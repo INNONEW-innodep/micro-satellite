@@ -30,4 +30,4 @@ Apply the LUT created in step 2.1 to each temporal image to generate orthorectif
 
 ## Figures
 Figure 1: TerraSAR-X Orthorectified Image
-[Figure 1 example](TSX_orthorectified.png)
+<img src="TSX_orthorectified.png" width="700" height="700"/>
