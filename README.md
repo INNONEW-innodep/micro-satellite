@@ -29,5 +29,5 @@ Convert the images to decibel scale to transform the Rayleigh distribution into 
 Apply the LUT created in step 2.1 to each temporal image to generate orthorectified images.
 
 ## Figures
-Figure 1: TerraSAR-X SLC Image (Intensity image)
-Figure 2: TerraSAR-X Orthorectified Image
+Figure 1: TerraSAR-X Orthorectified Image
+[Figure 1 example](TSX_orthorectified.png)
