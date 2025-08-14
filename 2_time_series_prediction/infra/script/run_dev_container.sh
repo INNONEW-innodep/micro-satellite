@@ -8,5 +8,5 @@ docker run -it --rm \
   --name conv-lstm-dev \
   --gpus all \
   -v "$PROJECT_ROOT":/workspace \
-  conv-lstm:latest \
+  conv-lstm:gpu \
   /bin/bash
