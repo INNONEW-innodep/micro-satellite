@@ -1,3 +1,4 @@
 *.npy
 *.tif
 *.h5
+*.pyc
