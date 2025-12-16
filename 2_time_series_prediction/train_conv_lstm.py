@@ -22,12 +22,12 @@ if USE_MIXED_PRECISION:
 
 
 from data_preprocess import load_and_split_data, create_shifted_frames, compress_weather_data
-from visualize import ImagePredictionCallback
+# from visualize import ImagePredictionCallback
 
-SEQ_DATA_PATH = "./data/data.npy"
-WEATHER_DATA_PATH = "./data/weather_ex.csv"
+SEQ_DATA_PATH = "./data/busan/data.npy"
+WEATHER_DATA_PATH = "./data/weather_20200218_20200414.csv"
 SAVE_WEIGHT_DIR = "./weights"
-SAVE_WEIGHT_PATH = "pred_with_weather.weights.h5"
+SAVE_WEIGHT_PATH = "busan_model.weights.h5"
 
 
 # -------------------------------
@@ -50,13 +50,24 @@ weather_data = raw_weather_data.iloc[:6, [2, 3, 4, 5, 6, 7]]
 weather_min, weather_max = weather_data.min(), weather_data.max()
 weather_data_scaled = (weather_data - weather_min) / (weather_max - weather_min)
 
-# 6개 일자 데이터를 4개 간격 데이터로 재구성
+ 원본 이미지 시퀀스 길이 확인 (shifted 전)
+original_seq_len = train_data.shape[1]  # 예: 4개 프레임
+# shifted 후 이미지 시퀀스 길이 확인
+shifted_seq_len = x_train_img.shape[1]  # 예: 3개 프레임
+
+# 기상 데이터를 원본 시퀀스 길이에 맞춰 압축
+# 예: 6일 데이터를 4개 간격으로 재구성
 DURATIONS = [1, 2, 2, 1] 
 compressed_weather_data = compress_weather_data(weather_data_scaled, durations=DURATIONS)
 
+# shifted 후 이미지 시퀀스 길이에 맞춰 기상 데이터도 마지막 시점 제외
+# create_shifted_frames와 동일하게 처리: x는 0~n-2, y는 1~n-1
+compressed_weather_data_x = compressed_weather_data[:-1]  # 마지막 시점 제외 (x에 맞춤)
+
 # 위성 이미지 시퀀스 데이터 수에 맞춰 기상 데이터 준비
-x_train_weather = np.tile(compressed_weather_data, (x_train_img.shape[0], 1, 1))
-x_val_weather = np.tile(compressed_weather_data, (x_val_img.shape[0], 1, 1))
+x_train_weather = np.tile(compressed_weather_data_x, (x_train_img.shape[0], 1, 1))
+x_val_weather = np.tile(compressed_weather_data_x, (x_val_img.shape[0], 1, 1))
+
 
 
 # 최종 데이터셋 확인
