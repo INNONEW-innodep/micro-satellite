@@ -12,8 +12,8 @@ url = 'http://apis.data.go.kr/1360000/AsosDalyInfoService/getWthrDataList'
 service_key = "wxNwEyNlM6t7jjFvLcRWRwIPiAs1eFTxPHagk7NP7zZNnDv8FJ6Pj27I4fOh9RNL6AqloMBfGwCHNZn779qViw==" # innodep api service key
 
 # YYYYMMDD format (D-1까지 제공)
-start_date="20200218"
-end_date="20200414"
+start_date="20250730"
+end_date="20250730"
 
 params ={
     'serviceKey' : service_key,
