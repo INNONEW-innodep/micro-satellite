@@ -2,3 +2,11 @@
 *.tif
 *.h5
 *.pyc
+*.json
+
+data/
+weights/
+inference_results/
+eval_results/
+test_results/
+su-data/
