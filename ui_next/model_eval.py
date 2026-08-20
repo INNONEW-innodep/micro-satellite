@@ -61,6 +61,7 @@ PROTOCOL_RESEARCH_KO: Final[str] = "연구 프로토콜 · 인수문서 기재"
 PROTOCOL_DEPLOY_KO: Final[str] = "배포 프로토콜 · VALREPORT 실측"
 PROTOCOL_SMOKE_KO: Final[str] = "스모크 재현 · 로컬 실추론"
 PROTOCOL_BATCH_KO: Final[str] = "배치 산출 · 체인 러너"
+PROTOCOL_FUSED_KO: Final[str] = "융합 보정 · 당일 보정치"
 POOLED_CAUTION_KO: Final[str] = (
     "pooled 값은 4개 씬 픽셀 합산 지표이며 대표 성능이 아닙니다. 씬별 편차를 함께 보세요."
 )
@@ -252,6 +253,14 @@ class GaugeLevelRow:
     boundary_median: float
     fused_level_m: float | None = None
     fused_delta_m: float | None = None
+    # 아래는 FUSED 레코드에서 그대로 옮긴 값이다. offset은 위성 수위를 절대 수위
+    # 체계로 옮긴 정렬량이라 모델 오차가 아니고, paired=False와 학습범위 이탈은
+    # 숨기지 않고 행에 표시한다.
+    satellite_level_m: float | None = None
+    offset_m: float | None = None
+    correction_mode: str = ""
+    paired: bool | None = None
+    out_of_train_range: bool | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -520,10 +529,23 @@ def load_batch_evals(batch_dir: Path | None = None) -> BatchEvalCollection:
 # --- gauge water levels -------------------------------------------------------
 
 
+def _optional_number(value: Any) -> float | None:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    return float(value)
+
+
 def _load_fused_corrections(
     fused_dir: Path,
-) -> tuple[str, str, str, Mapping[tuple[str, str, str], float]]:
-    """Read future fused-run corrections keyed by (loc, satellite, date)."""
+) -> tuple[str, str, str, Mapping[tuple[str, str, str], Mapping[str, Any]]]:
+    """Read fused-run corrections keyed by (loc, satellite, date).
+
+    Each entry keeps the whole correction context, not just the corrected
+    level: the uncorrected satellite level, the alignment offset, whether a
+    cross-sensor pair existed and whether the level fell outside the training
+    range. The panel has to show those, so dropping them here would hide a
+    WARN the viewer is entitled to see.
+    """
 
     provenance = _relative_provenance(fused_dir)
     if not fused_dir.is_dir():
@@ -532,7 +554,7 @@ def _load_fused_corrections(
     json_paths = sorted(fused_dir.glob("*/FUSED_*.json"))
     if not json_paths:
         return "missing", FUSED_WAITING_MESSAGE_KO, provenance, MappingProxyType({})
-    corrections: dict[tuple[str, str, str], float] = {}
+    corrections: dict[tuple[str, str, str], Mapping[str, Any]] = {}
     parsed_files = 0
     for json_path in json_paths:
         try:
@@ -543,15 +565,28 @@ def _load_fused_corrections(
             for record in records:
                 if not isinstance(record, Mapping):
                     raise ValueError("record must be an object")
-                corrected = record.get("corrected_water_level_m")
-                if not isinstance(corrected, (int, float)) or isinstance(corrected, bool):
+                corrected = _optional_number(record.get("corrected_water_level_m"))
+                if corrected is None:
                     continue
                 key = (
                     str(record["loc_id"]).strip().lower(),
                     str(record["satellite"]).strip(),
                     _iso_scene_date(record["date"]),
                 )
-                corrections[key] = float(corrected)
+                paired = record.get("paired")
+                out_of_range = record.get("wl_out_of_train_range")
+                corrections[key] = MappingProxyType(
+                    {
+                        "corrected_water_level_m": corrected,
+                        "water_level_m": _optional_number(record.get("water_level_m")),
+                        "offset_m": _optional_number(record.get("offset_m")),
+                        "correction_mode": str(record.get("correction_mode") or "").strip(),
+                        "paired": paired if isinstance(paired, bool) else None,
+                        "wl_out_of_train_range": (
+                            out_of_range if isinstance(out_of_range, bool) else None
+                        ),
+                    }
+                )
         except (KeyError, TypeError, ValueError, OSError):
             continue
         parsed_files += 1
@@ -634,10 +669,11 @@ def load_gauge_levels(
     merged: list[GaugeLevelRow] = []
     matched = 0
     for row in sorted(raw_rows, key=lambda item: (item.date, item.satellite, item.loc_id)):
-        fused_level = corrections.get((row.loc_name, row.satellite, row.date))
-        if fused_level is None:
+        entry = corrections.get((row.loc_name, row.satellite, row.date))
+        if entry is None:
             merged.append(row)
             continue
+        fused_level = float(entry["corrected_water_level_m"])
         matched += 1
         merged.append(
             GaugeLevelRow(
@@ -649,6 +685,11 @@ def load_gauge_levels(
                 boundary_median=row.boundary_median,
                 fused_level_m=fused_level,
                 fused_delta_m=fused_level - row.real_level_m,
+                satellite_level_m=entry["water_level_m"],
+                offset_m=entry["offset_m"],
+                correction_mode=entry["correction_mode"],
+                paired=entry["paired"],
+                out_of_train_range=entry["wl_out_of_train_range"],
             )
         )
     levels = [row.real_level_m for row in merged]
@@ -696,6 +737,71 @@ def gauge_pivot_rows(table: GaugeLevelTable) -> tuple[Mapping[str, Any], ...]:
         entry[f"{row.loc_name} (m)"] = row.real_level_m
     ordered = sorted(grouped.items(), key=lambda item: item[0])
     return tuple(MappingProxyType(entry) for _, entry in ordered)
+
+
+FUSED_SECTION_HEADER_KO: Final[str] = "융합 LSTM 보정 수위 — 당일 보정"
+FUSED_BADGE_KO: Final[str] = "당일 보정 · 예측 아님"
+FUSED_SOLO_SENSOR_KO: Final[str] = "단독 센서"
+FUSED_NOTICE_LINES_KO: Final[tuple[str, ...]] = (
+    "보정 수위는 관측일의 위성 수위를 게이지 절대 수위 체계로 정렬한 당일 "
+    "보정치입니다 — 미래 예측이 아닙니다. (correction_mode=absolute)",
+    "offset(예: gupo +2.26 m)은 위성 수위와 절대 수위 체계 간 정렬량이며 모델 "
+    "오차가 아닙니다. 실제 오차는 '실측 대비 차이' 열을 보세요.",
+    "성능 표기 주의: 융합 LODO RMSE 0.0453 m는 목표(0.5 m)는 충족하지만 위성 "
+    "미사용 베이스라인(0.0199 m)이 더 낮습니다 — 이 모델은 '위성 수위의 절대화 "
+    "보정기'로만 소개하고 '융합으로 향상' 주장은 금지.",
+)
+
+
+def fused_correction_rows(
+    table: GaugeLevelTable, *, satellite: str | None = None
+) -> tuple[Mapping[str, Any], ...]:
+    """Rows for the 당일 보정 panel — only observations that carry a correction.
+
+    Keeps ``paired`` and ``wl_out_of_train_range`` visible as their own cells:
+    a correction produced without a cross-sensor pair, or outside the training
+    range, is still shown but must never look like an ordinary row.
+    """
+
+    if table.status != "ok" or not table.has_fused:
+        return ()
+    rows: list[Mapping[str, Any]] = []
+    for row in table.rows:
+        if row.fused_level_m is None:
+            continue
+        if satellite is not None and row.satellite != satellite:
+            continue
+        flags: list[str] = []
+        if row.paired is False:
+            flags.append(FUSED_SOLO_SENSOR_KO)
+        if row.out_of_train_range:
+            flags.append("학습범위 이탈")
+        rows.append(
+            MappingProxyType(
+                {
+                    "관측일": row.date,
+                    "위성": row.satellite,
+                    "지점": f"{row.loc_name} (지점 {row.loc_id})",
+                    "위성 수위 (m)": (
+                        None
+                        if row.satellite_level_m is None
+                        else round(row.satellite_level_m, 4)
+                    ),
+                    "보정 수위 (m)": round(row.fused_level_m, 4),
+                    "offset (m)": (
+                        None if row.offset_m is None else round(row.offset_m, 4)
+                    ),
+                    "게이지 실측 (m)": row.real_level_m,
+                    "실측 대비 차이 (m)": (
+                        None
+                        if row.fused_delta_m is None
+                        else round(row.fused_delta_m, 4)
+                    ),
+                    "비고": " · ".join(flags),
+                }
+            )
+        )
+    return tuple(rows)
 
 
 def gauge_detail_rows(

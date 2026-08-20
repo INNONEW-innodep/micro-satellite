@@ -175,20 +175,48 @@ python3 scripts/wbms_chain_runner.py --scenes 20200302 --steps wb --gpu auto
 # [ok] wb_iceye_20200302 exit=0 38.0s
 ```
 
-2026-08-20 실측: **38.0초** (CPU 499초 대비 13.1배). 서버 4090은 전용이라 프리플라이트가
-항상 통과한다. 산출 마스크를 배포 라벨과 대조한 정확도는 **IoU 0.9247 · Dice 0.9609 ·
-Precision 0.9511 · Recall 0.9709** (유효영역 기준, WB 40.145 km² vs GT 39.327 km²).
+2026-08-20 기준 서버에는 **부산 4시점 실모델 산출이 모두 들어 있다**
+(`data/wbms_runs/` — WB 마스크, 지점별 WLWA, LSTM 보정 수위).
 
-`--steps`는 `wb,wlwa,fused`가 기본이고 위 예시는 수체 탐지만 돌린 것이다. `--dry-run`으로
-실행 없이 docker 명령만 확인할 수 있다.
+| 씬 | Pre 크기 | GPU 시간 | IoU | Dice | Precision | Recall |
+|---|---|---|---|---|---|---|
+| 20200302 | 1.51 GB | 38.0초 | 0.9247 | 0.9609 | 0.9511 | 0.9709 |
+| 20200330 | 1.14 GB | 28.7초 | 0.9472 | 0.9729 | 0.9608 | 0.9853 |
+| 20200415 | 1.21 GB | 28.3초 | 0.9619 | 0.9806 | 0.9762 | 0.9850 |
+| 20200416 | 1.59 GB | 34.8초 | 0.8810 | 0.9368 | 0.9474 | 0.9263 |
 
-주의: 러너가 만드는 docker 명령에는 `--user`가 없어 산출물이 **root 소유**로 떨어진다.
-실행 계정으로 정리하려면 아래처럼 되돌린다(러너 쪽 수정 전까지의 우회).
+**평균 IoU 0.9287.** CPU 대비 13배(499초 → 38초)이며, 서버 4090은 전용이라 VRAM
+프리플라이트가 항상 통과한다. 정확도는 배포 GT 라벨(`06_aux/Labels_GT`)과 직접 대조한
+값이다. 20200416이 최저인데 배포 프로토콜 수치(IoU 0.8786, 20200416 시험씬 기준)와
+거의 일치하므로 프로토콜이 재현된 것으로 본다.
+
+전체 체인(수위·면적·융합)도 서버에서 돈다.
 
 ```bash
-docker run --rm --user root -v ~/ssteam/watercast/data/wbms_runs:/fix \
-  --entrypoint chown wbms:0.13 -R "$(id -u):$(id -g)" /fix
+python3 scripts/wbms_chain_runner.py --steps wlwa,fused --gpu auto
+# wlwa 4지점 각 0.6~0.7초, fused 4지점 각 2.5~2.6초, 합계 13초
 ```
+
+서버에는 PlanetScope Pre가 없지만 **교차센서 쌍 부재는 WARN으로 처리되어 SAR 단독으로
+융합 보정까지 산출된다**(exit=0 확인). 지점은 jeongcheon·hupo·gimhae·gupo 네 곳이고,
+LSTM 번들은 이미지 동봉본이 자동 선택된다.
+
+`--dry-run`으로 실행 없이 docker 명령만 확인할 수 있다.
+
+### 체인 산출을 ui_next '정량 평가' 화면에 붙이기
+
+`ui_next/model_eval.py`의 `load_batch_evals()`는 `data/eval/*.json`을 읽어 **'배치 산출 ·
+체인 러너'** 계열로 표시한다. 배포 프로토콜·연구 프로토콜·스모크 재현과 섞이지 않는
+별도 계열이므로, 체인 결과는 여기에만 넣는다. 기대 스키마는 아래로 충분하다.
+
+```json
+{ "wb": "WB_Busan_ICEYE_20200302T183857.tif",
+  "metrics": { "water_iou": 0.924739, "f1": 0.960898 } }
+```
+
+파일명은 `WB_<테스트베드>_<센서>_<YYYYMMDD>T<HHMMSS>.tif` 규칙을 지켜야 센서·날짜가
+파싱된다. 서버에는 4시점이 이미 생성돼 있고 로더가 `status: ok · 배치 산출 4건`으로
+읽는 것을 확인했다.
 
 이 경로는 **호스트 러너 전용**이다. 컨테이너 백엔드의 `/api/v1/wbms/status`는
 `image_available: false`를 계속 보고하는데, 이미지가 없어서가 아니라 백엔드 컨테이너 안에

@@ -13,11 +13,15 @@ import streamlit as st
 
 try:  # package imports used by pytest and other Python callers
     from .model_eval import (
+        FUSED_BADGE_KO,
+        FUSED_NOTICE_LINES_KO,
+        FUSED_SECTION_HEADER_KO,
         FUSED_WAITING_MESSAGE_KO,
         GaugeLevelTable,
         build_gauge_level_figure,
         build_scene_iou_figure,
         build_weather_figure,
+        fused_correction_rows,
         gauge_detail_rows,
         gauge_pivot_rows,
         load_batch_evals,
@@ -31,11 +35,15 @@ try:  # package imports used by pytest and other Python callers
     )
 except ImportError:  # direct Streamlit execution adds ui_next/ to sys.path
     from model_eval import (
+        FUSED_BADGE_KO,
+        FUSED_NOTICE_LINES_KO,
+        FUSED_SECTION_HEADER_KO,
         FUSED_WAITING_MESSAGE_KO,
         GaugeLevelTable,
         build_gauge_level_figure,
         build_scene_iou_figure,
         build_weather_figure,
+        fused_correction_rows,
         gauge_detail_rows,
         gauge_pivot_rows,
         load_batch_evals,
@@ -56,8 +64,44 @@ _IN_SAMPLE_BADGE_HTML = (
 )
 
 
+_FUSED_BADGE_HTML = (
+    '<span style="display:inline-flex;align-items:center;border:1px solid '
+    "rgba(34,211,238,.45);border-radius:999px;padding:3px 10px;color:#67e8f9;"
+    "background:rgba(8,145,178,.18);font-size:.7rem;font-weight:800;"
+    'letter-spacing:.05em;margin-right:6px;">{label}</span>'
+)
+
+
 def _render_in_sample_badge() -> None:
     st.markdown(_IN_SAMPLE_BADGE_HTML, unsafe_allow_html=True)
+
+
+def render_fused_correction_panel(table: GaugeLevelTable) -> None:
+    """당일 보정치 계열. 예측 성능으로 읽히지 않게 고지 3줄을 항상 함께 낸다."""
+
+    st.markdown(f"##### {FUSED_SECTION_HEADER_KO}")
+    st.markdown(
+        _FUSED_BADGE_HTML.format(label=FUSED_BADGE_KO) + _IN_SAMPLE_BADGE_HTML,
+        unsafe_allow_html=True,
+    )
+    if not table.has_fused:
+        st.info(FUSED_WAITING_MESSAGE_KO)
+        return
+    rows = fused_correction_rows(table)
+    if not rows:
+        st.info(FUSED_WAITING_MESSAGE_KO)
+        return
+    # 캔버스 dataframe이 일부 환경에서 빈 칸으로 보이는 문제를 피해 정적 렌더한다.
+    st.table(rows)
+    flagged = sum(1 for row in rows if row["비고"])
+    if flagged:
+        st.warning(
+            f"{flagged}건은 교차센서 쌍이 없거나 학습범위를 벗어난 보정입니다. "
+            "'비고' 열을 확인하세요."
+        )
+    for line in FUSED_NOTICE_LINES_KO:
+        st.caption(line)
+    st.caption(f"출처 · {table.fused_provenance} · {table.fused_message_ko}")
 
 
 def render_gauge_levels_panel(
@@ -108,6 +152,8 @@ def render_gauge_levels_panel(
     figure = build_gauge_level_figure(table)
     if figure is not None:
         st.plotly_chart(figure, width="stretch", config={"displaylogo": False})
+
+    render_fused_correction_panel(table)
 
     st.markdown("##### 표본 상세")
     if table.has_fused:
