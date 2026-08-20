@@ -280,6 +280,10 @@ def docker_base(cname: str, mounts: list[tuple[str, str, bool]],
                 device: str | None = None) -> list[str]:
     dev = device or RUN_DEVICE
     cmd = ["docker", "run", "--rm", "--name", cname]
+    # 산출물이 root 소유로 떨어지면 실행 계정이 재실행·정리를 못 한다
+    # (backend docker_prefix 와 동일한 이유 — 서버 실측에서 확인된 결함)
+    cmd += ["--user", f"{os.getuid()}:{os.getgid()}",
+            "-e", "HOME=/tmp", "-e", "MPLCONFIGDIR=/tmp"]
     if dev == "gpu":
         # TF 기본은 가용 VRAM 전부 선점 — growth 로 필요한 만큼만 할당해
         # 동거 서비스와의 공존을 지킨다. cuda_malloc_async 는 단편화 완화용.

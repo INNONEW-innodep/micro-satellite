@@ -162,7 +162,39 @@ docker.sock 마운트를 보안상 하지 않는다고 못박혀 있다. 그래�
 (`assets/wbms_*.png` + `wbms_20200302_meta.json`)을 읽으므로 라이브 체인 없이도
 실모델 결과를 보여준다.
 
-### 전달받은 `wbms:0.13` 이미지를 서버에 올리려면
+### 서버에서 WBMS 실모델 GPU 추론 돌리기 (검증됨)
+
+`wbms:0.13`은 서버에 적재돼 있고(11.25 GB), 부산 4시점 입력·가중치·마스크·DEM·GT가
+`~/ssteam/watercast/data/`에 있다. 호스트에서 러너를 직접 실행하면 GPU로 돈다.
+
+```bash
+ssh -p 10322 ssteam@semyeongsoft.com
+cd ~/ssteam/watercast
+python3 scripts/wbms_chain_runner.py --scenes 20200302 --steps wb --gpu auto
+# [gpu] 여유 VRAM 24077 MiB ≥ 3000 — GPU 사용
+# [ok] wb_iceye_20200302 exit=0 38.0s
+```
+
+2026-08-20 실측: **38.0초** (CPU 499초 대비 13.1배). 서버 4090은 전용이라 프리플라이트가
+항상 통과한다. 산출 마스크를 배포 라벨과 대조한 정확도는 **IoU 0.9247 · Dice 0.9609 ·
+Precision 0.9511 · Recall 0.9709** (유효영역 기준, WB 40.145 km² vs GT 39.327 km²).
+
+`--steps`는 `wb,wlwa,fused`가 기본이고 위 예시는 수체 탐지만 돌린 것이다. `--dry-run`으로
+실행 없이 docker 명령만 확인할 수 있다.
+
+주의: 러너가 만드는 docker 명령에는 `--user`가 없어 산출물이 **root 소유**로 떨어진다.
+실행 계정으로 정리하려면 아래처럼 되돌린다(러너 쪽 수정 전까지의 우회).
+
+```bash
+docker run --rm --user root -v ~/ssteam/watercast/data/wbms_runs:/fix \
+  --entrypoint chown wbms:0.13 -R "$(id -u):$(id -g)" /fix
+```
+
+이 경로는 **호스트 러너 전용**이다. 컨테이너 백엔드의 `/api/v1/wbms/status`는
+`image_available: false`를 계속 보고하는데, 이미지가 없어서가 아니라 백엔드 컨테이너 안에
+`docker` CLI가 없어서다(위 "남은 블로커" 참조).
+
+### `wbms:0.13` 이미지를 다시 올려야 한다면
 
 로컬 `wbms_image_0.13_20260818-001.tar` (11 GB)는 CUDA 11.8 기반 GPU 이미지다
 (`NVIDIA_VISIBLE_DEVICES=all`, driver≥450 요구, `WORKDIR /WBMS`, 포트 1223,
