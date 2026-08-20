@@ -1,0 +1,51 @@
+services:
+  watercast:
+    build: .
+    image: watercast:latest
+    container_name: watercast
+    restart: unless-stopped
+    ports:
+      # 호스트 8000은 sat-water-seg-api가 사용 중이라 18000으로 매핑한다.
+      - "18000:8000"
+      - "8501:8501"
+    environment:
+      - KMA_API_KEY=${KMA_API_KEY:-}
+    volumes:
+      - ./backend/data:/app/backend/data
+      # SAR 원본·ingest 산출물은 이미지에 굽지 않고(수 GB) 읽기전용으로 붙인다.
+      - ./data:/app/data:ro
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if b'ok' in urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3).read() else 1)"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # 발표용 파이프라인 데모. 같은 이미지를 쓰고 진입점만 바꾼다.
+  pipeline-ui:
+    # watercast와 같은 이미지를 재사용한다(빌드는 캐시되어 한 번만 수행).
+    build: .
+    image: watercast:latest
+    depends_on:
+      - watercast
+    container_name: watercast-pipeline
+    restart: unless-stopped
+    entrypoint: ["./docker/pipeline_entrypoint.sh"]
+    volumes:
+      - ./data:/app/data:ro
+    ports:
+      - "8502:8501"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8501/', timeout=5).status == 200 else 1)"
+      interval: 30s
+      timeout: 8s
+      retries: 3
+      start_period: 30s

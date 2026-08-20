@@ -1,0 +1,16 @@
+.git
+.claude
+.venv
+.venv-*
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+*.pptx
+**/*.pptx
+backend/data
+node_modules
+
+# SAR 원본과 ingest 중간 산출물 (수 GB) — UI는 assets/만 읽는다.
+*.h5
+/data

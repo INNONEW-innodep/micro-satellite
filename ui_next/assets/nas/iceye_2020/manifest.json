@@ -1,0 +1,913 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "nas-iceye-water-body-2020",
+  "generated_at_utc": "2026-08-10T04:48:31.266884+00:00",
+  "classification": "real_iceye_sar_with_binary_water_body_labels",
+  "source_access": {
+    "mode": "read_only_local_mount_or_staging_copy",
+    "nas_modified": false,
+    "logical_roots_only": true
+  },
+  "temporal_coverage": {
+    "dates": [
+      "2020-03-02",
+      "2020-03-30",
+      "2020-04-15",
+      "2020-04-16"
+    ],
+    "span_days": 45,
+    "interval_days": [
+      28,
+      16,
+      1
+    ],
+    "forecasting_limit": "Four irregular observations support segmentation and change EDA, not a validated 7/14/30-day learned water-level forecast."
+  },
+  "common_grid": {
+    "crs": "EPSG:32652",
+    "bounds": [
+      479038.67391907226,
+      3847364.664009152,
+      528783.6203433549,
+      3915251.9979939666
+    ],
+    "width_m": 49744.94642428262,
+    "height_m": 67887.33398481458,
+    "bbox_area_km2": 3377.0517919619824,
+    "preview_width": 512,
+    "preview_height": 699,
+    "transform": [
+      97.158098484927,
+      0.0,
+      479038.67391907226,
+      0.0,
+      -97.1206494775602,
+      3915251.9979939666
+    ],
+    "sampling": "nearest",
+    "aspect_preserved": true
+  },
+  "cross_date_alignment": {
+    "same_crs": true,
+    "same_shape": false,
+    "same_transform": false,
+    "direct_array_stack_allowed": false,
+    "warp_to_common_grid_required": true,
+    "reason": "Dates have different footprints and sub-pixel-shifted 3 m grid origins. Use map-space reprojection before temporal comparison."
+  },
+  "output_semantics": {
+    "mask_png": "0=background, 255=water sampled from label value 1",
+    "validity_png": "255=label value is not declared label nodata; this is not the SAR input footprint validity mask",
+    "browse_preview": "non-aligned display context only"
+  },
+  "items": [
+    {
+      "date": "2020-03-02",
+      "source": {
+        "input": {
+          "logical_path": "신규데이터_위성영상_라벨링/ICEYE_WB/Images/20200302_Input.tif",
+          "bytes": 1463390651,
+          "sha256": null,
+          "sha256_note": "input pixels not materialized; size and grid metadata come from a read-only NAS TIFF IFD header audit"
+        },
+        "label": {
+          "logical_path": "신규데이터_위성영상_라벨링/ICEYE_WB/Labels/20200302_Label.tif",
+          "bytes": 489357749,
+          "sha256": "d761da497487e23bffed6a1f0c1a45cb8f78945231afa730c7087cd6edc282c2"
+        },
+        "raw_quicklook": {
+          "logical_path": "신규데이터_위성영상_원본/ICEYE/SM_23467_20200302/ICEYE_X5_QUICKLOOK_SM_23467_20200302T183857.png",
+          "bytes": 7576740,
+          "sha256": "f64ddeb55bf6916ebe9b7237416946dd9ffbd3141f7a0b90edc8e6b8dc882dc3"
+        },
+        "raw_grd_metadata": {
+          "logical_path": "신규데이터_위성영상_원본/ICEYE/SM_23467_20200302/ICEYE_X5_GRD_SM_23467_20200302T183857.xml",
+          "sha256": "2e825a48107486bac8523853685bc3d67da086013a94345260e2dd92fd1e11dc",
+          "fields": {
+            "product_name": "ICEYE_X5_GRD_SM_23467_20200302T183857",
+            "product_type": "Stripmap",
+            "product_level": "GRD",
+            "satellite_name": "ICEYE-X5",
+            "acquisition_mode": "stripmap",
+            "look_side": "right",
+            "satellite_look_angle": 14.4,
+            "acquisition_start_utc": "2020-03-02T18:38:57.215809",
+            "acquisition_end_utc": "2020-03-02T18:39:07.207339",
+            "orbit_direction": "DESCENDING",
+            "polarization": "VV",
+            "range_spacing": 2.5,
+            "azimuth_spacing": 2.5,
+            "incidence_center": 15.724995227753839,
+            "calibration_factor": 6.214056581158653e-05
+          }
+        }
+      },
+      "native": {
+        "input": {
+          "width": 19571,
+          "height": 24857,
+          "bands": 1,
+          "dtypes": [
+            "float32"
+          ],
+          "crs": "EPSG:32652",
+          "transform": [
+            3.0,
+            0.0,
+            473010.36353185785,
+            0.0,
+            -3.0,
+            3921935.664009152
+          ],
+          "bounds": [
+            473010.36353185785,
+            3847364.664009152,
+            531723.3635318578,
+            3921935.664009152
+          ],
+          "resolution": [
+            3.0,
+            3.0
+          ],
+          "nodata": 0,
+          "block_shapes": [
+            [
+              128,
+              128
+            ]
+          ],
+          "compression": "LZW",
+          "pixel_count": 486476347,
+          "bytes": 1463390651,
+          "bigtiff": false
+        },
+        "label": {
+          "width": 19571,
+          "height": 24857,
+          "bands": 1,
+          "dtypes": [
+            "uint8"
+          ],
+          "crs": "EPSG:32652",
+          "transform": [
+            3.0,
+            0.0,
+            473010.36353185785,
+            0.0,
+            -3.0,
+            3921935.664009152
+          ],
+          "bounds": [
+            473010.36353185785,
+            3847364.664009152,
+            531723.3635318578,
+            3921935.664009152
+          ],
+          "resolution": [
+            3.0,
+            3.0
+          ],
+          "nodata": 15,
+          "block_shapes": [
+            [
+              128,
+              128
+            ]
+          ],
+          "compression": "NONE",
+          "pixel_count": 486476347
+        },
+        "pair_alignment": {
+          "verified": true,
+          "verification_method": "read_only_nas_tiff_ifd_header_audit_2026-08-10",
+          "input_pixels_materialized": false,
+          "shape_equal": true,
+          "crs_equal": true,
+          "transform_equal": true,
+          "bounds_equal": true,
+          "same_pixel_grid": true,
+          "conclusion": "audited input header and live label are co-registered for this date"
+        }
+      },
+      "label_qa": {
+        "declared_nodata_tag": 15,
+        "actual_unique_values": [
+          0,
+          1
+        ],
+        "declared_nodata_occurs_in_pixels": false,
+        "class_semantics": {
+          "0": "background",
+          "1": "water_body"
+        },
+        "warning": "label nodata is declared but absent; use input != 0 as the SAR footprint validity mask for model training"
+      },
+      "counts": {
+        "full_native_extent": {
+          "pixel_count": 486476347,
+          "value_counts": {
+            "0": 481591533,
+            "1": 4884814
+          },
+          "valid_pixel_count": 486476347,
+          "declared_nodata_pixel_count": 0,
+          "water_pixel_count": 4884814,
+          "water_ratio_of_all": 0.010041215837365265,
+          "water_ratio_of_valid": 0.010041215837365265,
+          "water_area_km2": 43.963326
+        },
+        "common_bounds_native_centers": {
+          "pixel_count": 375234078,
+          "value_counts": {
+            "0": 370381575,
+            "1": 4852503
+          },
+          "valid_pixel_count": 375234078,
+          "declared_nodata_pixel_count": 0,
+          "water_pixel_count": 4852503,
+          "water_ratio_of_all": 0.012931935782229247,
+          "water_ratio_of_valid": 0.012931935782229247,
+          "water_area_km2": 43.672527,
+          "window": {
+            "row_start": 2228,
+            "row_stop": 24857,
+            "column_start": 2009,
+            "column_stop": 18591
+          }
+        },
+        "preview_nearest": {
+          "pixel_count": 357888,
+          "value_counts": {
+            "0": 353261,
+            "1": 4627
+          },
+          "valid_pixel_count": 357888,
+          "declared_nodata_pixel_count": 0,
+          "water_pixel_count": 4627,
+          "water_ratio_of_all": 0.012928625715307581,
+          "water_ratio_of_valid": 0.012928625715307581,
+          "water_area_km2": 43.660638639485235
+        }
+      },
+      "assets": {
+        "mask": {
+          "file": "20200302_mask.png",
+          "bytes": 3420,
+          "sha256": "8580fe8ba6f225d916bdd22c522c98b2d22058e492396fa22e05e3b41088b81e"
+        },
+        "label_validity": {
+          "file": "20200302_validity.png",
+          "bytes": 1224,
+          "sha256": "f18f795a295add304fa1c2b13e001dc772f39b6cb2ccbcb4b6a6ac8c62878b2f"
+        },
+        "browse": {
+          "file": "20200302_browse.jpg",
+          "bytes": 193597,
+          "sha256": "e19667944f383146b2a799b470b5bf5bebfc80a51168f620e35a4bc4bdee2172"
+        }
+      },
+      "browse_semantics": {
+        "role": "display_only_raw_quicklook_context",
+        "aligned_with_materialized_mask": false,
+        "pixelwise_analysis_allowed": false,
+        "note": "The raw quicklook has its own browse geometry and is not asserted to align with the processed 3 m label or common preview grid."
+      }
+    },
+    {
+      "date": "2020-03-30",
+      "source": {
+        "input": {
+          "logical_path": "신규데이터_위성영상_라벨링/ICEYE_WB/Images/20200330_Input.tif",
+          "bytes": 1125649675,
+          "sha256": null,
+          "sha256_note": "input pixels not materialized; size and grid metadata come from a read-only NAS TIFF IFD header audit"
+        },
+        "label": {
+          "logical_path": "신규데이터_위성영상_라벨링/ICEYE_WB/Labels/20200330_Label.tif",
+          "bytes": 425161028,
+          "sha256": "a30db7e6824fa4147c6c530c1388958b420d5b0e92518d62ff4f2551e7fb5150"
+        },
+        "raw_quicklook": {
+          "logical_path": "신규데이터_위성영상_원본/ICEYE/SM_25599_20200330/ICEYE_X5_QUICKLOOK_SM_25599_20200330T190048.png",
+          "bytes": 7136518,
+          "sha256": "9664fa36671ebc768524243c24610b77bb354fb93f5d5f16e6c7bf0b381ad7e8"
+        },
+        "raw_grd_metadata": {
+          "logical_path": "신규데이터_위성영상_원본/ICEYE/SM_25599_20200330/ICEYE_X5_GRD_SM_25599_20200330T190048.xml",
+          "sha256": "0318f35a540d3cc7ff9b2903d97d6c7996d8630b6eebdb07c7ae5b0cf5f373b6",
+          "fields": {
+            "product_name": "ICEYE_X5_GRD_SM_25599_20200330T190048",
+            "product_type": "Stripmap",
+            "product_level": "GRD",
+            "satellite_name": "ICEYE-X5",
+            "acquisition_mode": "stripmap",
+            "look_side": "left",
+            "satellite_look_angle": 30.0,
+            "acquisition_start_utc": "2020-03-30T19:00:48.953441",
+            "acquisition_end_utc": "2020-03-30T19:00:58.944680",
+            "orbit_direction": "DESCENDING",
+            "polarization": "VV",
+            "range_spacing": 2.5,
+            "azimuth_spacing": 2.5,
+            "incidence_center": 33.16866806617592,
+            "calibration_factor": 4.5198102342002016e-05
+          }
+        }
+      },
+      "native": {
+        "input": {
+          "width": 17356,
+          "height": 24488,
+          "bands": 1,
+          "dtypes": [
+            "float32"
+          ],
+          "crs": "EPSG:32652",
+          "transform": [
+            3.0,
+            0.0,
+            476715.6203433549,
+            0.0,
+            -3.0,
+            3916319.282163941
+          ],
+          "bounds": [
+            476715.6203433549,
+            3842855.282163941,
+            528783.6203433549,
+            3916319.282163941
+          ],
+          "resolution": [
+            3.0,
+            3.0
+          ],
+          "nodata": 0,
+          "block_shapes": [
+            [
+              128,
+              128
+            ]
+          ],
+          "compression": "LZW",
+          "pixel_count": 425013728,
+          "bytes": 1125649675,
+          "bigtiff": false
+        },
+        "label": {
+          "width": 17356,
+          "height": 24488,
+          "bands": 1,
+          "dtypes": [
+            "uint8"
+          ],
+          "crs": "EPSG:32652",
+          "transform": [
+            3.0,
+            0.0,
+            476715.6203433549,
+            0.0,
+            -3.0,
+            3916319.282163941
+          ],
+          "bounds": [
+            476715.6203433549,
+            3842855.282163941,
+            528783.6203433549,
+            3916319.282163941
+          ],
+          "resolution": [
+            3.0,
+            3.0
+          ],
+          "nodata": 15,
+          "block_shapes": [
+            [
+              1,
+              17356
+            ]
+          ],
+          "compression": "NONE",
+          "pixel_count": 425013728
+        },
+        "pair_alignment": {
+          "verified": true,
+          "verification_method": "read_only_nas_tiff_ifd_header_audit_2026-08-10",
+          "input_pixels_materialized": false,
+          "shape_equal": true,
+          "crs_equal": true,
+          "transform_equal": true,
+          "bounds_equal": true,
+          "same_pixel_grid": true,
+          "conclusion": "audited input header and live label are co-registered for this date"
+        }
+      },
+      "label_qa": {
+        "declared_nodata_tag": 15,
+        "actual_unique_values": [
+          0,
+          1
+        ],
+        "declared_nodata_occurs_in_pixels": false,
+        "class_semantics": {
+          "0": "background",
+          "1": "water_body"
+        },
+        "warning": "label nodata is declared but absent; use input != 0 as the SAR footprint validity mask for model training"
+      },
+      "counts": {
+        "full_native_extent": {
+          "pixel_count": 425013728,
+          "value_counts": {
+            "0": 420595213,
+            "1": 4418515
+          },
+          "valid_pixel_count": 425013728,
+          "declared_nodata_pixel_count": 0,
+          "water_pixel_count": 4418515,
+          "water_ratio_of_all": 0.010396170073828767,
+          "water_ratio_of_valid": 0.010396170073828767,
+          "water_area_km2": 39.766635
+        },
+        "common_bounds_native_centers": {
+          "pixel_count": 375234078,
+          "value_counts": {
+            "0": 370815563,
+            "1": 4418515
+          },
+          "valid_pixel_count": 375234078,
+          "declared_nodata_pixel_count": 0,
+          "water_pixel_count": 4418515,
+          "water_ratio_of_all": 0.011775356395002056,
+          "water_ratio_of_valid": 0.011775356395002056,
+          "water_area_km2": 39.766635,
+          "window": {
+            "row_start": 356,
+            "row_stop": 22985,
+            "column_start": 774,
+            "column_stop": 17356
+          }
+        },
+        "preview_nearest": {
+          "pixel_count": 357888,
+          "value_counts": {
+            "0": 353652,
+            "1": 4236
+          },
+          "valid_pixel_count": 357888,
+          "declared_nodata_pixel_count": 0,
+          "water_pixel_count": 4236,
+          "water_ratio_of_all": 0.011836105150214592,
+          "water_ratio_of_valid": 0.011836105150214592,
+          "water_area_km2": 39.97114010738263
+        }
+      },
+      "assets": {
+        "mask": {
+          "file": "20200330_mask.png",
+          "bytes": 3189,
+          "sha256": "8223dbe680cc7fd2e18f24e22c710be80411fe4b8e99e1466b723a6dd4eb6b51"
+        },
+        "label_validity": {
+          "file": "20200330_validity.png",
+          "bytes": 1224,
+          "sha256": "f18f795a295add304fa1c2b13e001dc772f39b6cb2ccbcb4b6a6ac8c62878b2f"
+        },
+        "browse": {
+          "file": "20200330_browse.jpg",
+          "bytes": 178202,
+          "sha256": "6b1f7badf81df22395440ff0295bc074a52d311239c909564ccc1ad1eff27a3b"
+        }
+      },
+      "browse_semantics": {
+        "role": "display_only_raw_quicklook_context",
+        "aligned_with_materialized_mask": false,
+        "pixelwise_analysis_allowed": false,
+        "note": "The raw quicklook has its own browse geometry and is not asserted to align with the processed 3 m label or common preview grid."
+      }
+    },
+    {
+      "date": "2020-04-15",
+      "source": {
+        "input": {
+          "logical_path": "신규데이터_위성영상_라벨링/ICEYE_WB/Images/20200415_Input.tif",
+          "bytes": 1207518571,
+          "sha256": null,
+          "sha256_note": "input pixels not materialized; size and grid metadata come from a read-only NAS TIFF IFD header audit"
+        },
+        "label": {
+          "logical_path": "신규데이터_위성영상_라벨링/ICEYE_WB/Labels/20200415_Label.tif",
+          "bytes": 398560149,
+          "sha256": "6b0a0981fe37d952774624d7d3e9af5fd2162ef27d476c75d3599740b9f0d3c4"
+        },
+        "raw_quicklook": {
+          "logical_path": "신규데이터_위성영상_원본/ICEYE/SM_25736_20200415/ICEYE_X5_QUICKLOOK_SM_25736_20200415T183220.png",
+          "bytes": 7097227,
+          "sha256": "70502777fc04d41570795f378db88d9cd535ca8755dec5e4db594b8adfa3c9ba"
+        },
+        "raw_grd_metadata": {
+          "logical_path": "신규데이터_위성영상_원본/ICEYE/SM_25736_20200415/ICEYE_X5_GRD_SM_25736_20200415T183220.xml",
+          "sha256": "6f7ac460bca6a65a2954a6f00eff7420eef5ebd58cf76a0f57d6e33ec2ac4af5",
+          "fields": {
+            "product_name": "ICEYE_X5_GRD_SM_25736_20200415T183220",
+            "product_type": "Stripmap",
+            "product_level": "GRD",
+            "satellite_name": "ICEYE-X5",
+            "acquisition_mode": "stripmap",
+            "look_side": "right",
+            "satellite_look_angle": 26.5,
+            "acquisition_start_utc": "2020-04-15T18:32:20.356371",
+            "acquisition_end_utc": "2020-04-15T18:32:30.347827",
+            "orbit_direction": "DESCENDING",
+            "polarization": "VV",
+            "range_spacing": 2.5,
+            "azimuth_spacing": 2.5,
+            "incidence_center": 29.110402418787032,
+            "calibration_factor": 3.8264358410623735e-05
+          }
+        }
+      },
+      "native": {
+        "input": {
+          "width": 16703,
+          "height": 23853,
+          "bands": 1,
+          "dtypes": [
+            "float32"
+          ],
+          "crs": "EPSG:32652",
+          "transform": [
+            3.0,
+            0.0,
+            479038.67391907226,
+            0.0,
+            -3.0,
+            3915251.9979939666
+          ],
+          "bounds": [
+            479038.67391907226,
+            3843692.9979939666,
+            529147.6739190723,
+            3915251.9979939666
+          ],
+          "resolution": [
+            3.0,
+            3.0
+          ],
+          "nodata": 0,
+          "block_shapes": [
+            [
+              128,
+              128
+            ]
+          ],
+          "compression": "LZW",
+          "pixel_count": 398416659,
+          "bytes": 1207518571,
+          "bigtiff": false
+        },
+        "label": {
+          "width": 16703,
+          "height": 23853,
+          "bands": 1,
+          "dtypes": [
+            "uint8"
+          ],
+          "crs": "EPSG:32652",
+          "transform": [
+            3.0,
+            0.0,
+            479038.67391907226,
+            0.0,
+            -3.0,
+            3915251.9979939666
+          ],
+          "bounds": [
+            479038.67391907226,
+            3843692.9979939666,
+            529147.6739190723,
+            3915251.9979939666
+          ],
+          "resolution": [
+            3.0,
+            3.0
+          ],
+          "nodata": 15,
+          "block_shapes": [
+            [
+              1,
+              16703
+            ]
+          ],
+          "compression": "NONE",
+          "pixel_count": 398416659
+        },
+        "pair_alignment": {
+          "verified": true,
+          "verification_method": "read_only_nas_tiff_ifd_header_audit_2026-08-10",
+          "input_pixels_materialized": false,
+          "shape_equal": true,
+          "crs_equal": true,
+          "transform_equal": true,
+          "bounds_equal": true,
+          "same_pixel_grid": true,
+          "conclusion": "audited input header and live label are co-registered for this date"
+        }
+      },
+      "label_qa": {
+        "declared_nodata_tag": 15,
+        "actual_unique_values": [
+          0,
+          1
+        ],
+        "declared_nodata_occurs_in_pixels": false,
+        "class_semantics": {
+          "0": "background",
+          "1": "water_body"
+        },
+        "warning": "label nodata is declared but absent; use input != 0 as the SAR footprint validity mask for model training"
+      },
+      "counts": {
+        "full_native_extent": {
+          "pixel_count": 398416659,
+          "value_counts": {
+            "0": 393906438,
+            "1": 4510221
+          },
+          "valid_pixel_count": 398416659,
+          "declared_nodata_pixel_count": 0,
+          "water_pixel_count": 4510221,
+          "water_ratio_of_all": 0.011320362485143976,
+          "water_ratio_of_valid": 0.011320362485143976,
+          "water_area_km2": 40.591989
+        },
+        "common_bounds_native_centers": {
+          "pixel_count": 375234078,
+          "value_counts": {
+            "0": 370723857,
+            "1": 4510221
+          },
+          "valid_pixel_count": 375234078,
+          "declared_nodata_pixel_count": 0,
+          "water_pixel_count": 4510221,
+          "water_ratio_of_all": 0.012019753173910819,
+          "water_ratio_of_valid": 0.012019753173910819,
+          "water_area_km2": 40.591989,
+          "window": {
+            "row_start": 0,
+            "row_stop": 22629,
+            "column_start": 0,
+            "column_stop": 16582
+          }
+        },
+        "preview_nearest": {
+          "pixel_count": 357888,
+          "value_counts": {
+            "0": 353569,
+            "1": 4319
+          },
+          "valid_pixel_count": 357888,
+          "declared_nodata_pixel_count": 0,
+          "water_pixel_count": 4319,
+          "water_ratio_of_all": 0.012068021280400573,
+          "water_ratio_of_valid": 0.012068021280400573,
+          "water_area_km2": 40.75433289041209
+        }
+      },
+      "assets": {
+        "mask": {
+          "file": "20200415_mask.png",
+          "bytes": 3255,
+          "sha256": "5073ac82a8843b7d7a6fe8bc9a4ea716cd1bec28be1518eda4af2fed58f42b74"
+        },
+        "label_validity": {
+          "file": "20200415_validity.png",
+          "bytes": 1224,
+          "sha256": "f18f795a295add304fa1c2b13e001dc772f39b6cb2ccbcb4b6a6ac8c62878b2f"
+        },
+        "browse": {
+          "file": "20200415_browse.jpg",
+          "bytes": 213743,
+          "sha256": "3ec62ec07228cb43ed9f906b3291ee912de36af7e029f77d3148991cb10b14c9"
+        }
+      },
+      "browse_semantics": {
+        "role": "display_only_raw_quicklook_context",
+        "aligned_with_materialized_mask": false,
+        "pixelwise_analysis_allowed": false,
+        "note": "The raw quicklook has its own browse geometry and is not asserted to align with the processed 3 m label or common preview grid."
+      }
+    },
+    {
+      "date": "2020-04-16",
+      "source": {
+        "input": {
+          "logical_path": "신규데이터_위성영상_라벨링/ICEYE_WB/Images/20200416_Input.tif",
+          "bytes": 1622083501,
+          "sha256": null,
+          "sha256_note": "input pixels not materialized; size and grid metadata come from a read-only NAS TIFF IFD header audit"
+        },
+        "label": {
+          "logical_path": "신규데이터_위성영상_라벨링/ICEYE_WB/Labels/20200416_Label.tif",
+          "bytes": 504689436,
+          "sha256": "92f29f687a7b43f6ce9b3f8240c3b52cd96866aae32c31bef468a8c3560ca4dd"
+        },
+        "raw_quicklook": {
+          "logical_path": "신규데이터_위성영상_원본/ICEYE/SM_25737_20200416/ICEYE_X5_QUICKLOOK_SM_25737_20200416T183630.png",
+          "bytes": 9028373,
+          "sha256": "5e9733547580c1c0ef1416eb710e02395d879a0e8ba839cf8241a2b3e6e48fd0"
+        },
+        "raw_grd_metadata": {
+          "logical_path": "신규데이터_위성영상_원본/ICEYE/SM_25737_20200416/ICEYE_X5_GRD_SM_25737_20200416T183630.xml",
+          "sha256": "13929032436239e6d5564292bfe9c9069529e224a849c4d8e34b784c2819a360",
+          "fields": {
+            "product_name": "ICEYE_X5_GRD_SM_25737_20200416T183630",
+            "product_type": "Stripmap",
+            "product_level": "GRD",
+            "satellite_name": "ICEYE-X5",
+            "acquisition_mode": "stripmap",
+            "look_side": "right",
+            "satellite_look_angle": 18.9,
+            "acquisition_start_utc": "2020-04-16T18:36:30.662116",
+            "acquisition_end_utc": "2020-04-16T18:36:40.658189",
+            "orbit_direction": "DESCENDING",
+            "polarization": "VV",
+            "range_spacing": 2.5,
+            "azimuth_spacing": 2.5,
+            "incidence_center": 20.735967677529086,
+            "calibration_factor": 3.147766968284649e-05
+          }
+        }
+      },
+      "native": {
+        "input": {
+          "width": 20440,
+          "height": 24684,
+          "bands": 1,
+          "dtypes": [
+            "float32"
+          ],
+          "crs": "EPSG:32652",
+          "transform": [
+            3.0000000000000027,
+            0.0,
+            472996.88501411973,
+            0.0,
+            -3.0,
+            3916822.0100970687
+          ],
+          "bounds": [
+            472996.88501411973,
+            3842770.0100970687,
+            534316.8850141198,
+            3916822.0100970687
+          ],
+          "resolution": [
+            3.0000000000000027,
+            3.0
+          ],
+          "nodata": 0,
+          "block_shapes": [
+            [
+              128,
+              128
+            ]
+          ],
+          "compression": "LZW",
+          "pixel_count": 504540960,
+          "bytes": 1622083501,
+          "bigtiff": true
+        },
+        "label": {
+          "width": 20440,
+          "height": 24684,
+          "bands": 1,
+          "dtypes": [
+            "uint8"
+          ],
+          "crs": "EPSG:32652",
+          "transform": [
+            3.0000000000000027,
+            0.0,
+            472996.88501411973,
+            0.0,
+            -3.0,
+            3916822.0100970687
+          ],
+          "bounds": [
+            472996.88501411973,
+            3842770.0100970687,
+            534316.8850141198,
+            3916822.0100970687
+          ],
+          "resolution": [
+            3.0000000000000027,
+            3.0
+          ],
+          "nodata": 15,
+          "block_shapes": [
+            [
+              1,
+              20440
+            ]
+          ],
+          "compression": "NONE",
+          "pixel_count": 504540960
+        },
+        "pair_alignment": {
+          "verified": true,
+          "verification_method": "read_only_nas_tiff_ifd_header_audit_2026-08-10",
+          "input_pixels_materialized": false,
+          "shape_equal": true,
+          "crs_equal": true,
+          "transform_equal": true,
+          "bounds_equal": true,
+          "same_pixel_grid": true,
+          "conclusion": "audited input header and live label are co-registered for this date"
+        }
+      },
+      "label_qa": {
+        "declared_nodata_tag": 15,
+        "actual_unique_values": [
+          0,
+          1
+        ],
+        "declared_nodata_occurs_in_pixels": false,
+        "class_semantics": {
+          "0": "background",
+          "1": "water_body"
+        },
+        "warning": "label nodata is declared but absent; use input != 0 as the SAR footprint validity mask for model training"
+      },
+      "counts": {
+        "full_native_extent": {
+          "pixel_count": 504540960,
+          "value_counts": {
+            "0": 498848503,
+            "1": 5692457
+          },
+          "valid_pixel_count": 504540960,
+          "declared_nodata_pixel_count": 0,
+          "water_pixel_count": 5692457,
+          "water_ratio_of_all": 0.011282447712471154,
+          "water_ratio_of_valid": 0.011282447712471154,
+          "water_area_km2": 51.232113000000034
+        },
+        "common_bounds_native_centers": {
+          "pixel_count": 375234078,
+          "value_counts": {
+            "0": 369587874,
+            "1": 5646204
+          },
+          "valid_pixel_count": 375234078,
+          "declared_nodata_pixel_count": 0,
+          "water_pixel_count": 5646204,
+          "water_ratio_of_all": 0.015047151447689141,
+          "water_ratio_of_valid": 0.015047151447689141,
+          "water_area_km2": 50.81583600000004,
+          "window": {
+            "row_start": 523,
+            "row_stop": 23152,
+            "column_start": 2014,
+            "column_stop": 18596
+          }
+        },
+        "preview_nearest": {
+          "pixel_count": 357888,
+          "value_counts": {
+            "0": 352538,
+            "1": 5350
+          },
+          "valid_pixel_count": 357888,
+          "declared_nodata_pixel_count": 0,
+          "water_pixel_count": 5350,
+          "water_ratio_of_all": 0.014948810801144493,
+          "water_ratio_of_valid": 0.014948810801144493,
+          "water_area_km2": 50.48290830370564
+        }
+      },
+      "assets": {
+        "mask": {
+          "file": "20200416_mask.png",
+          "bytes": 3696,
+          "sha256": "52e47cfb36006f74a956659cd0e564e2aaa42a7df85af73af39947737ceae3d3"
+        },
+        "label_validity": {
+          "file": "20200416_validity.png",
+          "bytes": 1224,
+          "sha256": "f18f795a295add304fa1c2b13e001dc772f39b6cb2ccbcb4b6a6ac8c62878b2f"
+        },
+        "browse": {
+          "file": "20200416_browse.jpg",
+          "bytes": 253180,
+          "sha256": "12d127195a582c98178ba5d2d3471f9a41d27cd96d3ccf5653088ab87424a717"
+        }
+      },
+      "browse_semantics": {
+        "role": "display_only_raw_quicklook_context",
+        "aligned_with_materialized_mask": false,
+        "pixelwise_analysis_allowed": false,
+        "note": "The raw quicklook has its own browse geometry and is not asserted to align with the processed 3 m label or common preview grid."
+      }
+    }
+  ]
+}

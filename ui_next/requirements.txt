@@ -1,0 +1,5 @@
+streamlit>=1.50,<2.0
+requests>=2.31,<3.0
+pandas>=2.0
+plotly>=5.24
+Pillow>=10.0

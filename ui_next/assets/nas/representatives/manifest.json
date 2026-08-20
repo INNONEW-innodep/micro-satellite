@@ -1,0 +1,35 @@
+{
+  "classification": "catalog_preview_only",
+  "items": {
+    "iceye_sar": {
+      "asset": "iceye_sar_quicklook_20200302.jpg",
+      "source_logical_path": "신규데이터_위성영상_원본/ICEYE/SM_23467_20200302/ICEYE_X5_QUICKLOOK_SM_23467_20200302T183857.png",
+      "scientific_input_allowed": false
+    },
+    "planetscope_udm2": {
+      "asset": "planetscope_udm2_20200218.png",
+      "source_logical_path": "신규데이터_위성영상_원본/Planetscope/20200218_psscene_analytic_sr_udm2/PSScene/20200218_020429_01_106a_3B_udm2_clip.tif",
+      "scientific_input_allowed": false
+    },
+    "university_water_body": {
+      "asset": "university_pred_wb_20210411.png",
+      "source_logical_path": "샘플데이터_시립대/수체면적및수위예시데이터/Pred_WB_S1A_IW_SLC__1SDV_20210411T092342.tif",
+      "scientific_input_allowed": false
+    },
+    "giheung_optical": {
+      "asset": "giheung_browse_20230730.jpg",
+      "source_logical_path": "샘플데이터_1세부제공/050258218010_기흥호수/050258218010_01_P001_MUL/23JUL30021924-M2AS-050258218010_01_P001-BROWSE.JPG",
+      "scientific_input_allowed": false
+    },
+    "hoedong_optical": {
+      "asset": "hoedong_browse_20240823.jpg",
+      "source_logical_path": "샘플데이터_1세부제공/050258288060_회동저수지/050258288060_01_P001_MUL/24AUG23015310-M2AS-050258288060_01_P001-BROWSE.JPG",
+      "scientific_input_allowed": false
+    }
+  },
+  "notes": [
+    "ICEYE quicklook and commercial browse images are display-only.",
+    "UDM2 colors show quality categories and do not represent water labels.",
+    "The university Pred_WB thumbnail is a one-date derived water-body output."
+  ]
+}

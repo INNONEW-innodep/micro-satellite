@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0",
+  "generated_by": "scripts/iceye_slc_ingest.py",
+  "acquisition_date": "2020-03-02",
+  "satellite": "ICEYE-X5",
+  "product_name": "ICEYE_X5_SLC_SM_23467_20200302T183857",
+  "product_type": "Stripmap",
+  "product_level": "SLC",
+  "polarization": "VV",
+  "look_side": "right",
+  "orbit_direction": "DESCENDING",
+  "orbit_absolute_number": 3612,
+  "orbit_repeat_cycle_days": null,
+  "acquisition_start_utc": "2020-03-02T18:38:57.215809",
+  "acquisition_end_utc": "2020-03-02T18:39:07.207339",
+  "heading_deg": 190.7352828074122,
+  "incidence_deg": {
+    "min": 13.552563224148559,
+    "max": 17.932160980747057
+  },
+  "carrier_frequency_ghz": 9.65,
+  "chirp_bandwidth_mhz": 256.0,
+  "slant_range_spacing_m": 0.49965409666666666,
+  "azimuth_ground_spacing_m": 1.4891004275147823,
+  "center_latlon": [
+    35.10490069583611,
+    129.02260933961213
+  ],
+  "footprint_latlon": [
+    [
+      35.35786895453113,
+      129.34371961174116
+    ],
+    [
+      35.43726859963433,
+      128.87027806298462
+    ],
+    [
+      34.84638174753485,
+      128.73302519806273
+    ],
+    [
+      34.76912687384185,
+      129.19128730246914
+    ]
+  ],
+  "scene_size_km": {
+    "azimuth": 66.9,
+    "range": 43.8
+  },
+  "calibration_factor": 0.001694695643844709,
+  "processing": {
+    "geometry": "slant-range (not orthorectified)",
+    "looks": [
+      2,
+      2
+    ],
+    "median_filter": 3,
+    "nodata": -9999.0,
+    "stats_db_full_scene": {
+      "p2": -7.623081207275391,
+      "p50": 2.5633933544158936,
+      "p98": 11.666346549987793,
+      "mean_db_of_linear_mean": 5.347097396850586,
+      "zero_pixel_fraction": 0.0
+    },
+    "quicklook_stretch_db": [
+      -7.6337385177612305,
+      11.684887123107904
+    ]
+  },
+  "quicklook": {
+    "ui_next": "ui_next/assets/nas/iceye_2020/20200302_slc_quicklook.png",
+    "pipeline_ui": "pipeline_ui/assets/iceye_20200302_busan.png"
+  },
+  "sigma0_geotiff": "data/ingest/20200302_ICEYE_sigma0db_slant.tif"
+}

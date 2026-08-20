@@ -1,0 +1,245 @@
+{
+  "schema_version": "1.0",
+  "dataset_id": "nas-busan-planetscope-water-labels-2020",
+  "classification": "real_satellite_imagery_with_derived_binary_water_labels",
+  "sensor": "PlanetScope AnalyticMS Surface Reflectance (inferred from source filenames)",
+  "label_semantics": {
+    "0": "non-water",
+    "1": "water"
+  },
+  "crs": "EPSG:32652",
+  "source_pixel_size_m": [
+    3.0,
+    3.0
+  ],
+  "source_pixel_area_m2": 9.0,
+  "common_bounds_utm": {
+    "xmin": 480933.0,
+    "xmax": 509310.0,
+    "ymin": 3888207.0,
+    "ymax": 3914898.0
+  },
+  "preview_shape": [
+    512,
+    512
+  ],
+  "preview_pixel_area_m2": 2889.291790008545,
+  "dates": [
+    "20200218",
+    "20200312",
+    "20200325",
+    "20200414"
+  ],
+  "source_root": "/mnt/innonew-playground/vunex/vunexai/초소형위성/신규데이터_위성영상_라벨링/0_Busan",
+  "generated_at_utc": "2026-08-10T03:54:21.311408+00:00",
+  "processing": [
+    "intersect four source footprints",
+    "nearest-neighbour sample on one common 512x512 grid",
+    "convert label values 0/1 to PNG values 0/255",
+    "render RGB from PlanetScope bands red/green/blue with per-date 2-98% stretch"
+  ],
+  "limitations": [
+    "preview masks are spatially resampled demo assets, not training rasters",
+    "no measured gauge water level is bundled",
+    "no future water-label truth exists after 2020-04-14",
+    "the sensor identity is inferred from matching PlanetScope dates and filenames"
+  ],
+  "frames": [
+    {
+      "date": "2020-02-18",
+      "preview": "previews/20200218_rgb.png",
+      "mask": "masks/20200218_water_mask.png",
+      "preview_sha256": "01c2a1a389787d3f3485efe0119bbfaf36eb3d78aae86f343987b4b58d3d4d35",
+      "mask_sha256": "908ddfd0f2e6d28a54317beb4095f265113b88240b31259d9cef63e50d543dce",
+      "preview_water_pixels": 9891,
+      "preview_water_area_m2": 28577985.094974518,
+      "source_common_grid_water_pixels": 3181939,
+      "source_common_grid_water_area_m2": 28637451.0,
+      "rgb_stretch_2_98": [
+        [
+          0.02810000069439411,
+          0.19779999554157257
+        ],
+        [
+          0.023800000548362732,
+          0.1543000042438507
+        ],
+        [
+          0.02800000086426735,
+          0.1354999989271164
+        ]
+      ],
+      "input_source": {
+        "relative_path": "input_busan/20200218_SR_input.tif",
+        "size_bytes": 2123755712,
+        "width": 10824,
+        "height": 12263,
+        "bounds_utm": {
+          "xmin": 476838.0,
+          "xmax": 509310.0,
+          "ymin": 3888207.0,
+          "ymax": 3924996.0
+        }
+      },
+      "label_source": {
+        "relative_path": "label_busan/20200218_SR_label.tif",
+        "size_bytes": 132808662,
+        "width": 10824,
+        "height": 12263,
+        "bounds_utm": {
+          "xmin": 476838.0,
+          "xmax": 509310.0,
+          "ymin": 3888207.0,
+          "ymax": 3924996.0
+        }
+      }
+    },
+    {
+      "date": "2020-03-12",
+      "preview": "previews/20200312_rgb.png",
+      "mask": "masks/20200312_water_mask.png",
+      "preview_sha256": "2352e6628edc3f19d0f98f215d0fca2644cbd9ba0e47667513f3302c475c6721",
+      "mask_sha256": "ca24943c81261a0534c991354289b3c6467d736f891aa3905b263bc339381c17",
+      "preview_water_pixels": 9550,
+      "preview_water_area_m2": 27592736.594581604,
+      "source_common_grid_water_pixels": 3075039,
+      "source_common_grid_water_area_m2": 27675351.0,
+      "rgb_stretch_2_98": [
+        [
+          0.03849999979138374,
+          0.17749999463558197
+        ],
+        [
+          0.03460000082850456,
+          0.14949999749660492
+        ],
+        [
+          0.027899999171495438,
+          0.13850000500679016
+        ]
+      ],
+      "input_source": {
+        "relative_path": "input_busan/20200312_SR_input.tif",
+        "size_bytes": 1968612160,
+        "width": 10322,
+        "height": 11920,
+        "bounds_utm": {
+          "xmin": 478884.0,
+          "xmax": 509850.0,
+          "ymin": 3887565.0,
+          "ymax": 3923325.0
+        }
+      },
+      "label_source": {
+        "relative_path": "label_busan/20200312_SR_label.tif",
+        "size_bytes": 123110132,
+        "width": 10322,
+        "height": 11920,
+        "bounds_utm": {
+          "xmin": 478884.0,
+          "xmax": 509850.0,
+          "ymin": 3887565.0,
+          "ymax": 3923325.0
+        }
+      }
+    },
+    {
+      "date": "2020-03-25",
+      "preview": "previews/20200325_rgb.png",
+      "mask": "masks/20200325_water_mask.png",
+      "preview_sha256": "bf1e9b33125da9600e5a5eb05e13b8499714ffbd8256fe8bf7006af543d83adc",
+      "mask_sha256": "89ed3afe5e527e94b4de5eacab33a0954e227fc0012744c29d7ba8d2dde3de28",
+      "preview_water_pixels": 10394,
+      "preview_water_area_m2": 30031298.865348816,
+      "source_common_grid_water_pixels": 3363699,
+      "source_common_grid_water_area_m2": 30273291.0,
+      "rgb_stretch_2_98": [
+        [
+          0.0333000011742115,
+          0.21660000085830688
+        ],
+        [
+          0.03400000184774399,
+          0.17569999396800995
+        ],
+        [
+          0.026599999517202377,
+          0.14509999752044678
+        ]
+      ],
+      "input_source": {
+        "relative_path": "input_busan/20200325_SR_input.tif",
+        "size_bytes": 1983370016,
+        "width": 10362,
+        "height": 11963,
+        "bounds_utm": {
+          "xmin": 480582.0,
+          "xmax": 511668.0,
+          "ymin": 3879009.0,
+          "ymax": 3914898.0
+        }
+      },
+      "label_source": {
+        "relative_path": "label_busan/20200325_SR_label.tif",
+        "size_bytes": 124032756,
+        "width": 10362,
+        "height": 11963,
+        "bounds_utm": {
+          "xmin": 480582.0,
+          "xmax": 511668.0,
+          "ymin": 3879009.0,
+          "ymax": 3914898.0
+        }
+      }
+    },
+    {
+      "date": "2020-04-14",
+      "preview": "previews/20200414_rgb.png",
+      "mask": "masks/20200414_water_mask.png",
+      "preview_sha256": "8909311450dbe11f156277e1e9a225347f0d160bc0569419df4f29f1ecf3164e",
+      "mask_sha256": "6cdc0705bdd58fe81e35bc5bd682cdeae6d7176bcc4668ee795b97942365f8b6",
+      "preview_water_pixels": 10192,
+      "preview_water_area_m2": 29447661.92376709,
+      "source_common_grid_water_pixels": 3278274,
+      "source_common_grid_water_area_m2": 29504466.0,
+      "rgb_stretch_2_98": [
+        [
+          0.033799998462200165,
+          0.20550000667572021
+        ],
+        [
+          0.046300001442432404,
+          0.1737000048160553
+        ],
+        [
+          0.029100000858306885,
+          0.14790000021457672
+        ]
+      ],
+      "input_source": {
+        "relative_path": "input_busan/20200414_SR_input.tif",
+        "size_bytes": 2054678848,
+        "width": 10592,
+        "height": 12124,
+        "bounds_utm": {
+          "xmin": 480933.0,
+          "xmax": 512709.0,
+          "ymin": 3884394.0,
+          "ymax": 3920766.0
+        }
+      },
+      "label_source": {
+        "relative_path": "label_busan/20200414_SR_label.tif",
+        "size_bytes": 128490524,
+        "width": 10592,
+        "height": 12124,
+        "bounds_utm": {
+          "xmin": 480933.0,
+          "xmax": 512709.0,
+          "ymin": 3884394.0,
+          "ymax": 3920766.0
+        }
+      }
+    }
+  ]
+}

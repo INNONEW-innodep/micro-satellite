@@ -1,0 +1,309 @@
+{
+  "schema_version": "1.0",
+  "profile_id": "micro-satellite-nas-source-profile-20260810",
+  "audit": {
+    "source": "NAS read-only audit",
+    "audited_at_utc": "2026-08-10T04:41:02Z",
+    "source_files_modified": false,
+    "credentials_included": false,
+    "absolute_paths_included": false,
+    "methods": [
+      "source file inventory",
+      "STAC JSON and vendor XML/IMD metadata parsing",
+      "GeoTIFF header and geokey inspection",
+      "block-wise UDM2 and water-mask pixel profiling",
+      "GeoJSON structure and geometry-count inspection"
+    ],
+    "limitations": [
+      "This profile describes the delivered files at audit time and is not a scientific validation report.",
+      "No measured gauge time series is bundled with the satellite sequences.",
+      "Cloud and haze fields are vendor metadata or UDM2 classifications, not manual quality labels.",
+      "Raw reflectance, SAR amplitude, DEM elevation and commercial-image histograms were not fully scanned because the source rasters are very large.",
+      "Physical water area derived from a geographic raster is approximate unless an equal-area projection and an explicit AOI are used."
+    ]
+  },
+  "groups": {
+    "planetscope_raw": {
+      "display_name_ko": "PlanetScope 광학 SR·UDM2 원천영상",
+      "logical_root": "신규데이터_위성영상_원본/Planetscope",
+      "observation_dates": [
+        "2020-02-18",
+        "2020-03-12",
+        "2020-03-25",
+        "2020-04-14"
+      ],
+      "interval_days": [23, 13, 20],
+      "span_days": 56,
+      "unique_date_count": 4,
+      "scene_count": 8,
+      "scenes_per_date": 2,
+      "asset_counts": {
+        "surface_reflectance_tif": 8,
+        "udm2_tif": 8,
+        "scene_metadata_json": 8,
+        "analytic_metadata_xml": 8
+      },
+      "asset_bytes": {
+        "surface_reflectance_tif": 2205840552,
+        "udm2_tif": 51203509
+      },
+      "product": {
+        "provider": "PlanetScope",
+        "instrument": "PS2.SD",
+        "item_type": "PSScene",
+        "bundle_type": "analytic_sr_udm2",
+        "quality_category": "standard",
+        "publishing_stage": "finalized",
+        "ground_control": true,
+        "surface_reflectance": {
+          "band_count": 4,
+          "bands": ["blue", "green", "red", "nir"],
+          "data_type": "uint16",
+          "scale": 0.0001,
+          "nodata": 0,
+          "pixel_size_m": 3.0,
+          "crs": "EPSG:32652"
+        },
+        "udm2": {
+          "band_count": 8,
+          "bands": [
+            "clear",
+            "snow_ice",
+            "shadow",
+            "light_haze",
+            "heavy_haze",
+            "cloud",
+            "confidence_percent",
+            "unusable_pixels"
+          ],
+          "data_type": "uint8",
+          "pixel_size_m": 3.0,
+          "crs": "EPSG:32652",
+          "is_water_label": false
+        }
+      },
+      "quality_summary": {
+        "vendor_scene_metadata": {
+          "clear_percent_range": [100.0, 100.0],
+          "cloud_percent_range": [0.0, 0.0],
+          "shadow_percent_range": [0.0, 0.0],
+          "heavy_haze_percent_range": [0.0, 0.0],
+          "clear_confidence_percent_range": [95.0, 98.0],
+          "visible_confidence_percent_range": [65.0, 98.0]
+        },
+        "udm2_pixel_audit": {
+          "usable_rectangle_percent_range": [67.973, 69.282],
+          "clear_within_usable_percent_range": [99.9196, 100.0],
+          "cloud_within_usable_percent_range": [0.0, 0.01051],
+          "shadow_within_usable_percent_range": [0.0, 0.0],
+          "heavy_haze_within_usable_percent_range": [0.0, 0.00058],
+          "interpretation": "About 31 percent of each rectangular clip is marked unusable, principally the footprint exterior. It must not be counted as poor-quality scene content."
+        }
+      },
+      "scenes": [
+        {
+          "scene_id": "20200218_020429_01_106a",
+          "acquired_utc": "2020-02-18T02:04:29.016947Z",
+          "satellite_id": "106a",
+          "shape": [7572, 9844],
+          "bbox_utm_52n": [479778.0, 3888207.0, 509310.0, 3910923.0],
+          "metadata_gsd_m": 4.0,
+          "off_nadir_deg": 2.0,
+          "sun_elevation_deg": 37.9,
+          "clear_confidence_percent": 98.0,
+          "visible_confidence_percent": 75.0,
+          "udm2": {"usable_percent": 69.082, "clear_percent_of_usable": 99.9992, "cloud_percent_of_usable": 0.00432, "snow_percent_of_usable": 0.00078, "light_haze_percent_of_usable": 0.0, "heavy_haze_percent_of_usable": 0.0, "shadow_percent_of_usable": 0.0, "mean_confidence_of_usable": 97.68}
+        },
+        {
+          "scene_id": "20200218_020431_06_106a",
+          "acquired_utc": "2020-02-18T02:04:31.064291Z",
+          "satellite_id": "106a",
+          "shape": [7576, 9848],
+          "bbox_utm_52n": [476838.0, 3902268.0, 506382.0, 3924996.0],
+          "metadata_gsd_m": 4.0,
+          "off_nadir_deg": 2.0,
+          "sun_elevation_deg": 37.8,
+          "clear_confidence_percent": 96.0,
+          "visible_confidence_percent": 69.0,
+          "udm2": {"usable_percent": 69.282, "clear_percent_of_usable": 99.9591, "cloud_percent_of_usable": 0.01051, "snow_percent_of_usable": 0.0, "light_haze_percent_of_usable": 0.04086, "heavy_haze_percent_of_usable": 0.00058, "shadow_percent_of_usable": 0.0, "mean_confidence_of_usable": 96.394}
+        },
+        {
+          "scene_id": "20200312_020959_88_1061",
+          "acquired_utc": "2020-03-12T02:09:59.881007Z",
+          "satellite_id": "1061",
+          "shape": [7149, 9324],
+          "bbox_utm_52n": [481878.0, 3901878.0, 509850.0, 3923325.0],
+          "metadata_gsd_m": 3.8,
+          "off_nadir_deg": 4.0,
+          "sun_elevation_deg": 47.0,
+          "clear_confidence_percent": 96.0,
+          "visible_confidence_percent": 75.0,
+          "udm2": {"usable_percent": 68.524, "clear_percent_of_usable": 99.9881, "cloud_percent_of_usable": 0.00441, "snow_percent_of_usable": 0.01187, "light_haze_percent_of_usable": 0.0, "heavy_haze_percent_of_usable": 0.0, "shadow_percent_of_usable": 0.0, "mean_confidence_of_usable": 96.017}
+        },
+        {
+          "scene_id": "20200312_021001_92_1061",
+          "acquired_utc": "2020-03-12T02:10:01.922060Z",
+          "satellite_id": "1061",
+          "shape": [7175, 9293],
+          "bbox_utm_52n": [478884.0, 3887565.0, 506763.0, 3909090.0],
+          "metadata_gsd_m": 3.8,
+          "off_nadir_deg": 4.0,
+          "sun_elevation_deg": 47.1,
+          "clear_confidence_percent": 95.0,
+          "visible_confidence_percent": 74.0,
+          "udm2": {"usable_percent": 68.69, "clear_percent_of_usable": 99.98, "cloud_percent_of_usable": 0.00581, "snow_percent_of_usable": 0.02, "light_haze_percent_of_usable": 0.0, "heavy_haze_percent_of_usable": 0.0, "shadow_percent_of_usable": 0.0, "mean_confidence_of_usable": 95.017}
+        },
+        {
+          "scene_id": "20200325_021316_97_1064",
+          "acquired_utc": "2020-03-25T02:13:16.970563Z",
+          "satellite_id": "1064",
+          "shape": [7231, 9345],
+          "bbox_utm_52n": [483633.0, 3893205.0, 511668.0, 3914898.0],
+          "metadata_gsd_m": 3.8,
+          "off_nadir_deg": 3.0,
+          "sun_elevation_deg": 52.1,
+          "clear_confidence_percent": 98.0,
+          "visible_confidence_percent": 98.0,
+          "udm2": {"usable_percent": 67.973, "clear_percent_of_usable": 100.0, "cloud_percent_of_usable": 0.0, "snow_percent_of_usable": 0.0, "light_haze_percent_of_usable": 0.0, "heavy_haze_percent_of_usable": 0.0, "shadow_percent_of_usable": 0.0, "mean_confidence_of_usable": 97.518}
+        },
+        {
+          "scene_id": "20200325_021319_00_1064",
+          "acquired_utc": "2020-03-25T02:13:19.007422Z",
+          "satellite_id": "1064",
+          "shape": [7220, 9349],
+          "bbox_utm_52n": [480582.0, 3879009.0, 508629.0, 3900669.0],
+          "metadata_gsd_m": 3.8,
+          "off_nadir_deg": 3.1,
+          "sun_elevation_deg": 52.2,
+          "clear_confidence_percent": 96.0,
+          "visible_confidence_percent": 65.0,
+          "udm2": {"usable_percent": 68.124, "clear_percent_of_usable": 99.997, "cloud_percent_of_usable": 0.00457, "snow_percent_of_usable": 0.00258, "light_haze_percent_of_usable": 0.00044, "heavy_haze_percent_of_usable": 0.0, "shadow_percent_of_usable": 0.0, "mean_confidence_of_usable": 95.885}
+        },
+        {
+          "scene_id": "20200414_021413_13_105a",
+          "acquired_utc": "2020-04-14T02:14:13.133969Z",
+          "satellite_id": "105a",
+          "shape": [7417, 9600],
+          "bbox_utm_52n": [483909.0, 3898515.0, 512709.0, 3920766.0],
+          "metadata_gsd_m": 3.9,
+          "off_nadir_deg": 0.4,
+          "sun_elevation_deg": 59.7,
+          "clear_confidence_percent": 96.0,
+          "visible_confidence_percent": 65.0,
+          "udm2": {"usable_percent": 68.661, "clear_percent_of_usable": 99.9813, "cloud_percent_of_usable": 0.0, "snow_percent_of_usable": 0.0031, "light_haze_percent_of_usable": 0.01565, "heavy_haze_percent_of_usable": 0.0, "shadow_percent_of_usable": 0.0, "mean_confidence_of_usable": 95.587}
+        },
+        {
+          "scene_id": "20200414_021415_16_105a",
+          "acquired_utc": "2020-04-14T02:14:15.165585Z",
+          "satellite_id": "105a",
+          "shape": [7426, 9616],
+          "bbox_utm_52n": [480933.0, 3884394.0, 509781.0, 3906672.0],
+          "metadata_gsd_m": 3.9,
+          "off_nadir_deg": 0.4,
+          "sun_elevation_deg": 59.8,
+          "clear_confidence_percent": 96.0,
+          "visible_confidence_percent": 69.0,
+          "udm2": {"usable_percent": 68.653, "clear_percent_of_usable": 99.9196, "cloud_percent_of_usable": 0.0, "snow_percent_of_usable": 0.03632, "light_haze_percent_of_usable": 0.04403, "heavy_haze_percent_of_usable": 0.0, "shadow_percent_of_usable": 0.0, "mean_confidence_of_usable": 95.487}
+        }
+      ],
+      "prediction_readiness": {
+        "status": "preprocess_required",
+        "required_steps": [
+          "group the two same-date scenes as one observation",
+          "apply UDM2 unusable and quality masks",
+          "mosaic and reproject every date onto one common grid",
+          "derive or join a water-mask label for every date",
+          "do not treat UDM2 as a water label"
+        ],
+        "limitation": "Four irregularly spaced dates are useful for an EDA and baseline demonstration, not for training or validating a daily forecasting model."
+      }
+    },
+    "iceye_raw": {
+      "display_name_ko": "ICEYE-X5 SAR GRD·SLC 원천영상",
+      "logical_root": "신규데이터_위성영상_원본/ICEYE",
+      "observation_dates": ["2020-03-02", "2020-03-30", "2020-04-15", "2020-04-16", "2020-04-17"],
+      "interval_days": [28, 16, 1, 1],
+      "span_days": 46,
+      "acquisition_count": 5,
+      "asset_counts": {"grd_tif": 5, "slc_h5": 5, "quicklook_png": 5, "metadata_xml": 10, "quicklook_kml": 5},
+      "asset_bytes": {"grd_tif": 4331977030, "slc_h5": 19156914990, "quicklook_png": 38107471},
+      "common_acquisition": {
+        "satellite": "ICEYE-X5",
+        "product_type": "Stripmap",
+        "acquisition_mode": "stripmap",
+        "polarization": "VV",
+        "orbit_direction": "DESCENDING",
+        "grd": {"band_count": 1, "data_type": "uint16", "range_spacing_m": 2.5, "azimuth_spacing_m": 2.5, "geokey": "EPSG:4326", "affine_transform_present": false, "geolocation": "dense GeoTIFF tiepoints/GCPs"},
+        "slc": {"sample_precision": "int16", "container": "HDF5"}
+      },
+      "acquisitions": [
+        {"scene_id": "SM_23467", "start_utc": "2020-03-02T18:38:57.215809", "end_utc": "2020-03-02T18:39:07.207339", "look_side": "right", "satellite_look_angle_deg": 14.4, "incidence_deg": {"near": 13.509531, "center": 15.724995, "far": 17.899166}, "heading_deg": 190.735283, "center_lat_lon": [35.10219975, 129.03878061], "grd_shape": [26732, 17075], "grd_gcp_count": 345, "grd_bytes": 913386214, "slc_shape": [44882, 23144], "slc_bytes": 4177667182, "quicklook_shape": [4096, 2816], "quicklook_bytes": 7576740, "calibration_factor": 0.00006214056581158653},
+        {"scene_id": "SM_25599", "start_utc": "2020-03-30T19:00:48.953441", "end_utc": "2020-03-30T19:00:58.944680", "look_side": "left", "satellite_look_angle_deg": 30.0, "incidence_deg": {"near": 31.771414, "center": 33.168668, "far": 34.529645}, "heading_deg": 194.935954, "center_lat_lon": [35.06016776, 129.02312833], "grd_shape": [26432, 13915], "grd_gcp_count": 276, "grd_bytes": 736543772, "slc_shape": [42520, 17776], "slc_bytes": 3044312174, "quicklook_shape": [4096, 2304], "quicklook_bytes": 7136518, "calibration_factor": 0.000045198102342002016},
+        {"scene_id": "SM_25736", "start_utc": "2020-04-15T18:32:20.356371", "end_utc": "2020-04-15T18:32:30.347827", "look_side": "right", "satellite_look_angle_deg": 26.5, "incidence_deg": {"near": 27.549261, "center": 29.110402, "far": 30.632548}, "heading_deg": 190.33579, "center_lat_lon": [35.05677492, 129.05169568], "grd_shape": [26279, 14747], "grd_gcp_count": 286, "grd_bytes": 776013158, "slc_shape": [45238, 18543], "slc_bytes": 3375193082, "quicklook_shape": [4096, 2304], "quicklook_bytes": 7097227, "calibration_factor": 0.000038264358410623735},
+        {"scene_id": "SM_25737", "start_utc": "2020-04-16T18:36:30.662116", "end_utc": "2020-04-16T18:36:40.658189", "look_side": "right", "satellite_look_angle_deg": 18.9, "incidence_deg": {"near": 18.502576, "center": 20.735968, "far": 22.913815}, "heading_deg": 190.678356, "center_lat_lon": [35.05913905, 129.04978677], "grd_shape": [26305, 18802], "grd_gcp_count": 352, "grd_bytes": 990123844, "slc_shape": [48070, 24970], "slc_bytes": 4825022466, "quicklook_shape": [4096, 3072], "quicklook_bytes": 9028373, "calibration_factor": 0.00003147766968284649},
+        {"scene_id": "SM_25738", "start_utc": "2020-04-17T18:40:40.960936", "end_utc": "2020-04-17T18:40:50.952676", "look_side": "right", "satellite_look_angle_deg": 10.6, "incidence_deg": {"near": 9.391094, "center": 11.605521, "far": 13.789754}, "heading_deg": 191.076049, "center_lat_lon": [35.05416323, 129.03711573], "grd_shape": [26421, 17315], "grd_gcp_count": 345, "grd_bytes": 915910042, "slc_shape": [45660, 20324], "slc_bytes": 3734720086, "quicklook_shape": [4096, 2816], "quicklook_bytes": 7268613, "calibration_factor": 0.00005903195433461724}
+      ],
+      "label_pairing": {"matched_dates": ["2020-03-02", "2020-03-30", "2020-04-15", "2020-04-16"], "unmatched_raw_dates": ["2020-04-17"]},
+      "prediction_readiness": {
+        "status": "preprocess_required",
+        "required_steps": ["radiometric calibration", "speckle filtering", "terrain correction", "GCP-based geocoding", "common-grid resampling", "incidence-angle and look-side harmonization", "water-mask extraction"],
+        "critical_caution": "The center incidence angle varies from 11.61 to 33.17 degrees and 2020-03-30 changes to left-looking geometry. Raw intensity differences must not be interpreted directly as water change.",
+        "quicklook_scientific_input_allowed": false
+      }
+    },
+    "university_single_date": {
+      "display_name_ko": "시립대 수체면적·수위 단일시점 예시",
+      "logical_root": "샘플데이터_시립대/수체면적및수위예시데이터",
+      "observation_datetime": "2021-04-11T09:23:42",
+      "source_name_hint": "S1A IW SLC 1SDV",
+      "rasters": {
+        "image": {"shape": [22434, 34356], "band_count": 1, "data_type": "float32", "crs": "EPSG:4326", "pixel_size_deg": [0.000092592567, 0.000092592567], "compression": "PackBits", "nodata": 0, "bounds": [127.1180546, 36.049167552, 130.299164832, 38.1263892]},
+        "dem": {"shape": [22434, 34356], "band_count": 1, "data_type": "float32", "crs": "EPSG:4326", "pixel_size_deg": [0.000092592567, 0.000092592567], "compression": "none", "nodata": null, "bounds": [127.118008304, 36.049213848, 130.299118536, 38.126435496], "approx_aux_statistics": {"minimum": 0.0, "maximum": 817.939087, "mean": 0.063522, "standard_deviation": 3.813374}},
+        "water_body": {"shape": [22434, 34356], "band_count": 1, "data_type": "uint8", "crs": "EPSG:4326", "pixel_size_deg": [0.000092592567, 0.000092592567], "compression": "LZW", "nodata": 0, "bounds": [127.118008304, 36.049213848, 130.299118536, 38.126435496], "value_counts": {"0": 766760750, "1": 3981754}, "water_pixel_percent": 0.516612744, "approx_water_area_km2": 337.648711}
+      },
+      "alignment_audit": {"image_to_dem_water_offset_pixels": [-0.5, 0.5], "approx_offset_m": [-4.12, 5.15], "caution": "The source image and DEM/water outputs differ by one half-pixel in their tiepoints and must be aligned by geotransform, not array index."},
+      "geojson": {"valid_json": true, "type": "FeatureCollection", "crs": "OGC:CRS84", "feature_count": 5833, "geometry_types": {"Polygon": 5833}, "property_fields": ["fid", "DN"], "bbox": [127.161711995, 36.070047176, 129.394303971, 37.839954094]},
+      "reported_results": [
+        {"location": "Andong", "water_body_json_valid": false, "water_area_km2": 23.17, "roi_top_left_lat_lon": [36.7177322, 128.7792115], "roi_bottom_right_lat_lon": [36.6043063, 128.9281004], "water_level_json_valid": true, "water_level_el_m": 154.33522801822303, "level_point_lat_lon": [36.692, 128.8565]},
+        {"location": "Daecheong", "water_body_json_valid": false, "water_area_km2": 43.4, "roi_top_left_lat_lon": [36.460417438, 127.457452654], "roi_bottom_right_lat_lon": [36.3211582, 127.6216193], "water_level_json_valid": true, "water_level_el_m": 71.63485499867662, "level_point_lat_lon": [36.35185, 127.63405]}
+      ],
+      "json_issue": "Both WB JSON files contain a trailing comma after the title field and fail strict JSON parsing at line 22. Both WL JSON files parse successfully.",
+      "prediction_readiness": {"status": "single_date_reference", "direct_timeseries_prediction": false, "reason": "It contains only one acquisition date. The supplied area and level values are output-schema or calibration examples, not a temporal training series.", "caution": "Value 0 in the water raster is both the non-water value and the declared NoData value, so land and NoData cannot be separated from that raster alone."}
+    },
+    "giheung_worldview": {
+      "display_name_ko": "기흥호수 WorldView PAN·MUL",
+      "logical_root": "샘플데이터_1세부제공/050258218010_기흥호수",
+      "observation_dates": ["2022-11-11", "2023-01-25", "2023-07-30"],
+      "interval_days": [75, 186],
+      "span_days": 261,
+      "unique_date_count": 3,
+      "pan_mul_pair_count": 3,
+      "tif_asset_bytes": {"multispectral": 326940864, "panchromatic": 623490499},
+      "common_product": {"descriptor": "ORStandard2A", "product_level": "LV2A", "product_type": "Standard", "radiometric_level": "Corrected", "radiometric_enhancement": "ACOMP", "bits_per_pixel": 16, "compression": "none", "crs": "EPSG:32652", "multispectral": {"band_count": 8, "bands": ["coastal", "blue", "green", "yellow", "red", "red_edge", "nir1", "nir2"], "pixel_size_m": 2.0}, "panchromatic": {"band_count": 1, "pixel_size_m": 0.5}},
+      "acquisitions": [
+        {"pair_id": "P003", "catalog_id": "104001007F8FA700", "acquired_utc": "2022-11-11T02:11:56.326938Z", "satellite": "WV03", "multispectral_shape": [2774, 2339], "panchromatic_shape": [11099, 9356], "collected_gsd_m": {"multispectral": 1.548, "panchromatic": 0.387}, "cloud_cover_percent": 0.0, "haze_severity_raw": "095, 005, 000, 000, 000", "sun_elevation_deg": 33.5, "off_nadir_deg": 28.4, "pniirs": 3.2},
+        {"pair_id": "P002", "catalog_id": "10300100E169FE00", "acquired_utc": "2023-01-25T02:33:04.026699Z", "satellite": "WV02", "multispectral_shape": [2749, 2339], "panchromatic_shape": [10998, 9356], "collected_gsd_m": {"multispectral": 1.959, "panchromatic": 0.49}, "cloud_cover_percent": 0.0, "haze_severity_raw": "100, 000, 000, 000, 000", "sun_elevation_deg": 31.5, "off_nadir_deg": 13.8, "pniirs": 3.2},
+        {"pair_id": "P001", "catalog_id": "10400100895AB400", "acquired_utc": "2023-07-30T02:19:24.466205Z", "satellite": "WV03", "multispectral_shape": [2774, 2339], "panchromatic_shape": [11099, 9356], "collected_gsd_m": {"multispectral": 1.267, "panchromatic": 0.317}, "cloud_cover_percent": 0.0, "haze_severity_raw": "000, 000, 100, 000, 000", "sun_elevation_deg": 64.7, "off_nadir_deg": 9.4, "pniirs": 3.2}
+      ],
+      "prediction_readiness": {"status": "preprocess_required", "direct_timeseries_prediction": false, "required_steps": ["pair PAN and MUL by catalog ID", "optionally pan-sharpen", "harmonize WV02 and WV03 radiometry", "derive a water mask from MUL bands", "place all dates on one common AOI and grid"], "caution": "PAN and MUL are two products of the same acquisition, not two temporal frames. No water-mask or level label is delivered."}
+    },
+    "hoedong_worldview": {
+      "display_name_ko": "회동저수지 WorldView PAN·MUL",
+      "logical_root": "샘플데이터_1세부제공/050258288060_회동저수지",
+      "observation_dates": ["2023-11-08", "2024-08-23"],
+      "interval_days": [289],
+      "span_days": 289,
+      "unique_date_count": 2,
+      "acquisition_count": 3,
+      "pan_mul_pair_count": 3,
+      "tif_asset_bytes": {"multispectral": 268046784, "panchromatic": 497662651},
+      "common_product": {"satellite": "WV02", "descriptor": "ORStandard2A", "product_level": "LV2A", "product_type": "Standard", "radiometric_level": "Corrected", "radiometric_enhancement": "ACOMP", "bits_per_pixel": 16, "compression": "none", "crs": "EPSG:32652", "multispectral": {"band_count": 8, "bands": ["coastal", "blue", "green", "yellow", "red", "red_edge", "nir1", "nir2"], "pixel_size_m": 2.0}, "panchromatic": {"band_count": 1, "pixel_size_m": 0.5}},
+      "acquisitions": [
+        {"pair_id": "P003", "catalog_id": "10300100F0A76C00", "acquired_utc": "2023-11-08T02:19:33.828461Z", "multispectral_shape": [2552, 2068], "panchromatic_shape": [10208, 8272], "collected_gsd_m": {"multispectral": 2.184, "panchromatic": 0.546}, "cloud_cover_percent": 0.0, "haze_severity_raw": "100, 000, 000, 000, 000", "sun_elevation_deg": 37.2, "off_nadir_deg": 24.0, "pniirs": 3.0, "lon_lat_bounds": [129.09309186, 35.2294638, 129.13860054, 35.27551227]},
+        {"pair_id": "P002", "catalog_id": "10300100EF325500", "acquired_utc": "2023-11-08T02:19:45.378057Z", "multispectral_shape": [2551, 1527], "panchromatic_shape": [10204, 6108], "collected_gsd_m": {"multispectral": 2.333, "panchromatic": 0.583}, "cloud_cover_percent": 0.0, "haze_severity_raw": "100, 000, 000, 000, 000", "sun_elevation_deg": 37.3, "off_nadir_deg": 28.0, "pniirs": 2.9, "lon_lat_bounds": [129.113818, 35.2294714, 129.14744104, 35.27549453]},
+        {"pair_id": "P001", "catalog_id": "1030010103327200", "acquired_utc": "2024-08-23T01:53:09.455085Z", "multispectral_shape": [2552, 2470], "panchromatic_shape": [10208, 9880], "collected_gsd_m": {"multispectral": 2.309, "panchromatic": 0.577}, "cloud_cover_percent": 0.0, "haze_severity_raw": "095, 005, 000, 000, 000", "sun_elevation_deg": 58.2, "off_nadir_deg": 27.5, "pniirs": 3.0, "lon_lat_bounds": [129.09309186, 35.22945337, 129.14744104, 35.27551227]}
+      ],
+      "prediction_readiness": {"status": "preprocess_required", "direct_timeseries_prediction": false, "required_steps": ["pair PAN and MUL by catalog ID", "mosaic or reconcile the two overlapping 2023-11-08 footprints", "derive a water mask from MUL bands", "place both unique dates on one common AOI and grid"], "critical_caution": "The two 2023-11-08 catalog IDs are acquisitions only 11.55 seconds apart with overlapping partial footprints. They are not two independent daily time points. After mosaicking, only two unique dates remain, and no water-mask or level label is delivered."}
+    }
+  }
+}

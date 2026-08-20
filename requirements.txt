@@ -1,0 +1,3 @@
+-r backend/requirements.txt
+-r ui_next/requirements.txt
+-r scripts/requirements.txt

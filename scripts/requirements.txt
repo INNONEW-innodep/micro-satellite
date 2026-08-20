@@ -1,0 +1,7 @@
+# scripts/ 전용 런타임 의존성 (SAR ingest·지오코딩·통계)
+h5py>=3.10
+scipy>=1.11
+dill>=0.3.8
+rasterio>=1.3
+numpy>=1.26
+pillow>=10.0

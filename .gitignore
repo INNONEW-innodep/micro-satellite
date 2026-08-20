@@ -4,6 +4,27 @@
 *.pyc
 *.json
 
+# 대용량 전송 파일(인수 zip·도커 이미지 tar·발표자료)은 저장소에 넣지 않는다
+*.zip
+*.tar
+*.pptx
+
+# Small, provenance-tracked browser/demo manifests derived from the delivered NAS.
+!ui_next/assets/nas/**/*.json
+
+# ICEYE SLC ingest가 만든 데모용 메타데이터 (scripts/iceye_slc_ingest.py)
+!pipeline_ui/assets/iceye_meta.json
+
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.venv/
+.venv-*/
+
+# KMA_API_KEY 등 배포용 비밀값
+.env
+.env.*
+
 data/
 weights/
 inference_results/
