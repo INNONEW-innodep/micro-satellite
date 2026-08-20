@@ -12,6 +12,7 @@ from ..wbms.runner import (
     CONTAINER_MODULE_DIR,
     DockerRunner,
     docker_prefix,
+    resolve_gpu_device,
     summarize_failure,
 )
 
@@ -295,8 +296,14 @@ class WbmsSegmentationJobAdapter:
 
     def build_command(self, scene: dict[str, Any]) -> list[str]:
         self.settings.wb_output_dir.mkdir(parents=True, exist_ok=True)
+        device, gpu_warning = resolve_gpu_device(
+            self.settings.gpu_mode, self.settings.gpu_min_free_mib
+        )
+        if gpu_warning:
+            scene.setdefault("warnings", []).append(gpu_warning)
         argv = docker_prefix(
-            self.settings.docker_bin, self.settings.docker_image, scene["mounts"]
+            self.settings.docker_bin, self.settings.docker_image, scene["mounts"],
+            gpu=(device == "gpu"),
         )
         argv += [
             "python3",
@@ -309,7 +316,7 @@ class WbmsSegmentationJobAdapter:
         ]
         if scene["mask_container"]:
             argv += ["--mask", scene["mask_container"]]
-        argv += ["--gpu", "cpu", "--output_dir", "/out"]
+        argv += ["--gpu", device, "--output_dir", "/out"]
         return argv
 
     # ── worker ─────────────────────────────────────────────────────────────

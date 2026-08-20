@@ -372,6 +372,8 @@ class WbmsFusionAdapter:
             (self.settings.aws_csv.parent, "/aux", True),
             (workspace, "/work", False),
         ]
+        # 융합 LSTM 은 3만 파라미터라 CPU 2~3초로 충분 — GPU 모드여도 이 어댑터는
+        # CPU 를 고정한다(공유 VRAM 을 초 단위 작업에 낭비하지 않는다).
         argv = docker_prefix(self.settings.docker_bin, self.settings.docker_image, mounts)
         argv += [
             "python3",

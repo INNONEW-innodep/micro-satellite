@@ -55,6 +55,10 @@ class WbmsSettings:
     aws_csv: Path = _aws_csv_for(DEFAULT_HANDOVER_DIR)
     segmentation_timeout_s: float = DEFAULT_SEGMENTATION_TIMEOUT_S
     fusion_timeout_s: float = DEFAULT_FUSION_TIMEOUT_S
+    # 추론 장치: cpu | gpu(여유 VRAM 부족 시 422) | auto(부족 시 CPU 폴백+경고).
+    # GPU 는 vucatcher 상주 서비스와 공유라 프리플라이트가 필수다.
+    gpu_mode: str = "cpu"
+    gpu_min_free_mib: int = 3000
 
     @property
     def model_dir(self) -> Path:
@@ -86,4 +90,6 @@ class WbmsSettings:
             fusion_timeout_s=_env_float(
                 "BACKEND_WBMS_FUSION_TIMEOUT_S", DEFAULT_FUSION_TIMEOUT_S
             ),
+            gpu_mode=os.getenv("BACKEND_WBMS_GPU", "cpu").strip().lower() or "cpu",
+            gpu_min_free_mib=int(_env_float("BACKEND_WBMS_GPU_MIN_FREE_MIB", 3000.0)),
         )

@@ -72,16 +72,57 @@ class DockerRunner:
         return result.returncode == 0
 
 
-def docker_prefix(docker_bin: str, image: str, mounts: list[tuple[Path, str, bool]]) -> list[str]:
+def gpu_free_mib() -> int | None:
+    """nvidia-smi 로 여유 VRAM(MiB)을 읽는다. GPU 부재/오류는 None."""
+    try:
+        out = subprocess.run(
+            ["nvidia-smi", "--query-gpu=memory.free",
+             "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=10, check=False)
+        return int(out.stdout.strip().splitlines()[0])
+    except Exception:  # noqa: BLE001 - 드라이버 부재 포함 전부 "사용 불가"
+        return None
+
+
+def resolve_gpu_device(mode: str, min_free_mib: int) -> tuple[str, str | None]:
+    """(device, warning) 반환. mode='gpu' 인데 여유 VRAM 부족이면 ValueError
+    (라우터가 422 로 변환). 이 서버 GPU 는 vucatcher 상주 서비스와 공유라
+    프리플라이트가 필수다."""
+    if mode not in ("cpu", "gpu", "auto"):
+        raise ValueError(f"BACKEND_WBMS_GPU 값이 잘못됨: {mode!r} (cpu|gpu|auto)")
+    if mode == "cpu":
+        return "cpu", None
+    free = gpu_free_mib()
+    if free is not None and free >= min_free_mib:
+        return "gpu", None
+    msg = (f"GPU 여유 VRAM 부족(free={free} MiB < {min_free_mib} MiB) — "
+           "상주 서비스(triton/DeepStream) 조정 후 재시도 필요")
+    if mode == "gpu":
+        raise ValueError(msg)
+    return "cpu", msg + " · auto 모드라 CPU 로 폴백"
+
+
+def docker_prefix(
+    docker_bin: str,
+    image: str,
+    mounts: list[tuple[Path, str, bool]],
+    *,
+    gpu: bool = False,
+) -> list[str]:
     """``docker run --rm`` prefix shared by both adapters.
 
     ``mounts`` is a list of ``(host_path, container_path, read_only)``.
     The container runs as the backend's uid:gid so produced artifacts stay
     manageable by the backend user (the delivered image has no entrypoint and
     would otherwise write root-owned files, as the first manual smoke did).
+    ``gpu=True`` 는 --gpus device=0 + TF memory growth(동거 서비스 보호)를 붙인다.
     """
 
     argv = [docker_bin, "run", "--rm"]
+    if gpu:
+        argv += ["--gpus", "device=0",
+                 "-e", "TF_FORCE_GPU_ALLOW_GROWTH=true",
+                 "-e", "TF_GPU_ALLOCATOR=cuda_malloc_async"]
     if hasattr(os, "getuid"):
         argv += ["--user", f"{os.getuid()}:{os.getgid()}"]
     argv += ["-e", "HOME=/tmp", "-e", "MPLCONFIGDIR=/tmp"]

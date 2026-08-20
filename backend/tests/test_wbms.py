@@ -566,3 +566,49 @@ def test_fusion_adapter_duplicate_observation_rejected(tmp_path: Path) -> None:
                 ],
             }
         )
+
+
+# ── GPU 모드 (BACKEND_WBMS_GPU) ───────────────────────────────────────────────
+
+
+def test_resolve_gpu_device_cpu_mode_never_probes(monkeypatch):
+    from backend.app.wbms import runner as r
+
+    monkeypatch.setattr(r, "gpu_free_mib", lambda: (_ for _ in ()).throw(AssertionError))
+    assert r.resolve_gpu_device("cpu", 3000) == ("cpu", None)
+
+
+def test_resolve_gpu_device_auto_falls_back_with_warning(monkeypatch):
+    from backend.app.wbms import runner as r
+
+    monkeypatch.setattr(r, "gpu_free_mib", lambda: 512)
+    device, warning = r.resolve_gpu_device("auto", 3000)
+    assert device == "cpu"
+    assert warning and "512" in warning
+
+
+def test_resolve_gpu_device_strict_gpu_raises_when_starved(monkeypatch):
+    import pytest
+
+    from backend.app.wbms import runner as r
+
+    monkeypatch.setattr(r, "gpu_free_mib", lambda: 100)
+    with pytest.raises(ValueError):
+        r.resolve_gpu_device("gpu", 3000)
+
+
+def test_resolve_gpu_device_grants_gpu_when_free(monkeypatch):
+    from backend.app.wbms import runner as r
+
+    monkeypatch.setattr(r, "gpu_free_mib", lambda: 20000)
+    assert r.resolve_gpu_device("auto", 3000) == ("gpu", None)
+
+
+def test_docker_prefix_gpu_flag_adds_gpus_and_growth(tmp_path):
+    from backend.app.wbms.runner import docker_prefix
+
+    argv = docker_prefix("docker", "wbms:0.13", [(tmp_path, "/x", True)], gpu=True)
+    assert "--gpus" in argv and "device=0" in argv
+    assert "TF_FORCE_GPU_ALLOW_GROWTH=true" in argv
+    cpu_argv = docker_prefix("docker", "wbms:0.13", [(tmp_path, "/x", True)])
+    assert "--gpus" not in cpu_argv

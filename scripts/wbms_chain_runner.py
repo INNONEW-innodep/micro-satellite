@@ -29,7 +29,10 @@
   python3 scripts/wbms_chain_runner.py --scenes 20200416 --steps wb
   python3 scripts/wbms_chain_runner.py --dry-run             # 커맨드만 출력
 
-주의: ③ 은 --gpu 인자가 없다(딥러닝 미사용, 매뉴얼 §2.6). ②④⑤ 는 전부 --gpu cpu.
+주의: ③ 은 --gpu 인자가 없다(딥러닝 미사용, 매뉴얼 §2.6). ②④⑤ 는 --gpu <장치>.
+장치 선택: 러너 --gpu {cpu,gpu,auto} (기본 cpu) — gpu/auto 는 nvidia-smi 여유 VRAM
+프리플라이트 후 docker run 에 --gpus device=0 + TF_FORCE_GPU_ALLOW_GROWTH 를 전달한다.
+이 서버 GPU 는 vucatcher 상주 서비스와 공유이므로 auto 권장.
 기존 코드 무수정 · 호스트 파이썬 표준 라이브러리만 사용.
 """
 from __future__ import annotations
@@ -233,8 +236,57 @@ def run_task(*, step: str, task_id: str, cname: str, cmd: list[str],
 
 
 # ── 단계별 태스크 구성 ──────────────────────────────────────────────────────
-def docker_base(cname: str, mounts: list[tuple[str, str, bool]]) -> list[str]:
-    cmd = ["docker", "run", "--rm", "--name", cname, "--entrypoint", "python3"]
+RUN_DEVICE = "cpu"  # main() 의 --gpu 프리플라이트 결과로 설정된다
+
+
+def gpu_free_mib() -> int | None:
+    try:
+        out = subprocess.run(
+            ["nvidia-smi", "--query-gpu=memory.free",
+             "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=10)
+        return int(out.stdout.strip().splitlines()[0])
+    except Exception:
+        return None
+
+
+def resolve_device(mode: str, min_free_mib: int) -> str:
+    """gpu/auto 요청 시 여유 VRAM 프리플라이트. 이 서버 GPU 는 vucatcher
+    상주 서비스(triton·DeepStream)와 공유라 여유분이 수시로 변한다."""
+    if mode == "cpu":
+        return "cpu"
+    free = gpu_free_mib()
+    if free is not None and free >= min_free_mib:
+        print(f"[gpu] 여유 VRAM {free} MiB ≥ {min_free_mib} — GPU 사용")
+        return "gpu"
+    msg = (f"[gpu] 여유 VRAM 부족(free={free} MiB < {min_free_mib} MiB) — "
+           "상주 서비스 조정 후 재시도 필요")
+    if mode == "gpu":
+        raise SystemExit(msg + " · --gpu gpu 강제 모드라 중단")
+    print(msg + " · auto 모드라 CPU 폴백")
+    return "cpu"
+
+
+def oom_in_log(stdout_path: str) -> bool:
+    """모듈 stdout JSONL 에 GPU OOM(RESOURCE_EXHAUSTED) 흔적이 있는지."""
+    try:
+        with open(stdout_path, encoding="utf-8") as f:
+            return "RESOURCE_EXHAUSTED" in f.read()
+    except OSError:
+        return False
+
+
+def docker_base(cname: str, mounts: list[tuple[str, str, bool]],
+                device: str | None = None) -> list[str]:
+    dev = device or RUN_DEVICE
+    cmd = ["docker", "run", "--rm", "--name", cname]
+    if dev == "gpu":
+        # TF 기본은 가용 VRAM 전부 선점 — growth 로 필요한 만큼만 할당해
+        # 동거 서비스와의 공존을 지킨다. cuda_malloc_async 는 단편화 완화용.
+        cmd += ["--gpus", "device=0",
+                "-e", "TF_FORCE_GPU_ALLOW_GROWTH=true",
+                "-e", "TF_GPU_ALLOCATOR=cuda_malloc_async"]
+    cmd += ["--entrypoint", "python3"]
     for host, cont, ro in mounts:
         cmd += ["-v", f"{host}:{cont}" + (":ro" if ro else "")]
     cmd += [IMAGE]
@@ -276,8 +328,16 @@ def main() -> int:
                     help="산출 루트 (기본 data/wbms_runs)")
     ap.add_argument("--force", action="store_true",
                     help="러너 스킵 무시 + 모듈에 --force 전달(완료 마커 무시)")
+    ap.add_argument("--gpu", choices=["cpu", "gpu", "auto"], default="cpu",
+                    help="추론 장치 (기본 cpu). gpu=여유 VRAM 부족 시 중단, "
+                         "auto=부족 시 CPU 폴백")
+    ap.add_argument("--gpu-min-free-mib", type=int, default=3000,
+                    help="GPU 사용에 필요한 최소 여유 VRAM (기본 3000 MiB)")
     ap.add_argument("--dry-run", action="store_true", help="커맨드만 출력")
     a = ap.parse_args()
+
+    global RUN_DEVICE
+    RUN_DEVICE = resolve_device(a.gpu, a.gpu_min_free_mib)
 
     steps = [s.strip() for s in a.steps.split(",") if s.strip()]
     bad = [s for s in steps if s not in STEPS_ALL]
@@ -339,24 +399,38 @@ def main() -> int:
             os.makedirs(host_out, exist_ok=True)
             cname = f"wbms_chain_wb_{scene['date']}"
             rel = os.path.relpath(scene["input_host"], H)
-            cmd = docker_base(cname, [
-                (os.path.join(H, "03_model"), "/model", True),
-                (H, "/data", True),
-                (os.path.join(H, "06_aux"), "/aux", True),
-                (host_out, "/out", False),
-            ]) + ["/WBMS/wbms_modules/detect_water.py",
-                  "--input", f"/data/{rel}",
-                  "--sensor", scene["sensor"], "--testbed", "busan",
-                  "--image_date", scene["date"],
-                  "--weights", sc["weights"]]
-            if sc["mask_tpl"]:
-                cmd += ["--mask", sc["mask_tpl"].format(date=scene["date"])]
-            cmd += ["--gpu", "cpu", "--output_dir", "/out"]
-            if a.force:
-                cmd += ["--force"]
-            rec = run_task(step="wb", task_id=task_id, cname=cname, cmd=cmd,
-                           host_out=host_out, log_dir=log_dir,
-                           man_path=man_path, man=man, dry=a.dry_run)
+            def build_wb_cmd(device: str) -> list[str]:
+                c = docker_base(cname, [
+                    (os.path.join(H, "03_model"), "/model", True),
+                    (H, "/data", True),
+                    (os.path.join(H, "06_aux"), "/aux", True),
+                    (host_out, "/out", False),
+                ], device=device) + ["/WBMS/wbms_modules/detect_water.py",
+                      "--input", f"/data/{rel}",
+                      "--sensor", scene["sensor"], "--testbed", "busan",
+                      "--image_date", scene["date"],
+                      "--weights", sc["weights"]]
+                if sc["mask_tpl"]:
+                    c += ["--mask", sc["mask_tpl"].format(date=scene["date"])]
+                c += ["--gpu", device, "--output_dir", "/out"]
+                if a.force:
+                    c += ["--force"]
+                return c
+
+            rec = run_task(step="wb", task_id=task_id, cname=cname,
+                           cmd=build_wb_cmd(RUN_DEVICE), host_out=host_out,
+                           log_dir=log_dir, man_path=man_path, man=man,
+                           dry=a.dry_run)
+            if (rec.get("status") == "failed" and RUN_DEVICE == "gpu"
+                    and a.gpu == "auto"
+                    and oom_in_log(os.path.join(log_dir,
+                                                f"{task_id}.stdout.jsonl"))):
+                # 공유 GPU 여유가 이 모델의 배치에 부족 — 이 태스크만 CPU 재시도
+                print(f"[gpu] {task_id} VRAM OOM — CPU 로 재시도")
+                rec = run_task(step="wb", task_id=task_id, cname=cname,
+                               cmd=build_wb_cmd("cpu"), host_out=host_out,
+                               log_dir=log_dir, man_path=man_path, man=man,
+                               dry=a.dry_run)
             if rec.get("status") in ("failed", "timeout", "success_no_output"):
                 failed.append(task_id)
 
@@ -431,7 +505,7 @@ def main() -> int:
                   "--optic_result_dir", "/optic",
                   "--aws_csv", "/aux/busan_aws_2019_202004.csv",
                   "--testbed", "busan", "--loc_id", loc,
-                  "--gpu", "cpu", "--output_dir", "/out"]
+                  "--gpu", RUN_DEVICE, "--output_dir", "/out"]
             if a.force:
                 cmd += ["--force"]
             rec = run_task(step="fused", task_id=task_id, cname=cname, cmd=cmd,
@@ -461,7 +535,7 @@ def main() -> int:
                 cmd += ["--mask_dir", sc["mask_dir"]]
             cmd += ["--weights", sc["weights"],
                     "--sensor", sensor, "--testbed", "busan",
-                    "--gpu", "cpu", "--output_dir", "/out"]
+                    "--gpu", RUN_DEVICE, "--output_dir", "/out"]
             if a.force:
                 cmd += ["--force"]
             rec = run_task(step="validate", task_id=task_id, cname=cname, cmd=cmd,

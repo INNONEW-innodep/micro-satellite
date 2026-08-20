@@ -127,6 +127,41 @@ tar가 `.env`를 덮어쓰지 않도록 위 명령처럼 백업·복원한다.
 현재 `watercast`/`watercast-pipeline`은 CPU 전용(`python:3.11-slim`, torch 없음)이고
 GPU 예약도 없다. 이 앱들은 GPU가 필요 없으므로 그대로 두는 것이 맞다.
 
+### WBMS 실모델 — 서버에 올라간 것과 남은 블로커
+
+`~/ssteam/watercast/data/`에 WBMS 체인 입력 일체를 올려두었다(총 8.9 GB). 46 GB 전량이
+아니라 실제로 마운트되는 것만 골랐다 — `06_aux/Masks`(6.4 GB), `DEM`(3.5 GB) 등은
+런타임이 읽지 않는다.
+
+| 경로 | 크기 | 용도 |
+|---|---|---|
+| `incoming/handover/03_model/` | 118 MB | `WBMS_SAR_ICEYE.h5` 등 가중치 |
+| `incoming/handover/02_package/` | 5.7 MB | LSTM 융합 번들 설정 |
+| `incoming/handover/05_l1_pre/iceye_pre/` | 5.1 GB | 부산 4시점 전처리 입력 |
+| `incoming/handover/06_aux/*.csv` | 10 KB | AWS 기상, WAMIS 수위 |
+| `incoming/handover/07_test_evidence/`, `wb_smoke/` | 4 MB | 정량 평가 근거 |
+
+결과: `GET /api/v1/wbms/status`의 `handover_available`·`bundle_available`·
+`aws_csv_available`가 모두 true가 되고, `ui_next/tests/test_model_eval.py` 16개가
+서버에서 전부 통과한다(이전에는 9개 스킵).
+
+**남은 블로커는 데이터가 아니라 구조다.** 백엔드는 컨테이너 안에서 도는데 그 안에
+`docker` CLI가 없다. `runner.py`는 호스트 `docker`로 shell out 하는 설계이고 주석에
+docker.sock 마운트를 보안상 하지 않는다고 못박혀 있다. 그래서 `image_available`은
+`wbms:0.13`을 서버에 적재해도 계속 false다 — 이미지가 없어서가 아니라 백엔드가
+물어볼 수단이 없어서다. 같은 이유로 이미지 11 GB는 **일부러 올리지 않았다**(올려도
+관측 가능한 변화가 없다).
+
+라이브 체인을 서버에서 돌리려면 둘 중 하나를 골라야 한다.
+1. 백엔드를 호스트에서 직접 실행(컨테이너 밖). 현재 배포 형태를 바꾸는 결정이다.
+2. 호스트측 러너를 따로 두고 백엔드는 작업 요청만 파일로 남긴다. 새 구성요소가 필요하다.
+
+`docker.sock` 마운트는 컨테이너에 호스트 root 권한을 주는 것과 같아 선택지에서 뺐다.
+
+**시연에는 영향이 없다.** `pipeline_ui`는 미리 생성한 실모델 산출 자산
+(`assets/wbms_*.png` + `wbms_20200302_meta.json`)을 읽으므로 라이브 체인 없이도
+실모델 결과를 보여준다.
+
 ### 전달받은 `wbms:0.13` 이미지를 서버에 올리려면
 
 로컬 `wbms_image_0.13_20260818-001.tar` (11 GB)는 CUDA 11.8 기반 GPU 이미지다
