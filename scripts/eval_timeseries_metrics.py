@@ -212,6 +212,11 @@ def change_stats(pairs: list[tuple[float, float]]) -> dict:
         "mae": round(sum(abs(e) for e in err) / n, 4),
         "zero_baseline_mse": round(mse0, 6),
         "skill_vs_no_change": round(1 - mse / mse0, 3) if mse0 > 0 else None,
+        # 변화 대비 상대 오차 = RMSE(Δ오차)/RMS(Δ실제) = sqrt(1-skill).
+        # 예: 실제 변화 3을 5로 보면 그 쌍은 67% — 쌍별 평균 대신 RMS 비율을
+        # 쓰는 이유는 Δ실제≈0인 쌍에서 분모 폭발을 피하기 위함(표준 관행).
+        "rel_err_pct_of_change": (round(100 * math.sqrt(mse / mse0), 1)
+                                  if mse0 > 0 else None),
         "sign_agreement": (f"{sign_ok}/{len(signif)}" if signif else "n/a"),
         "true_change_rms": round(math.sqrt(mse0), 4),
     }
