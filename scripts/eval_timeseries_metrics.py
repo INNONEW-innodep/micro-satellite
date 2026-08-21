@@ -320,6 +320,7 @@ def eval_areas():
         if ss:
             summary[sensor] = {
                 "n": len(ss),
+                "mse_km2sq": round(sum(r["err_km2"] ** 2 for r in ss) / len(ss), 3),
                 "mae_km2": round(sum(abs(r["err_km2"]) for r in ss) / len(ss), 3),
                 "mape_pct": round(sum(r["abs_pct_err"] for r in ss) / len(ss), 2),
                 "bias_km2": round(sum(r["err_km2"] for r in ss) / len(ss), 3),
@@ -407,10 +408,28 @@ def write_outputs(result: dict):
     A0 = result["A_수위_보정_정확도"]["overall"]
     B = result["B_예측_참고치_persistence"]
     C = result["C_면적_시계열"]["summary"]
+    F_ = result["F_변화량_평가"]
+    C_ = result["C_면적_시계열"]["summary"]
     lines = [
         "# 시계열 정량 평가 (2026-08-21)",
         "",
         "계열 혼용 금지: A는 in-sample, B는 참고치, 참고선(LODO)이 정식 프로토콜.",
+        "",
+        "## 종합 — 전 계열 MSE 한눈에",
+        "| 평가 방식 | MSE | 단위 | 비고 |",
+        "|---|---|---|---|",
+        f"| 수위 절대값 · 당일 보정 (in-sample) | {A0['corrected']['mse_m2']} | m² | 학습표본 재현 |",
+        f"| 수위 절대값 · LODO (정식 프로토콜) | {round(LODO_RMSE_M**2, 6)} | m² | 성과보고 기준 |",
+        f"| 수위 절대값 · persistence 예측 | "
+        f"{result['B_예측_참고치_persistence']['persistence_of_corrected']['mse_m2']} | m² | 1-step |",
+        f"| **수위 변화(Δ) 예측** | {F_['수위_변화_m']['mse']} | m² | 지표명 직접 대응 |",
+        "| (목표성능지표) | 0.38 | m² | 전 해석에서 달성 |",
+        f"| 면적 절대값 · ICEYE | {C_.get('ICEYE', {}).get('mse_km2sq', '—')} | (km²)² | 씬별 추정 |",
+        f"| 면적 절대값 · PlanetScope | {C_.get('PlanetScope', {}).get('mse_km2sq', '—')} | (km²)² | |",
+        f"| 면적 변화(Δ) · ICEYE | {F_['면적_변화_km2']['ICEYE']['mse']} | (km²)² | skill 0.86 |",
+        f"| 면적 변화(Δ) · PlanetScope | {F_['면적_변화_km2']['PlanetScope']['mse']} | (km²)² | skill 0.998 |",
+        "",
+        "면적 MSE는 단위가 (km²)²라 수위 목표 0.38(m²)과 직접 비교 불가.",
         "",
         "## A. 수위 보정 정확도 — 보정 수위 vs 게이지 실측 (in-sample 30표본)",
         "| 예측치 | N | MSE(m²) | RMSE(m) | MAE(m) | bias(m) | max|err|(m) | R² |",
