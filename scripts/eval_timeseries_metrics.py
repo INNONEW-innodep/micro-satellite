@@ -192,6 +192,44 @@ def eval_persistence(joined):
     }
 
 
+HORIZON_BINS = [(1, 7), (8, 14), (15, 28), (29, 58)]
+LEVEL_RANGE_M = 2.415 - 1.43   # 게이지 실측 전체 범위 — 정규화 MSE 분모
+
+
+def eval_horizon(joined):
+    """계열 E: 예측 지평별 성능 — 모든 관측쌍(t_i→t_j, i<j)에 persistence 적용.
+
+    '며칠 앞을 예측하면 얼마나 나빠지나'를 관측이 허용하는 모든 간격에서 측정.
+    관측 8시점뿐이라 매일이 아니라 구간(bin) 단위이며, 갈수기 데이터라
+    홍수기 급변 상황의 저하는 이 곡선에 나타나지 않는다(한계 명시)."""
+    pairs = []   # (horizon_days, pred_corrected, truth)
+    for s in sorted({j["station"] for j in joined}):
+        rows = sorted((j for j in joined if j["station"] == s),
+                      key=lambda j: j["date"])
+        by_date: dict[str, list] = {}
+        for j in rows:
+            by_date.setdefault(j["date"], []).append(j)
+        series = [(d,
+                   sum(x["corrected_m"] for x in g) / len(g),
+                   g[0]["truth_m"])
+                  for d, g in sorted(by_date.items())]
+        for i, (d0, c0, _t0) in enumerate(series):
+            for d1, _c1, t1 in series[i + 1:]:
+                h = (dt.date.fromisoformat(d1) - dt.date.fromisoformat(d0)).days
+                pairs.append({"station": s, "from": d0, "to": d1,
+                              "horizon_days": h, "pred_m": round(c0, 4),
+                              "truth_m": t1, "err_m": round(c0 - t1, 4)})
+    bins = []
+    for lo, hi in HORIZON_BINS:
+        sub = [(p["pred_m"], p["truth_m"]) for p in pairs
+               if lo <= p["horizon_days"] <= hi]
+        st_ = level_stats(sub)
+        if st_.get("n"):
+            st_["norm_mse"] = round(st_["mse_m2"] / LEVEL_RANGE_M ** 2, 5)
+        bins.append({"horizon": f"{lo}~{hi}일", **st_})
+    return {"n_pairs_total": len(pairs), "bins": bins, "pairs": pairs}
+
+
 def eval_areas():
     """계열 C: 씬별 WB 면적 vs GT 면적."""
     rows = []
@@ -260,6 +298,19 @@ def write_outputs(result: dict):
                     round(BASELINE_RMSE_M ** 2, 6), BASELINE_RMSE_M, "", "", "",
                     "", "", "이 값이 더 낮음 — '융합으로 향상' 주장 금지"])
         w.writerow([])
+        w.writerow(["계열", "지평", "N", "MSE(m²)", "정규화MSE", "RMSE(m)",
+                    "MAE(m)", "bias(m)", "max|err|(m)"])
+        for b in result["E_지평별_성능"]["bins"]:
+            w.writerow(["E 지평별(persistence)", b["horizon"], b["n"], b["mse_m2"],
+                        b["norm_mse"], b["rmse_m"], b["mae_m"], b["bias_m"],
+                        b["max_abs_err_m"]])
+        w.writerow([])
+        w.writerow(["계열", "지점", "기준일", "예측일", "지평(일)", "예측(m)",
+                    "실측(m)", "오차(m)"])
+        for p in result["E_지평별_성능"]["pairs"]:
+            w.writerow(["E 관측쌍", p["station"], p["from"], p["to"],
+                        p["horizon_days"], p["pred_m"], p["truth_m"], p["err_m"]])
+        w.writerow([])
         w.writerow(["계열", "센서", "날짜", "WB(km²)", "GT(km²)", "오차(km²)",
                     "|오차|(%)"])
         for r in result["C_면적_시계열"]["per_scene"]:
@@ -308,7 +359,16 @@ def write_outputs(result: dict):
         st_ = B[name]
         lines.append(f"| {name} | {st_['n']} | {st_['mse_m2']} | {st_['rmse_m']} | "
                      f"{st_['mae_m']} | {st_['r2']} |")
-    lines += ["", "## C. 면적 시계열 — WB vs GT (3 m 격자)",
+    E = result["E_지평별_성능"]
+    lines += ["", f"## E. 지평별 성능 — 모든 관측쌍 persistence ({E['n_pairs_total']}쌍)",
+              "| 지평 | N | MSE(m²) | 정규화MSE | RMSE(m) | MAE(m) |",
+              "|---|---|---|---|---|---|"]
+    for b in E["bins"]:
+        lines.append(f"| {b['horizon']} | {b['n']} | {b['mse_m2']} | {b['norm_mse']} | "
+                     f"{b['rmse_m']} | {b['mae_m']} |")
+    lines += ["", "주의: 갈수기(2~4월) 데이터라 저하가 완만함 — 홍수기 급변 시 "
+                  "지평별 저하는 이보다 훨씬 가파를 것(이 데이터로는 측정 불가).",
+              "", "## C. 면적 시계열 — WB vs GT (3 m 격자)",
               "| 센서 | N | MAE(km²) | MAPE(%) | bias(km²) |", "|---|---|---|---|---|"]
     for sensor, s in C.items():
         lines.append(f"| {sensor} | {s['n']} | {s['mae_km2']} | {s['mape_pct']} | "
@@ -326,6 +386,9 @@ def main() -> int:
           f"corrected RMSE {A['overall']['corrected']['rmse_m']} m")
     print("[2/3] persistence walk-forward (B)")
     B = eval_persistence(joined)
+    print("[2.5/3] 지평별 성능 (E) — 전체 관측쌍 persistence")
+    E = eval_horizon(joined)
+    print(f"  관측쌍 {E['n_pairs_total']}건")
     print("[3/3] 면적 시계열 (C) — 마스크 16개 집계")
     C = eval_areas()
     result = {
@@ -341,7 +404,10 @@ def main() -> int:
         "A_수위_보정_정확도": A,
         "B_예측_참고치_persistence": B,
         "C_면적_시계열": C,
+        "E_지평별_성능": E,
     }
+    result["labels"]["E"] = ("모든 관측쌍 persistence — 갈수기 데이터라 홍수기 급변 저하는 "
+                             "미반영. norm_mse는 수위 범위(0.985 m) 기준 정규화")
     paths = write_outputs(result)
     print("산출:", *paths, sep="\n  ")
     return 0
