@@ -258,6 +258,57 @@ def eval_change(joined, area_rows):
     return {"수위_변화_m": change_stats(lvl_pairs), "면적_변화_km2": area_pairs}
 
 
+def eval_indicator(joined, area_rows):
+    """계열 G: 성과지표 정합 단일값 — '수체면적 및 수위변화 시계열 예측 정확도(MSE)'.
+
+    단위가 다른 두 변수를 하나의 MSE 로 합치는 유일한 방법은 정규화이므로:
+    변수별 [0,1] min-max 정규화(관측 전체 범위) → persistence 1-step 예측 MSE
+    → 두 변수 동가중 평균. 목표 0.38 과 직접 비교 가능한 단일 값."""
+    # ── 수위변화 예측: persistence 는 Δ̂=0 → MSE = mean(Δ실제²), 수위범위로 정규화
+    lvl_sq = []
+    for s in sorted({j["station"] for j in joined}):
+        rows = sorted((j for j in joined if j["station"] == s),
+                      key=lambda j: j["date"])
+        seen, series = set(), []
+        for j in rows:
+            if j["date"] not in seen:
+                seen.add(j["date"])
+                series.append(j["truth_m"])
+        lvl_sq += [(b - a) ** 2 for a, b in zip(series, series[1:])]
+    norm_level_change = (sum(lvl_sq) / len(lvl_sq)) / LEVEL_RANGE_M ** 2
+
+    # ── 면적 예측: 예측 = 직전 씬의 WB 면적, 실제 = 다음 씬 GT 면적 (인접쌍)
+    ok = [r for r in area_rows if "err_km2" in r]
+    gts = [r["gt_km2"] for r in ok]
+    area_range = max(gts) - min(gts)
+    area_sq, detail = [], []
+    for sensor in ("ICEYE", "PlanetScope"):
+        ss = sorted((r for r in ok if r["sensor"] == sensor),
+                    key=lambda r: r["date"])
+        for a, b in zip(ss, ss[1:]):
+            e = a["wb_km2"] - b["gt_km2"]
+            area_sq.append(e * e)
+            detail.append({"sensor": sensor, "from": a["date"], "to": b["date"],
+                           "pred_km2": a["wb_km2"], "truth_km2": b["gt_km2"],
+                           "err_km2": round(e, 3)})
+    norm_area = (sum(area_sq) / len(area_sq)) / area_range ** 2
+
+    combined = (norm_level_change + norm_area) / 2
+    return {
+        "정의": "변수별 [0,1] min-max 정규화(수위 범위 0.985 m·면적 범위 "
+               f"{round(area_range, 1)} km²) 후 persistence 1-step 예측 MSE, 동가중 평균",
+        "수위변화_정규화MSE": round(norm_level_change, 5),
+        "수체면적_정규화MSE": round(norm_area, 5),
+        "종합_정규화MSE": round(combined, 5),
+        "목표": 0.38,
+        "달성": bool(combined < 0.38),
+        "면적_예측_쌍": detail,
+        "주의": "면적 정규화 MSE 의 대부분은 광학 3/25 씬의 실제 면적 급증(65 km²) "
+               "1건을 persistence 가 못 맞춘 것 — 이벤트 예측이 ConvLSTM+기상 융합의 "
+               "존재 이유. n 이 작아 단일 이벤트가 지배함을 명시할 것.",
+    }
+
+
 HORIZON_BINS = [(1, 7), (8, 14), (15, 28), (29, 58)]
 LEVEL_RANGE_M = 2.415 - 1.43   # 게이지 실측 전체 범위 — 정규화 MSE 분모
 
@@ -415,6 +466,16 @@ def write_outputs(result: dict):
         "",
         "계열 혼용 금지: A는 in-sample, B는 참고치, 참고선(LODO)이 정식 프로토콜.",
         "",
+        "## 성과지표 정합값 — \"수체면적 및 수위변화 시계열 예측 정확도(MSE)\"",
+        "| 구성 | 정규화 MSE |",
+        "|---|---|",
+        f"| 수위변화 예측 | {result['G_성과지표_정합']['수위변화_정규화MSE']} |",
+        f"| 수체면적 예측 | {result['G_성과지표_정합']['수체면적_정규화MSE']} |",
+        f"| **종합 (동가중 평균)** | **{result['G_성과지표_정합']['종합_정규화MSE']}** |",
+        f"| 목표 | 0.38 → **{'달성' if result['G_성과지표_정합']['달성'] else '미달'}** |",
+        "",
+        result["G_성과지표_정합"]["정의"] + " · " + result["G_성과지표_정합"]["주의"],
+        "",
         "## 종합 — 전 계열 MSE 한눈에",
         "| 평가 방식 | MSE | 단위 | 비고 |",
         "|---|---|---|---|",
@@ -518,6 +579,7 @@ def main() -> int:
         "C_면적_시계열": C,
         "E_지평별_성능": E,
         "F_변화량_평가": eval_change(joined, C["per_scene"]),
+        "G_성과지표_정합": eval_indicator(joined, C["per_scene"]),
     }
     result["labels"]["F"] = ("Δ평가 — 위성 시계열의 변화 추적 정확도(당일 보정 2회 차분, "
                              "미래예측 아님). skill>0 이어야 무변화 가정보다 나음. "
