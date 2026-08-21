@@ -192,6 +192,67 @@ def eval_persistence(joined):
     }
 
 
+def change_stats(pairs: list[tuple[float, float]]) -> dict:
+    """pairs = [(Δpred, Δtrue)] → 변화량 지표 + 무변화(Δ=0) 기준선 대비 스킬.
+
+    skill = 1 − MSE/MSE₀ (MSE₀ = 무변화 가정의 MSE = mean Δtrue²).
+    skill>0 이어야 '변화를 추적한다'고 말할 수 있다."""
+    n = len(pairs)
+    if n == 0:
+        return {"n": 0}
+    err = [p - t for p, t in pairs]
+    mse = sum(e * e for e in err) / n
+    mse0 = sum(t * t for _, t in pairs) / n
+    signif = [(p, t) for p, t in pairs if abs(t) >= 0.01]  # |Δtrue|≥1cm(수위)/1km²(면적)
+    sign_ok = sum(1 for p, t in signif if (p > 0) == (t > 0)) if signif else None
+    return {
+        "n": n,
+        "mse": round(mse, 6),
+        "rmse": round(math.sqrt(mse), 4),
+        "mae": round(sum(abs(e) for e in err) / n, 4),
+        "zero_baseline_mse": round(mse0, 6),
+        "skill_vs_no_change": round(1 - mse / mse0, 3) if mse0 > 0 else None,
+        "sign_agreement": (f"{sign_ok}/{len(signif)}" if signif else "n/a"),
+        "true_change_rms": round(math.sqrt(mse0), 4),
+    }
+
+
+def eval_change(joined, area_rows):
+    """계열 F: 변화량(Δ) 평가 — '차이는 3인데 5로 봤다' 기준.
+
+    수위 Δ: 위성 보정치의 두 시점 차분 vs 게이지 실측 차분 (당일 보정 2회의
+    차분이므로 '변화 추적 정확도'이지 미래 예측이 아님 — 라벨 필수).
+    면적 Δ: WB 마스크 면적 차분 vs GT 면적 차분."""
+    lvl_pairs = []
+    for s in sorted({j["station"] for j in joined}):
+        rows = sorted((j for j in joined if j["station"] == s),
+                      key=lambda j: j["date"])
+        by_date: dict[str, list] = {}
+        for j in rows:
+            by_date.setdefault(j["date"], []).append(j)
+        series = [(d, sum(x["corrected_m"] for x in g) / len(g), g[0]["truth_m"])
+                  for d, g in sorted(by_date.items())]
+        for i in range(len(series)):
+            for k in range(i + 1, len(series)):
+                _d0, c0, t0 = series[i]
+                _d1, c1, t1 = series[k]
+                lvl_pairs.append((c1 - c0, t1 - t0))
+
+    area_pairs = {}
+    ok = [r for r in area_rows if "err_km2" in r]
+    for sensor in ("ICEYE", "PlanetScope"):
+        ss = sorted((r for r in ok if r["sensor"] == sensor),
+                    key=lambda r: r["date"])
+        ps = []
+        for i in range(len(ss)):
+            for k in range(i + 1, len(ss)):
+                ps.append((ss[k]["wb_km2"] - ss[i]["wb_km2"],
+                           ss[k]["gt_km2"] - ss[i]["gt_km2"]))
+        area_pairs[sensor] = change_stats(ps)
+
+    return {"수위_변화_m": change_stats(lvl_pairs), "면적_변화_km2": area_pairs}
+
+
 HORIZON_BINS = [(1, 7), (8, 14), (15, 28), (29, 58)]
 LEVEL_RANGE_M = 2.415 - 1.43   # 게이지 실측 전체 범위 — 정규화 MSE 분모
 
@@ -311,6 +372,20 @@ def write_outputs(result: dict):
             w.writerow(["E 관측쌍", p["station"], p["from"], p["to"],
                         p["horizon_days"], p["pred_m"], p["truth_m"], p["err_m"]])
         w.writerow([])
+        w.writerow(["계열", "대상", "N", "MSE", "RMSE", "MAE", "무변화기준 MSE",
+                    "skill", "부호일치(|Δ|≥1)", "실제변화 RMS"])
+        F = result["F_변화량_평가"]
+        fl = F["수위_변화_m"]
+        w.writerow(["F 변화량(Δ)", "수위(m)", fl["n"], fl["mse"], fl["rmse"],
+                    fl["mae"], fl["zero_baseline_mse"], fl["skill_vs_no_change"],
+                    fl["sign_agreement"], fl["true_change_rms"]])
+        for sensor, fa in F["면적_변화_km2"].items():
+            if fa.get("n"):
+                w.writerow(["F 변화량(Δ)", f"면적(km²) {sensor}", fa["n"], fa["mse"],
+                            fa["rmse"], fa["mae"], fa["zero_baseline_mse"],
+                            fa["skill_vs_no_change"], fa["sign_agreement"],
+                            fa["true_change_rms"]])
+        w.writerow([])
         w.writerow(["계열", "센서", "날짜", "WB(km²)", "GT(km²)", "오차(km²)",
                     "|오차|(%)"])
         for r in result["C_면적_시계열"]["per_scene"]:
@@ -366,6 +441,19 @@ def write_outputs(result: dict):
     for b in E["bins"]:
         lines.append(f"| {b['horizon']} | {b['n']} | {b['mse_m2']} | {b['norm_mse']} | "
                      f"{b['rmse_m']} | {b['mae_m']} |")
+    F = result["F_변화량_평가"]
+    lines += ["", "## F. 변화량(Δ) 평가 — '실제 변화 vs 추정 변화' (무변화 기준선 대비)",
+              "| 대상 | N | Δ-MSE | Δ-RMSE | 무변화 MSE | skill | 부호일치 |",
+              "|---|---|---|---|---|---|---|"]
+    fl = F["수위_변화_m"]
+    lines.append(f"| 수위(m) | {fl['n']} | {fl['mse']} | {fl['rmse']} | "
+                 f"{fl['zero_baseline_mse']} | {fl['skill_vs_no_change']} | "
+                 f"{fl['sign_agreement']} |")
+    for sensor, fa in F["면적_변화_km2"].items():
+        if fa.get("n"):
+            lines.append(f"| 면적 {sensor}(km²) | {fa['n']} | {fa['mse']} | "
+                         f"{fa['rmse']} | {fa['zero_baseline_mse']} | "
+                         f"{fa['skill_vs_no_change']} | {fa['sign_agreement']} |")
     lines += ["", "주의: 갈수기(2~4월) 데이터라 저하가 완만함 — 홍수기 급변 시 "
                   "지평별 저하는 이보다 훨씬 가파를 것(이 데이터로는 측정 불가).",
               "", "## C. 면적 시계열 — WB vs GT (3 m 격자)",
@@ -405,7 +493,11 @@ def main() -> int:
         "B_예측_참고치_persistence": B,
         "C_면적_시계열": C,
         "E_지평별_성능": E,
+        "F_변화량_평가": eval_change(joined, C["per_scene"]),
     }
+    result["labels"]["F"] = ("Δ평가 — 위성 시계열의 변화 추적 정확도(당일 보정 2회 차분, "
+                             "미래예측 아님). skill>0 이어야 무변화 가정보다 나음. "
+                             "갈수기라 수위 Δ는 잡음 수준일 수 있음")
     result["labels"]["E"] = ("모든 관측쌍 persistence — 갈수기 데이터라 홍수기 급변 저하는 "
                              "미반영. norm_mse는 수위 범위(0.985 m) 기준 정규화")
     paths = write_outputs(result)
