@@ -60,6 +60,7 @@ def level_stats(pairs: list[tuple[float, float]]) -> dict:
     sst = sum((t - mean_t) ** 2 for t in truths)
     return {
         "n": n,
+        "mse_m2": round(sse / n, 6),
         "rmse_m": round(math.sqrt(sse / n), 4),
         "mae_m": round(sum(abs(e) for e in err) / n, 4),
         "bias_m": round(sum(err) / n, 4),
@@ -232,30 +233,32 @@ def write_outputs(result: dict):
     cp = os.path.join(OUT_DIR, "timeseries_metrics.csv")
     with open(cp, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
-        w.writerow(["계열", "구분", "대상", "N", "RMSE(m)", "MAE(m)", "bias(m)",
-                    "max|err|(m)", "MAPE(%)", "R2", "비고"])
+        w.writerow(["계열", "구분", "대상", "N", "MSE(m²)", "RMSE(m)", "MAE(m)",
+                    "bias(m)", "max|err|(m)", "MAPE(%)", "R2", "비고"])
         A = result["A_수위_보정_정확도"]
         for scope, block in [("전체", A["overall"])] + \
                 [(s, v) for s, v in A["per_station"].items()]:
             for name, st_ in block.items():
                 if st_.get("n"):
                     w.writerow(["A 수위보정(in-sample)", scope, name, st_["n"],
-                                st_["rmse_m"], st_["mae_m"], st_["bias_m"],
-                                st_["max_abs_err_m"], st_["mape_pct"],
-                                st_["r2"], "융합 LSTM 학습표본과 동일"])
+                                st_["mse_m2"], st_["rmse_m"], st_["mae_m"],
+                                st_["bias_m"], st_["max_abs_err_m"],
+                                st_["mape_pct"], st_["r2"],
+                                "융합 LSTM 학습표본과 동일"])
         B = result["B_예측_참고치_persistence"]
         for name in ("persistence_of_corrected", "persistence_of_gauge"):
             st_ = B[name]
             w.writerow(["B 예측참고(walk-forward)", "전체", name, st_["n"],
-                        st_["rmse_m"], st_["mae_m"], st_["bias_m"],
+                        st_["mse_m2"], st_["rmse_m"], st_["mae_m"], st_["bias_m"],
                         st_["max_abs_err_m"], st_["mape_pct"], st_["r2"],
                         f"불규칙 간격 {B['horizon_days']['min']}~"
                         f"{B['horizon_days']['max']}일"])
-        w.writerow(["참고선", "인수문서", "LODO RMSE", "", LODO_RMSE_M, "", "", "",
+        w.writerow(["참고선", "인수문서", "LODO RMSE", "",
+                    round(LODO_RMSE_M ** 2, 6), LODO_RMSE_M, "", "", "",
                     "", "", "정식 out-of-sample 프로토콜"])
         w.writerow(["참고선", "인수문서", "위성 미사용 베이스라인", "",
-                    BASELINE_RMSE_M, "", "", "", "", "",
-                    "이 값이 더 낮음 — '융합으로 향상' 주장 금지"])
+                    round(BASELINE_RMSE_M ** 2, 6), BASELINE_RMSE_M, "", "", "",
+                    "", "", "이 값이 더 낮음 — '융합으로 향상' 주장 금지"])
         w.writerow([])
         w.writerow(["계열", "센서", "날짜", "WB(km²)", "GT(km²)", "오차(km²)",
                     "|오차|(%)"])
@@ -279,12 +282,13 @@ def write_outputs(result: dict):
         "계열 혼용 금지: A는 in-sample, B는 참고치, 참고선(LODO)이 정식 프로토콜.",
         "",
         "## A. 수위 보정 정확도 — 보정 수위 vs 게이지 실측 (in-sample 30표본)",
-        "| 예측치 | N | RMSE(m) | MAE(m) | bias(m) | max|err|(m) | R² |",
-        "|---|---|---|---|---|---|---|",
+        "| 예측치 | N | MSE(m²) | RMSE(m) | MAE(m) | bias(m) | max|err|(m) | R² |",
+        "|---|---|---|---|---|---|---|---|",
     ]
     for name, st_ in A0.items():
-        lines.append(f"| {name} | {st_['n']} | {st_['rmse_m']} | {st_['mae_m']} | "
-                     f"{st_['bias_m']} | {st_['max_abs_err_m']} | {st_['r2']} |")
+        lines.append(f"| {name} | {st_['n']} | {st_['mse_m2']} | {st_['rmse_m']} | "
+                     f"{st_['mae_m']} | {st_['bias_m']} | {st_['max_abs_err_m']} | "
+                     f"{st_['r2']} |")
     lines += [
         "",
         "해석 주의: ① 보정은 상수-정렬 위성 수위(RMSE 0.057→0.026 m) 대비 개선되나, "
@@ -297,13 +301,13 @@ def write_outputs(result: dict):
         f"## B. 예측 참고치 — walk-forward persistence "
         f"(간격 {B['horizon_days']['min']}~{B['horizon_days']['max']}일, "
         f"평균 {B['horizon_days']['mean']}일)",
-        "| 방식 | N | RMSE(m) | MAE(m) | R² |",
-        "|---|---|---|---|---|",
+        "| 방식 | N | MSE(m²) | RMSE(m) | MAE(m) | R² |",
+        "|---|---|---|---|---|---|",
     ]
     for name in ("persistence_of_corrected", "persistence_of_gauge"):
         st_ = B[name]
-        lines.append(f"| {name} | {st_['n']} | {st_['rmse_m']} | {st_['mae_m']} | "
-                     f"{st_['r2']} |")
+        lines.append(f"| {name} | {st_['n']} | {st_['mse_m2']} | {st_['rmse_m']} | "
+                     f"{st_['mae_m']} | {st_['r2']} |")
     lines += ["", "## C. 면적 시계열 — WB vs GT (3 m 격자)",
               "| 센서 | N | MAE(km²) | MAPE(%) | bias(km²) |", "|---|---|---|---|---|"]
     for sensor, s in C.items():
