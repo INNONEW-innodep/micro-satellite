@@ -7,6 +7,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
+from .api_docs import API_DOCS
 from .schemas import (
     WeatherObservationRequest,
     WeatherObservationResponse,
@@ -22,10 +23,7 @@ KMA_DOCUMENTATION_URL = "https://www.data.go.kr/data/15059093/openapi.do"
     "/status",
     response_model=WeatherStatusResponse,
     summary="Check live ASOS and sample weather capabilities",
-    description=(
-        "Reports whether the backend has a KMA key without returning the key itself. "
-        "A caller may still supply a per-request service_key to the observations endpoint."
-    ),
+    description=API_DOCS["weather_status"],
 )
 async def weather_status() -> WeatherStatusResponse:
     service = _weather_service()
@@ -41,7 +39,7 @@ async def weather_status() -> WeatherStatusResponse:
 @router.get(
     "/stations",
     summary="List commonly used KMA ASOS stations",
-    description="Returns a compact station list suitable for the UI. Custom station IDs remain accepted.",
+    description=API_DOCS["weather_stations"],
 )
 async def list_weather_stations() -> dict[str, Any]:
     service = _weather_service()
@@ -79,11 +77,7 @@ async def list_weather_stations() -> dict[str, Any]:
     "/observations",
     response_model=WeatherObservationResponse,
     summary="Fetch KMA ASOS daily observations",
-    description=(
-        "Fetches historical daily ASOS observations (available through D-1), or deterministic "
-        "sample rows for offline demonstrations. Returned rows can be passed unchanged as "
-        "weather_json to the prediction endpoint."
-    ),
+    description=API_DOCS["weather_observations"],
 )
 async def weather_observations(
     request: WeatherObservationRequest,

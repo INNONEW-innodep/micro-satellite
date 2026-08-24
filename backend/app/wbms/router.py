@@ -12,6 +12,7 @@ from ..adapters.wbms_segmentation import (
     WbmsSegmentationJobAdapter,
 )
 from .jobs import JobNotFoundError
+from ..api_docs import API_DOCS
 from .schemas import (
     WbmsFusionRequest,
     WbmsFusionResponse,
@@ -36,6 +37,7 @@ def _fusion(request: Request) -> WbmsFusionAdapter:
     "/status",
     response_model=WbmsStatusResponse,
     summary="Report wbms container-image and handover readiness",
+    description=API_DOCS["wbms_status"],
 )
 async def wbms_status(request: Request) -> WbmsStatusResponse:
     adapter = _segmentation(request)
@@ -68,12 +70,7 @@ async def wbms_status(request: Request) -> WbmsStatusResponse:
     response_model=WbmsSegmentationJob,
     status_code=202,
     summary="Start ② detect_water as an asynchronous container job",
-    description=(
-        "CPU inference is ~610 s per scene, so this endpoint returns a job id "
-        "immediately; poll GET /wbms/segmentation/jobs/{job_id}. If a COMPLETE "
-        "mask for the scene already exists under the output root, the job is "
-        "returned as succeeded instantly (cached=true) without running docker."
-    ),
+    description=API_DOCS["wbms_segmentation_create"],
 )
 async def create_segmentation_job(
     payload: WbmsSegmentationJobRequest, request: Request
@@ -90,6 +87,7 @@ async def create_segmentation_job(
     "/segmentation/jobs",
     response_model=WbmsSegmentationJobList,
     summary="List segmentation jobs (newest first)",
+    description=API_DOCS["wbms_segmentation_list"],
 )
 async def list_segmentation_jobs(
     request: Request,
@@ -105,6 +103,7 @@ async def list_segmentation_jobs(
     "/segmentation/jobs/{job_id}",
     response_model=WbmsSegmentationJob,
     summary="Get one segmentation job's state and result",
+    description=API_DOCS["wbms_segmentation_detail"],
 )
 async def get_segmentation_job(job_id: str, request: Request) -> WbmsSegmentationJob:
     try:
@@ -118,12 +117,7 @@ async def get_segmentation_job(job_id: str, request: Request) -> WbmsSegmentatio
     "/fusion/corrections",
     response_model=WbmsFusionResponse,
     summary="Correct ③ satellite water levels with the ④ fusion LSTM (synchronous)",
-    description=(
-        "Runs Correct.py inside the wbms container (~seconds on CPU). The model "
-        "corrects the water level for the observed dates; it does not forecast. "
-        "persistence_horizon_days>0 adds an explicitly-labeled persistence "
-        "extension of the last corrected level."
-    ),
+    description=API_DOCS["wbms_fusion"],
 )
 async def create_fusion_correction(
     payload: WbmsFusionRequest, request: Request

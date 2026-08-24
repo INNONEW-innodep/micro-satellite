@@ -26,6 +26,46 @@ ssh -p 10322 -L 8501:localhost:8501 -L 8502:localhost:8502 \
 # API 문서      http://localhost:18000/docs
 ```
 
+## API 문서(Swagger) 접속
+
+| 문서 | 경로 |
+|---|---|
+| Swagger UI | `/docs` |
+| ReDoc | `/redoc` |
+| OpenAPI JSON | `/openapi.json` |
+
+서버 공인 IP는 **211.243.12.176**(= semyeongsoft.com)이고 API는 호스트 18000이다.
+다만 **현재 firewalld가 SSH(10322) 외 모든 포트를 막고 있어** 아래 주소는 포트를
+개방해야 열린다. 개방은 서버 관리자만 할 수 있다(ssteam 계정에 sudo 없음).
+
+```
+개방 후:  http://211.243.12.176:18000/docs
+```
+
+개방 전에는 SSH 터널로 그대로 쓸 수 있다.
+
+```bash
+ssh -p 10322 -L 18000:localhost:18000 ssteam@semyeongsoft.com
+# 브라우저에서 http://localhost:18000/docs
+```
+
+서버 안에서 확인만 할 때는 `curl -s http://localhost:18000/openapi.json`.
+
+### 명세 문구를 고치려면
+
+엔드포인트 설명은 라우트 데코레이터가 아니라 [`backend/app/api_docs.py`](backend/app/api_docs.py)에
+모아 두었다. 라우트는 `description=API_DOCS["<키>"]`로 참조만 한다. 문구를 고칠 때
+라우트 시그니처를 건드리지 않아도 되고, 어떤 엔드포인트에 설명이 빠졌는지 한 파일에서
+바로 보인다.
+
+- `SERVICE_DESCRIPTION` — Swagger 최상단 서비스 개요
+- `TAG_DOCS` — `system` / `predictions` / `weather` / `wbms` 태그 그룹 설명
+- `API_DOCS` — 엔드포인트 17개의 상세 설명(파라미터·단위·기본값·실패 응답·한계)
+- `API_SUMMARIES` — 한국어 한 줄 요약(현재 라우트는 영문 summary를 쓰고 있어 미사용)
+
+설명에는 기준선 모델·`rule_based` 위험도·조건부 `water_level_m` 같은 **한계 고지가
+포함되어 있다.** 문구를 줄일 때 이 부분을 빼면 명세가 성능을 과장하게 되므로 유지한다.
+
 ## 서버에서 운영
 ```bash
 cd ~/ssteam/watercast

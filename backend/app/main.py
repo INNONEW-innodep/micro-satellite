@@ -11,6 +11,7 @@ from fastapi.responses import FileResponse, RedirectResponse
 from pydantic import BaseModel, ValidationError
 
 from .adapters.registry import AdapterRegistry, build_registry
+from .api_docs import API_DOCS, SERVICE_DESCRIPTION, TAG_DOCS
 from .config import Settings
 from .schemas import (
     ArtifactInfo,
@@ -48,28 +49,10 @@ def create_app(
     app = FastAPI(
         title=settings.title,
         version=settings.version,
-        description=(
-            "Model-independent API for water-mask time-series forecasting. "
-            "Upload upstream masks, select an adapter, and export every result as JSON or files."
-        ),
+        description=SERVICE_DESCRIPTION,
         openapi_tags=[
-            {"name": "system", "description": "Service readiness and model discovery."},
-            {
-                "name": "predictions",
-                "description": "Run, inspect, and export predictions.",
-            },
-            {
-                "name": "weather",
-                "description": "KMA ASOS observations and offline sample data.",
-            },
-            {
-                "name": "wbms",
-                "description": (
-                    "Delivered WBMS real models run inside the wbms container via "
-                    "host-runner subprocess: ② detect_water as async jobs, "
-                    "④ fusion-LSTM same-day water-level correction."
-                ),
-            },
+            {"name": name, "description": TAG_DOCS[name]}
+            for name in ("system", "predictions", "weather", "wbms")
         ],
     )
     app.add_middleware(
@@ -95,6 +78,7 @@ def create_app(
         response_model=HealthResponse,
         tags=["system"],
         summary="Check backend readiness",
+        description=API_DOCS["health"],
     )
     async def health(request: Request) -> HealthResponse:
         current_registry: AdapterRegistry = request.app.state.registry
@@ -113,6 +97,7 @@ def create_app(
         response_model=list[ModelInfo],
         tags=["system"],
         summary="List selectable predictor adapters",
+        description=API_DOCS["models_list"],
     )
     async def models(request: Request) -> list[ModelInfo]:
         return request.app.state.registry.list()
@@ -122,6 +107,7 @@ def create_app(
         response_model=ModelInfo,
         tags=["system"],
         summary="Describe one predictor adapter",
+        description=API_DOCS["models_detail"],
     )
     async def model_detail(model_id: str, request: Request) -> ModelInfo:
         try:
@@ -135,13 +121,7 @@ def create_app(
         status_code=201,
         tags=["predictions"],
         summary="Run a time-series prediction",
-        description=(
-            "Files are interpreted in multipart order. A single NPY may contain [T,H,W]. "
-            "weather_json is a JSON array of rows; historical levels and dates align with decoded frames. "
-            "input_metadata_json may carry non-secret source and preprocessing provenance. "
-            "Optional reference_water_levels_json aligns with forecast horizons and is used only "
-            "after inference to calculate evaluation metrics; it is never passed to the predictor."
-        ),
+        description=API_DOCS["predictions_create"],
     )
     async def create_prediction(
         request: Request,
@@ -223,6 +203,7 @@ def create_app(
         response_model=PredictionList,
         tags=["predictions"],
         summary="List persisted predictions",
+        description=API_DOCS["predictions_list"],
     )
     async def list_predictions(
         request: Request,
@@ -237,6 +218,7 @@ def create_app(
         response_model=PredictionResult,
         tags=["predictions"],
         summary="Get one complete prediction result",
+        description=API_DOCS["predictions_detail"],
     )
     async def prediction_detail(
         prediction_id: str, request: Request
@@ -251,6 +233,7 @@ def create_app(
         response_model=ArtifactList,
         tags=["predictions"],
         summary="List generated mask artifacts",
+        description=API_DOCS["predictions_files"],
     )
     async def prediction_files(prediction_id: str, request: Request) -> ArtifactList:
         try:
@@ -273,6 +256,7 @@ def create_app(
         f"{settings.api_prefix}/predictions/{{prediction_id}}/files/{{filename}}",
         tags=["predictions"],
         summary="View or download one generated file",
+        description=API_DOCS["predictions_file"],
     )
     async def prediction_file(
         prediction_id: str,
@@ -294,6 +278,7 @@ def create_app(
         f"{settings.api_prefix}/predictions/{{prediction_id}}/bundle",
         tags=["predictions"],
         summary="Download metadata and every output file as ZIP",
+        description=API_DOCS["predictions_bundle"],
     )
     async def prediction_bundle(prediction_id: str, request: Request) -> FileResponse:
         try:
