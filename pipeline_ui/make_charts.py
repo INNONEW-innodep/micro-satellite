@@ -1,6 +1,11 @@
 """
 발표용 정확도 시각화 차트 생성.
-실측이 없으므로 학습/검증 시뮬레이션 결과를 모사하여 발표 자료용으로 사용.
+
+수치 출처:
+- 수체 IoU: data/incoming/handover/07_test_evidence/VALREPORT_Busan_*.json
+  (배포 프로토콜, ICEYE·PlanetScope 각 4씬)
+- GPU 성능: 로컬 재현 (SAR 씬당 CPU 499s → GPU 42.8s)
+- 시계열 예측 성능은 아직 실측 없음 (학습 곡선은 개념도로만 사용)
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -68,6 +73,8 @@ def make_training_curve():
     val_iou = np.clip(val_iou, 0, 1)
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.2))
+    fig.suptitle("[개념도] 시계열 예측 학습 곡선 예시 · 실측 아님",
+                 fontsize=10, color=GRAY, y=1.02, style="italic")
     # Loss
     ax = axes[0]
     ax.plot(epochs, train_loss, label="Train Loss", color=TEAL, lw=2.2)
@@ -96,156 +103,238 @@ def make_training_curve():
     fig_save(fig, "01_training_curve.png")
 
 
-# ====== 2. 1:1 산점도 (Predicted vs Actual) - 수위 ======
+# ====== 2. 실측 수체 IoU 바 차트 (배포 프로토콜 · Busan 4씬) ======
 def make_scatter_water_level():
-    rng = np.random.default_rng(7)
-    n = 80
-    true_wl = rng.uniform(2.0, 12.0, n)  # 수위 m
-    # 약간의 노이즈 추가된 예측
-    pred_wl = true_wl + rng.normal(0, 0.55, n) + (true_wl - 7) * 0.04
+    """이전 이름은 유지. 내용은 실측 IoU 그래프로 교체.
+    출처: data/incoming/handover/07_test_evidence/VALREPORT_Busan_*.json"""
+    # per-scene 실측치
+    sar_scenes = [("20200302", 0.9233), ("20200330", 0.9472),
+                  ("20200415", 0.9614), ("20200416", 0.8786)]
+    opt_scenes = [("20200218", 0.9476), ("20200312", 0.9317),
+                  ("20200325", 0.9484), ("20200414", 0.9323)]
+    # overall 평균
+    sar_mean = 0.9259
+    opt_mean = 0.9415
 
-    fig, ax = plt.subplots(figsize=(6, 5.5))
-    ax.scatter(true_wl, pred_wl, c=TEAL2, s=55, alpha=0.65, edgecolor=TEAL, linewidth=1)
-    # 1:1 line
-    lo = min(true_wl.min(), pred_wl.min()) - 0.5
-    hi = max(true_wl.max(), pred_wl.max()) + 0.5
-    ax.plot([lo, hi], [lo, hi], color=ORANGE, linestyle="--", lw=2, label="y = x (이상)")
-    # 회귀선
-    z = np.polyfit(true_wl, pred_wl, 1)
-    xs = np.linspace(lo, hi, 50)
-    ax.plot(xs, z[0] * xs + z[1], color=TEAL, lw=2, alpha=0.7,
-            label=f"회귀선  (slope={z[0]:.2f})")
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.5))
 
-    # 메트릭
-    mae = float(np.mean(np.abs(pred_wl - true_wl)))
-    rmse = float(np.sqrt(np.mean((pred_wl - true_wl) ** 2)))
-    ss_res = float(np.sum((true_wl - pred_wl) ** 2))
-    ss_tot = float(np.sum((true_wl - true_wl.mean()) ** 2))
-    r2 = 1 - ss_res / ss_tot
-
-    txt = f"MAE  = {mae:.3f} m\nRMSE = {rmse:.3f} m\nR²   = {r2:.3f}\nN    = {n}"
-    ax.text(0.04, 0.96, txt, transform=ax.transAxes, va="top", ha="left",
-            fontsize=11, family="monospace",
-            bbox=dict(boxstyle="round,pad=0.5", fc="#f0fbfa", ec=TEAL2, lw=1.5))
-
-    ax.set_xlim(lo, hi); ax.set_ylim(lo, hi)
-    ax.set_xlabel("실제 수위 (m)")
-    ax.set_ylabel("예측 수위 (m)")
-    ax.set_title("ConvLSTM 수위 예측 정확도 · 1:1 산점도",
+    # 좌: 씬별 바
+    ax = axes[0]
+    x = np.arange(4)
+    w = 0.38
+    sar_vals = [v for _, v in sar_scenes]
+    opt_vals = [v for _, v in opt_scenes]
+    b1 = ax.bar(x - w/2, sar_vals, w, color=TEAL, label="SAR (ICEYE)")
+    b2 = ax.bar(x + w/2, opt_vals, w, color=AMBER, label="광학 (PlanetScope)")
+    ax.set_xticks(x)
+    ax.set_xticklabels([f"씬 {i+1}" for i in range(4)])
+    ax.set_ylim(0.85, 1.0)
+    ax.set_ylabel("water IoU")
+    ax.set_title("씬별 수체 IoU · 배포 프로토콜 (Busan 4씬)",
                  fontsize=12, color=TEAL)
     ax.legend(loc="lower right", frameon=False)
+    for rects, vals in [(b1, sar_vals), (b2, opt_vals)]:
+        for r, v in zip(rects, vals):
+            ax.text(r.get_x() + r.get_width()/2, v + 0.003, f"{v:.3f}",
+                    ha="center", fontsize=9, color=NAVY)
+
+    # 우: 평균 IoU (강조)
+    ax = axes[1]
+    names = ["SAR\n(ICEYE)", "광학\n(PlanetScope)"]
+    means = [sar_mean, opt_mean]
+    colors = [TEAL, AMBER]
+    bars = ax.bar(names, means, color=colors, width=0.55)
+    ax.set_ylim(0.85, 1.0)
+    ax.set_ylabel("water IoU")
+    ax.set_title("4씬 평균 IoU · 배포 프로토콜",
+                 fontsize=12, color=TEAL)
+    for b, v in zip(bars, means):
+        ax.text(b.get_x() + b.get_width()/2, v + 0.005, f"{v:.3f}",
+                ha="center", fontsize=16, color=NAVY, fontweight="bold")
+    ax.text(0.5, 0.02,
+            "※ VALREPORT_Busan_ICEYE / PlanetScope.json · GPU 추론 재현",
+            transform=ax.transAxes, ha="center", fontsize=8, color=GRAY,
+            style="italic")
+
     fig_save(fig, "02_scatter_water_level.png")
 
 
-# ====== 3. Δt(시간 ahead) 별 성능 저하 ======
+# ====== 3. Δt(지평) 별 실측 성능 — 수위 RMSE + 수체 IoU ======
 def make_horizon_metrics():
-    # 1~5 프레임 ahead 예측의 IoU·MAE
-    horizons = ["T+1\n(11일)", "T+2\n(22일)", "T+3\n(33일)", "T+4\n(44일)", "T+5\n(55일)"]
-    iou = [0.86, 0.81, 0.76, 0.69, 0.62]
-    dice = [0.91, 0.87, 0.83, 0.78, 0.72]
-    mae_wl = [0.38, 0.52, 0.71, 0.95, 1.28]  # 수위 MAE (m)
+    """실측 데이터:
+    - 수위: data/eval/timeseries_metrics.json → E_지평별_성능
+    - IoU: data/eval/mask_persistence_iou.json → summary
+    갈수기 조건(부산 2020.02~04) 각주 필수.
+    """
+    # 수위 RMSE (99쌍 persistence, 4구간)
+    horizons_wl = ["1~7일\n(n=13)", "8~14일\n(n=12)", "15~28일\n(n=34)", "29~58일\n(n=40)"]
+    rmse_wl = [0.0238, 0.0253, 0.0234, 0.0233]
 
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4.2))
+    # 수체 IoU (12쌍)
+    iou_labels = ["ICEYE\n단기\n(n=3)", "ICEYE\n장기\n(n=3)",
+                  "Planet\n단기\n(n=2)", "Planet\n장기\n(n=4)"]
+    iou_mean = [0.8357, 0.8777, 0.8514, 0.8186]
+    iou_ceiling = [0.8326, 0.8821, 0.8475, 0.8228]
 
-    # 좌: IoU/Dice
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.4))
+    fig.suptitle("실측 · 부산 4씬 · 2020.02~04 (갈수기 조건)",
+                 fontsize=10, color=GRAY, y=1.02, style="italic")
+
+    # 좌: 수위 RMSE 지평별
     ax = axes[0]
-    x = np.arange(len(horizons))
-    w = 0.35
-    b1 = ax.bar(x - w/2, iou, w, color=TEAL, label="IoU")
-    b2 = ax.bar(x + w/2, dice, w, color=AMBER, label="Dice")
-    ax.set_xticks(x); ax.set_xticklabels(horizons)
-    ax.set_ylim(0, 1.05)
-    ax.set_ylabel("Score")
-    ax.set_title("예측 시점(Δt)별 마스크 정확도", fontsize=12, color=TEAL)
-    ax.legend(loc="upper right", frameon=False)
-    for rects, vals in [(b1, iou), (b2, dice)]:
-        for r, v in zip(rects, vals):
-            ax.text(r.get_x() + r.get_width()/2, v + 0.015, f"{v:.2f}",
-                    ha="center", fontsize=9, color=NAVY)
+    x = np.arange(len(horizons_wl))
+    bars = ax.bar(x, [v * 100 for v in rmse_wl], color=TEAL, width=0.6)
+    ax.set_xticks(x); ax.set_xticklabels(horizons_wl)
+    ax.set_ylim(0, 3.0)
+    ax.set_ylabel("수위 RMSE (cm)")
+    ax.set_title("수위 예측 지평별 오차 (persistence · 99쌍)",
+                 fontsize=12, color=TEAL)
+    for b, v in zip(bars, rmse_wl):
+        ax.text(b.get_x() + b.get_width()/2, v * 100 + 0.05,
+                f"{v*100:.2f} cm", ha="center", fontsize=10,
+                color=NAVY, fontweight="bold")
+    # 목표 대비 달성 주석 (텍스트로만 표기 · 스케일 왜곡 방지)
+    ax.text(0.5, 0.90,
+            "목표 RMSE 38 cm 대비 ×15 배 이상 정확 (목표 달성)",
+            transform=ax.transAxes, ha="center", fontsize=10,
+            color=ORANGE, fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.35", fc="#fff4e6", ec=ORANGE, lw=1.2))
 
-    # 우: 수위 MAE
+    # 우: 수체 IoU (predicted vs ceiling)
     ax = axes[1]
-    ax.plot(horizons, mae_wl, marker="o", color=ORANGE, lw=2.5, markersize=10)
-    for xi, vi in zip(horizons, mae_wl):
-        ax.annotate(f"{vi:.2f} m", (xi, vi), textcoords="offset points",
-                    xytext=(0, 8), ha="center", fontsize=9, color=NAVY)
-    ax.set_ylabel("수위 MAE (m)")
-    ax.set_title("예측 시점(Δt)별 수위 오차", fontsize=12, color=TEAL)
-    ax.set_ylim(0, max(mae_wl) * 1.3)
+    x = np.arange(len(iou_labels))
+    w = 0.35
+    b1 = ax.bar(x - w/2, iou_mean, w, color=TEAL, label="예측 IoU (persistence)")
+    b2 = ax.bar(x + w/2, iou_ceiling, w, color=AMBER, label="변화 상한 IoU (GT_A→GT_B)")
+    ax.set_xticks(x); ax.set_xticklabels(iou_labels)
+    ax.set_ylim(0.7, 0.95)
+    ax.set_ylabel("water IoU")
+    ax.set_title("수체 영역 예측 정확도 (12쌍)", fontsize=12, color=TEAL)
+    ax.legend(loc="upper right", frameon=False, fontsize=8)
+    for rects, vals in [(b1, iou_mean), (b2, iou_ceiling)]:
+        for r, v in zip(rects, vals):
+            ax.text(r.get_x() + r.get_width()/2, v + 0.005, f"{v:.2f}",
+                    ha="center", fontsize=8, color=NAVY)
+    ax.text(0.5, 0.02,
+            "예측 IoU ≈ 변화 상한 → 오차 지배 요인 = 수체 자체 변화",
+            transform=ax.transAxes, ha="center", fontsize=8, color=GRAY,
+            style="italic")
 
     fig_save(fig, "03_horizon_metrics.png")
 
 
 # ====== 4. 시계열 예측 vs 실제 (수위) ======
 def make_timeseries_compare():
-    rng = np.random.default_rng(11)
-    days = np.arange(0, 60)
-    # 시즌성 + 트렌드 + 노이즈
-    base = 5 + 1.8 * np.sin(days / 9.0) + 0.02 * days
-    true_wl = base + rng.normal(0, 0.15, len(days))
+    """[개편] F 계열 · 변화량(Δ) 예측 skill 시각화 (실측).
+    출처: data/eval/timeseries_metrics.json → F_변화량_평가
+    "수위변화 예측" IITP 지표에 직접 대응."""
+    # 수위 변화 (99쌍)
+    wl_skill = 0.167       # 무변화 대비 skill
+    wl_sign = 56 / 64      # 87.5% 방향 일치
+    # 면적 변화 (센서별)
+    area_data = {
+        "ICEYE (SAR)": {"skill": 0.862, "sign": 5/6, "n": 6, "true_rms": 3.16, "rmse": 1.17},
+        "PlanetScope (광학)": {"skill": 0.998, "sign": 6/6, "n": 6, "true_rms": 21.19, "rmse": 0.93},
+    }
 
-    obs_idx = np.arange(0, 33)
-    pred_idx = np.arange(33, 60)
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.6))
+    fig.suptitle("F 계열 · 변화량(Δ) 예측 실측 · 부산 4씬 (2020.02~04)",
+                 fontsize=11, color=TEAL, y=1.02, style="italic")
 
-    pred_wl = base[pred_idx] + rng.normal(0, 0.35, len(pred_idx)) * (1 + np.arange(len(pred_idx)) * 0.04)
-    pred_ci = 0.25 + np.arange(len(pred_idx)) * 0.04
+    # 좌: 면적 변화 skill (센서별)
+    ax = axes[0]
+    names = list(area_data.keys())
+    skills = [area_data[n]["skill"] for n in names]
+    colors = [TEAL, AMBER]
+    bars = ax.bar(names, skills, color=colors, width=0.5)
+    ax.set_ylim(0, 1.05)
+    ax.set_ylabel("Skill vs 무변화")
+    ax.set_title("면적 변화 추적 skill", fontsize=12, color=TEAL)
+    for b, n in zip(bars, names):
+        d = area_data[n]
+        ax.text(b.get_x() + b.get_width()/2, d["skill"] + 0.02,
+                f"{d['skill']:.3f}", ha="center", fontsize=15,
+                color=NAVY, fontweight="bold")
+        ax.text(b.get_x() + b.get_width()/2, d["skill"] - 0.06,
+                f"방향 {int(d['sign']*d['n'])}/{d['n']}",
+                ha="center", fontsize=10, color="white", fontweight="bold")
+    ax.text(0.5, 0.02,
+            "PlanetScope: 3/25 씬 65 km² 급증도 오차 1 km² 이내로 추적",
+            transform=ax.transAxes, ha="center", fontsize=9, color=GRAY,
+            style="italic")
 
-    fig, ax = plt.subplots(figsize=(11, 4.5))
-    # 관측
-    ax.plot(obs_idx, true_wl[obs_idx], color=TEAL, lw=2.5, marker="o",
-            markersize=6, label="관측 수위")
-    # 예측
-    ax.plot(pred_idx, pred_wl, color=ORANGE, lw=2.5, marker="D",
-            markersize=6, linestyle="-", label="ConvLSTM 예측")
-    # 신뢰구간
-    ax.fill_between(pred_idx, pred_wl - 2 * pred_ci, pred_wl + 2 * pred_ci,
-                    color=ORANGE, alpha=0.15, label="95% 신뢰구간")
-    # 실제 미래값 (점선 회색)
-    ax.plot(pred_idx, true_wl[pred_idx], color=GRAY, lw=1.5,
-            linestyle=":", marker="x", markersize=5, label="실측 (검증용)")
-
-    ax.axvline(33, color="#bbb", linestyle="--")
-    ax.text(33.5, ax.get_ylim()[1] * 0.95, "현재 시점", color=GRAY, fontsize=10)
-
-    ax.set_xlabel("경과일 (기준시점 $T_0$ 이후)")
-    ax.set_ylabel("수위 (m)")
-    ax.set_title("ConvLSTM 시계열 예측 — 관측 ↔ 미래 60일", fontsize=12, color=TEAL)
-    ax.legend(loc="upper left", frameon=False, ncol=2)
+    # 우: 수위 변화 - skill 낮은 이유 설명
+    ax = axes[1]
+    # 관측 잡음 vs 실제 변화 폭 비교
+    labels = ["실제 수위\n변화 폭\n(RMS)", "관측 잡음\n수준", "예측 오차\n(RMSE)"]
+    values = [2.41, 2.20, 2.20]  # cm 단위
+    bar_colors = [AMBER, GRAY, TEAL]
+    bars = ax.bar(labels, values, color=bar_colors, width=0.6)
+    ax.set_ylim(0, 3.5)
+    ax.set_ylabel("cm")
+    ax.set_title("수위 변화 skill 0.17 — 왜?",
+                 fontsize=12, color=TEAL)
+    for b, v in zip(bars, values):
+        ax.text(b.get_x() + b.get_width()/2, v + 0.05, f"{v:.2f} cm",
+                ha="center", fontsize=11, color=NAVY, fontweight="bold")
+    ax.text(0.5, 0.92,
+            "갈수기 변화 폭 ≈ 관측 잡음 → 스킬 하한",
+            transform=ax.transAxes, ha="center", fontsize=10,
+            color=ORANGE, fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.35", fc="#fff4e6", ec=ORANGE, lw=1.2))
+    ax.text(0.5, 0.02,
+            "홍수기엔 변화가 잡음을 압도 → skill 상승 예상 (별도 검증)",
+            transform=ax.transAxes, ha="center", fontsize=9, color=GRAY,
+            style="italic")
+    # 아래 legend
+    ax.text(0.5, -0.28, f"방향 일치율 {wl_sign*100:.1f}% (56/64)",
+            transform=ax.transAxes, ha="center", fontsize=10,
+            color=TEAL, fontweight="bold")
 
     fig_save(fig, "04_timeseries_predict.png")
 
 
-# ====== 5. 잔차(Residual) 분포 ======
+# ====== 5. GPU vs CPU 추론 성능 비교 (실측) ======
 def make_residual_hist():
-    rng = np.random.default_rng(5)
-    res = rng.normal(0.05, 0.45, 200)
+    """이전 이름은 유지. 내용은 GPU 성능 비교 그래프로 교체.
+    실측: SAR 씬 CPU 499s → GPU 42.8s (약 11.7배)."""
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.2))
 
-    fig, axes = plt.subplots(1, 2, figsize=(12, 4))
-
-    # 좌: 히스토그램
+    # 좌: 막대 - CPU vs GPU
     ax = axes[0]
-    ax.hist(res, bins=24, color=TEAL2, edgecolor=TEAL, alpha=0.85)
-    ax.axvline(0, color=ORANGE, lw=2, linestyle="--", label="이상 (잔차=0)")
-    ax.axvline(res.mean(), color=AMBER, lw=2, label=f"평균  {res.mean():+.3f} m")
-    ax.set_xlabel("잔차 (예측 − 실제, m)")
-    ax.set_ylabel("빈도")
-    ax.set_title("수위 예측 잔차 분포 (Bias 검증)", fontsize=12, color=TEAL)
-    ax.legend(loc="upper right", frameon=False)
+    labels = ["CPU\n(기존)", "GPU\n(신규 지원)"]
+    values = [499.0, 42.8]
+    colors = [GRAY, TEAL]
+    bars = ax.bar(labels, values, color=colors, width=0.5)
+    ax.set_ylabel("SAR 씬당 처리 시간 (초)")
+    ax.set_title("추론 성능 · CPU vs GPU (SAR 1씬 기준)",
+                 fontsize=12, color=TEAL)
+    for b, v in zip(bars, values):
+        ax.text(b.get_x() + b.get_width()/2, v + 12, f"{v:.1f}s",
+                ha="center", fontsize=14, color=NAVY, fontweight="bold")
+    # speedup 화살표
+    ax.annotate("", xy=(1, 60), xytext=(0, 470),
+                arrowprops=dict(arrowstyle="->", color=ORANGE, lw=2.5))
+    ax.text(0.5, 260, "× 11.7 배 가속",
+            ha="center", fontsize=13, color=ORANGE, fontweight="bold",
+            bbox=dict(boxstyle="round,pad=0.4", fc="white", ec=ORANGE, lw=1.5))
+    ax.set_ylim(0, 560)
 
-    # 우: QQ-plot 모사
+    # 우: 처리량 비교 (씬/시간)
     ax = axes[1]
-    sorted_res = np.sort(res)
-    theoretical = np.linspace(-2.5, 2.5, len(res)) * res.std() + res.mean()
-    ax.scatter(theoretical, sorted_res, c=TEAL, s=22, alpha=0.6)
-    lo = min(theoretical.min(), sorted_res.min()) - 0.1
-    hi = max(theoretical.max(), sorted_res.max()) + 0.1
-    ax.plot([lo, hi], [lo, hi], color=ORANGE, linestyle="--", lw=2,
-            label="이상 (정규 분포)")
-    ax.set_xlabel("이론 분위수")
-    ax.set_ylabel("관측 분위수")
-    ax.set_title("Q-Q Plot · 정규성 검증", fontsize=12, color=TEAL)
-    ax.legend(loc="upper left", frameon=False)
-    ax.set_xlim(lo, hi); ax.set_ylim(lo, hi)
+    scenes_per_hour = [3600 / 499.0, 3600 / 42.8]
+    bars = ax.bar(labels, scenes_per_hour, color=colors, width=0.5)
+    ax.set_ylabel("시간당 처리 씬 수")
+    ax.set_title("처리량 · SAR 씬/시간",
+                 fontsize=12, color=TEAL)
+    for b, v in zip(bars, scenes_per_hour):
+        ax.text(b.get_x() + b.get_width()/2, v + 2, f"{v:.1f}",
+                ha="center", fontsize=14, color=NAVY, fontweight="bold")
+    ax.text(0.5, 0.02,
+            "※ 공유 GPU 3GB 여유 조건 · 광학 모델은 VRAM 부족 시 CPU 자동 폴백",
+            transform=ax.transAxes, ha="center", fontsize=8, color=GRAY,
+            style="italic")
+    ax.set_ylim(0, max(scenes_per_hour) * 1.2)
 
     fig_save(fig, "05_residual_qq.png")
 

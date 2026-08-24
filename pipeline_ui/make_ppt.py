@@ -479,22 +479,23 @@ def slide_step2(prs):
                  "센서별 가중치 분리 학습 · 공통 추론 코드"],
                 size=11, spacing=7)
 
-    # 좌측 하단: 성능 메트릭
+    # 좌측 하단: 실측 성능 (배포 프로토콜)
     add_text(slide, Inches(0.5), Inches(4.55), Inches(6), Inches(0.4),
-             "■ 검증 성능 (water class)", size=14, bold=True, color=TEAL_DK)
+             "■ 실측 성능 · 배포 프로토콜 (Busan 4씬 평균)",
+             size=14, bold=True, color=TEAL_DK)
     metrics = [
-        ("IoU", "0.84", TEAL),
-        ("Precision", "0.86", TEAL),
-        ("Recall", "0.97", AMBER),
-        ("F1", "0.91", AMBER),
+        ("SAR IoU\n(ICEYE)", "0.926", TEAL),
+        ("광학 IoU\n(PlanetScope)", "0.942", AMBER),
+        ("SAR F1", "0.962", TEAL),
+        ("광학 F1", "0.970", AMBER),
     ]
     for i, (name, val, color) in enumerate(metrics):
         x = Inches(0.5) + Inches(1.5) * i
-        b = add_rect(slide, x, Inches(5.05), Inches(1.4), Inches(1.1), fill=WHITE, line=color, line_w=1.5)
-        add_text(slide, x, Inches(5.15), Inches(1.4), Inches(0.3),
-                 name, size=10, bold=True, color=GRAY, align=PP_ALIGN.CENTER)
-        add_text(slide, x, Inches(5.45), Inches(1.4), Inches(0.6),
-                 val, size=24, bold=True, color=color, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+        b = add_rect(slide, x, Inches(5.05), Inches(1.4), Inches(1.15), fill=WHITE, line=color, line_w=1.5)
+        add_text(slide, x, Inches(5.1), Inches(1.4), Inches(0.4),
+                 name, size=9, bold=True, color=GRAY, align=PP_ALIGN.CENTER)
+        add_text(slide, x, Inches(5.55), Inches(1.4), Inches(0.6),
+                 val, size=22, bold=True, color=color, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
     # 우측: 실제 데모 스크린샷 (SAR / 마스크 / 오버레이 3패널 + 메트릭)
     add_text(slide, Inches(7), Inches(1.2), Inches(6), Inches(0.4),
@@ -512,11 +513,11 @@ def slide_step2(prs):
 
     # 하단: 산출 메타
     add_text(slide, Inches(7), Inches(5.6), Inches(6), Inches(0.4),
-             "■ 산출물", size=14, bold=True, color=TEAL_DK)
+             "■ 산출물 · 실측 근거", size=14, bold=True, color=TEAL_DK)
     add_bullets(slide, Inches(7), Inches(6.0), Inches(5.9), Inches(1.1),
-                ["GeoTIFF 수체 마스크 (*_SR_label.tif) · 시계열 분석 입력",
-                 "수체 면적 (km²) · 비율 (%) 자동 산출",
-                 "시립대(2세부) 산출물과 동일 포맷 → 호환 검증 완료"],
+                ["WB_*.tif (0=비수체 / 1=수체 / 255=nodata)",
+                 "근거: VALREPORT_Busan_{ICEYE,PlanetScope}.json · GPU 재현",
+                 "씬별 IoU 범위: SAR 0.879~0.961 · 광학 0.932~0.948"],
                 size=10, spacing=3)
     add_footer(slide)
 
@@ -591,8 +592,8 @@ def slide_step3(prs):
 # ========== Slide 7: Step 4 — ConvLSTM 시계열 예측 ==========
 def slide_step4(prs):
     slide = add_blank_slide(prs)
-    add_header_bar(slide, 7, "STEP 4 · 이종 센서 퓨전 보정 (Correct.py)",
-                   "ICEYE(SAR) + PlanetScope(광학) + AWS 60일 기상 → corrected_water_level (CWLWA_*)")
+    add_header_bar(slide, 7, "STEP 4 · 이종 센서 퓨전 보정기 (Correct.py)",
+                   "실측 게이지 기반 상대 보정 위주 · '보정기' 역할 (위성 융합 자체를 향상 주장으로 사용 안 함)")
 
     # 좌측: 입력 데이터 구조
     add_text(slide, Inches(0.5), Inches(1.2), Inches(6), Inches(0.4),
@@ -625,20 +626,23 @@ def slide_step4(prs):
                  v, size=10, color=NAVY)
         y += Inches(0.45)
 
-    # 보정 모드
+    # 보정 모드 + 실측 근거
     add_text(slide, Inches(0.5), Inches(6.0), Inches(6), Inches(0.4),
-             "■ 보정 모드 (실측 유무에 따라)", size=14, bold=True, color=TEAL_DK)
+             "■ 보정 모드 · 실측 근거", size=14, bold=True, color=TEAL_DK)
     risks = [("absolute", "실측 있음", TEAL),
              ("relative", "실측 없음", AMBER),
              ("none", "보정 안 함", GRAY)]
     for i, (lab, rng, color) in enumerate(risks):
         x = Inches(0.5) + Inches(2.0) * i
-        b = add_rect(slide, x, Inches(6.45), Inches(1.9), Inches(0.6),
+        b = add_rect(slide, x, Inches(6.45), Inches(1.9), Inches(0.45),
                      fill=WHITE, line=color, line_w=1.5)
-        add_text(slide, x, Inches(6.48), Inches(1.9), Inches(0.27),
-                 lab, size=11, bold=True, color=color, align=PP_ALIGN.CENTER)
-        add_text(slide, x, Inches(6.72), Inches(1.9), Inches(0.27),
-                 rng, size=9, color=NAVY, align=PP_ALIGN.CENTER)
+        add_text(slide, x, Inches(6.45), Inches(1.9), Inches(0.45),
+                 f"{lab}  ·  {rng}", size=10, bold=True, color=color,
+                 align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    # 실측 성능 (조심스러운 표기)
+    add_text(slide, Inches(0.5), Inches(6.98), Inches(6.5), Inches(0.32),
+             "실측: 융합 LSTM (LODO) RMSE 0.045 m · in-sample 게이지 30 표본",
+             size=9, color=GRAY, bold=True, anchor=MSO_ANCHOR.MIDDLE)
 
     # 우측: 퓨전 흐름도 + 보정 결과 시각화
     add_text(slide, Inches(7), Inches(1.2), Inches(6), Inches(0.4),
@@ -711,11 +715,13 @@ def slide_demo(prs):
                  desc, size=10, bold=is_btn, color=text_c)
         y += Inches(0.5)
 
-    # 하단: 접속 정보
-    add_text(slide, Inches(0.5), Inches(7.0), Inches(12.5), Inches(0.3),
-             "🌐  내부망 http://172.18.10.113:8501    ·    로컬 http://localhost:8501    ·    "
-             "실행: bash run.sh",
+    # 하단: 접속 정보 + ui_next 화면 안내
+    add_text(slide, Inches(0.5), Inches(6.95), Inches(12.5), Inches(0.3),
+             "🌐  pipeline_ui (파이프라인 데모): http://172.18.10.113:8501    ·    실행: bash run.sh",
              size=10, bold=True, color=TEAL_DK)
+    add_text(slide, Inches(0.5), Inches(7.25), Inches(12.5), Inches(0.3),
+             "📊  ui_next '정량 평가' 화면 — 배포/연구/융합 세 계열을 라벨 구분해 표시 (실측 수치 근거)",
+             size=9, color=GRAY, bold=True)
     add_footer(slide)
 
 
@@ -816,7 +822,7 @@ def slide_roadmap(prs):
 def slide_innodep_dev(prs):
     slide = add_blank_slide(prs)
     add_header_bar(slide, 8, "★ 이노뎁 차별 영역 · 시계열 예측 모델",
-                   "4단계 시스템 산출물(WLWA) + 기상청 API → ConvLSTM → 미래 시점 수체/수위 예측")
+                   "IITP 성과지표 정합 MSE 0.135 (목표 0.38 달성) · 수위 RMSE 2.3cm · 광학 면적변화 skill 0.998 (부산 갈수기)")
 
     # ───────── 상단: 입력 → 모델 → 출력 흐름 ─────────
     add_text(slide, Inches(0.4), Inches(1.2), Inches(12.5), Inches(0.4),
@@ -908,89 +914,71 @@ def slide_innodep_dev(prs):
     add_bullets(slide, Inches(8.0), Inches(6.15), Inches(4.8), Inches(1.0),
                 ["Loss: BCE + Dice  ·  Adam(lr=1e-4)",
                  "Mixed precision · Early stop(patience=10)",
-                 "Hold-out 15% + Δt별 정확도 + 잔차 분석"],
+                 "부산 4씬 갈수기 실측 완료 · 확장은 홍수기 후속"],
                 size=10, spacing=2)
 
     add_footer(slide)
 
 
-# ========== Slide B: 이노뎁 — 정확도 시각화 ==========
+# ========== Slide B: 이노뎁 — 실측 정량 성과 ==========
 def slide_innodep_accuracy(prs):
     slide = add_blank_slide(prs)
-    add_header_bar(slide, 9, "이노뎁 · 시계열 예측 정확도 시각화",
-                   "학습곡선 · 1:1 산점도 · Δt별 성능 저하 · 잔차 분포")
+    add_header_bar(slide, 9, "실측 정량 성과 · 성과지표 MSE 0.135 (목표 0.38 달성)",
+                   "부산 4씬 · 2020.02~04 갈수기 · 6개 실측 계열 (G 정합값 + 수체 IoU + 지평 + Δ skill + GPU + 융합)")
 
-    # 상단 좌: 학습곡선
-    add_text(slide, Inches(0.4), Inches(1.2), Inches(6.3), Inches(0.4),
-             "■ 학습 / 검증 곡선 (Loss & IoU)",
-             size=13, bold=True, color=TEAL_DK)
-    if has_chart("01_training_curve.png"):
-        add_chart(slide, "01_training_curve.png",
-                  Inches(0.4), Inches(1.65), Inches(6.4), Inches(2.4))
+    # ───── ★ G 계열 강조 배너 (최상단) ─────
+    g_y = Inches(1.15)
+    g_bg = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
+                                  Inches(0.35), g_y, Inches(12.6), Inches(0.6))
+    g_bg.adjustments[0] = 0.2
+    g_bg.fill.solid(); g_bg.fill.fore_color.rgb = RED
+    g_bg.line.fill.background(); g_bg.shadow.inherit = False
+    add_text(slide, Inches(0.55), g_y, Inches(4.2), Inches(0.6),
+             "★ IITP 성과지표 정합", size=12, bold=True, color=WHITE,
+             anchor=MSO_ANCHOR.MIDDLE)
+    add_text(slide, Inches(4.7), g_y, Inches(4.5), Inches(0.6),
+             "종합 MSE = 0.135", size=18, bold=True, color=AMBER,
+             align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
+    add_text(slide, Inches(9.2), g_y, Inches(3.7), Inches(0.6),
+             "(목표 0.38 → 달성 ✓)", size=13, bold=True, color=WHITE,
+             align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
 
-    # 상단 우: 1:1 산점도
-    add_text(slide, Inches(7.0), Inches(1.2), Inches(6), Inches(0.4),
-             "■ 1:1 산점도 · 수위 예측 회귀 정확도",
-             size=13, bold=True, color=TEAL_DK)
+    # ───── ① 수체 IoU (배포 프로토콜) ─────
+    add_text(slide, Inches(0.35), Inches(1.85), Inches(12.6), Inches(0.26),
+             "■ ① 수체 분할 정확도 · 배포 프로토콜 (VALREPORT_Busan_*.json)",
+             size=10, bold=True, color=TEAL_DK)
     if has_chart("02_scatter_water_level.png"):
         add_chart(slide, "02_scatter_water_level.png",
-                  Inches(7.0), Inches(1.65), Inches(2.7), Inches(2.4))
-    # 산점도 옆: 메트릭 요약
-    mbox = add_rect(slide, Inches(9.9), Inches(1.65), Inches(3.0), Inches(2.4),
-                    fill=BG_CARD, line=TEAL, line_w=1.5)
-    add_text(slide, Inches(10.0), Inches(1.75), Inches(2.8), Inches(0.35),
-             "회귀 메트릭 (수위)", size=11, bold=True, color=TEAL_DK)
-    metric_rows = [
-        ("MAE", "0.365 m", TEAL),
-        ("RMSE", "0.476 m", TEAL),
-        ("MAPE", "5.8 %", AMBER),
-        ("R²", "0.973", ORANGE),
-    ]
-    yy = Inches(2.15)
-    for k, v, c in metric_rows:
-        add_rect(slide, Inches(10.0), yy, Inches(2.8), Inches(0.42),
-                 fill=WHITE, line=c, line_w=1)
-        add_text(slide, Inches(10.15), yy + Inches(0.08), Inches(1.4), Inches(0.3),
-                 k, size=11, bold=True, color=GRAY)
-        add_text(slide, Inches(11.5), yy + Inches(0.08), Inches(1.2), Inches(0.3),
-                 v, size=13, bold=True, color=c, align=PP_ALIGN.RIGHT)
-        yy += Inches(0.47)
+                  Inches(0.35), Inches(2.13), Inches(12.6), Inches(1.35))
 
-    # 하단 좌: Δt별 성능
-    add_text(slide, Inches(0.4), Inches(4.2), Inches(12.5), Inches(0.4),
-             "■ 예측 시점(Δt)별 정확도 저하 — 마스크 IoU/Dice & 수위 MAE",
-             size=13, bold=True, color=TEAL_DK)
+    # ───── ② 시계열 지평별 (99쌍 + 12쌍 IoU) ─────
+    add_text(slide, Inches(0.35), Inches(3.58), Inches(12.6), Inches(0.26),
+             "■ ② 시계열 지평별 실측 (persistence 99쌍 · IoU 12쌍)",
+             size=10, bold=True, color=TEAL_DK)
     if has_chart("03_horizon_metrics.png"):
         add_chart(slide, "03_horizon_metrics.png",
-                  Inches(0.4), Inches(4.65), Inches(8.6), Inches(2.3))
+                  Inches(0.35), Inches(3.86), Inches(12.6), Inches(1.35))
 
-    # 하단 우: 잔차 분포 (좁게)
-    add_text(slide, Inches(9.2), Inches(4.2), Inches(4), Inches(0.4),
-             "■ 잔차 분석 (Bias 검증)",
-             size=13, bold=True, color=TEAL_DK)
-    if has_chart("05_residual_qq.png"):
-        add_chart(slide, "05_residual_qq.png",
-                  Inches(9.2), Inches(4.65), Inches(3.7), Inches(1.8))
-    add_text(slide, Inches(9.2), Inches(6.5), Inches(3.7), Inches(0.4),
-             "평균 잔차 +0.05 m · 편향 없음",
-             size=10, color=ORANGE, bold=True)
-    add_text(slide, Inches(9.2), Inches(6.78), Inches(3.7), Inches(0.4),
-             "정규성 확보 → 모델 가정 만족",
-             size=9, color=GRAY)
+    # ───── ③ 변화량(Δ) 예측 skill — F 계열 (G의 구성 요소) ─────
+    add_text(slide, Inches(0.35), Inches(5.31), Inches(12.6), Inches(0.26),
+             "■ ③ 변화량(Δ) skill · G 정합값 구성: 수위변화 0.00039 + 수체면적 0.27014",
+             size=10, bold=True, color=RED)
+    if has_chart("04_timeseries_predict.png"):
+        add_chart(slide, "04_timeseries_predict.png",
+                  Inches(0.35), Inches(5.59), Inches(12.6), Inches(1.35))
 
-    # ───────── 결과 한 줄 요약 (강조 띠) ─────────
-    sum_y = Inches(7.0)
-    sum_bg = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE,
-                                    Inches(0.4), sum_y, Inches(8.6), Inches(0.45))
-    sum_bg.adjustments[0] = 0.25
-    sum_bg.fill.solid(); sum_bg.fill.fore_color.rgb = AMBER
-    sum_bg.line.fill.background(); sum_bg.shadow.inherit = False
-    add_text(slide, Inches(0.55), sum_y, Inches(1.3), Inches(0.45),
-             "✓ 결과 요약", size=11, bold=True, color=NAVY,
-             anchor=MSO_ANCHOR.MIDDLE)
-    add_text(slide, Inches(1.85), sum_y, Inches(7.0), Inches(0.45),
-             "수위 R² 0.97 · MAE 36 cm · 단기(11~22일) IoU 0.86 · 장기(55일) IoU 0.62 유지",
-             size=11, bold=True, color=NAVY, anchor=MSO_ANCHOR.MIDDLE)
+    # ───── ④·⑤ 하단 카드 (GPU + 융합) ─────
+    gbox = add_rect(slide, Inches(0.35), Inches(7.02), Inches(6.15), Inches(0.35),
+                    fill=BG_CARD, line=TEAL, line_w=1.2)
+    add_text(slide, Inches(0.45), Inches(7.02), Inches(6.0), Inches(0.35),
+             "④ GPU 42.8s/씬 (×11.7 가속) — 씬당 1분 미만",
+             size=10, bold=True, color=NAVY, anchor=MSO_ANCHOR.MIDDLE)
+
+    fbox = add_rect(slide, Inches(6.75), Inches(7.02), Inches(6.15), Inches(0.35),
+                    fill=BG_CARD, line=ORANGE, line_w=1.2)
+    add_text(slide, Inches(6.85), Inches(7.02), Inches(6.0), Inches(0.35),
+             "⑤ 융합 LSTM LODO 0.045m — '보정기' 역할",
+             size=10, bold=True, color=NAVY, anchor=MSO_ANCHOR.MIDDLE)
 
     add_footer(slide)
 
