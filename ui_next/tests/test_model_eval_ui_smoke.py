@@ -5,6 +5,8 @@ from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
 
+from ui_next.state import phase_index
+
 from ui_next.model_eval import GAUGE_CSV_PATH, WEATHER_CSV_PATH
 
 APP_PATH = Path(__file__).resolve().parents[1] / "app.py"
@@ -16,7 +18,7 @@ APP_PATH = Path(__file__).resolve().parents[1] / "app.py"
 )
 def test_model_eval_phase_renders_all_three_panels_with_series_labels() -> None:
     app = AppTest.from_file(str(APP_PATH), default_timeout=20)
-    app.session_state["phase"] = 4  # 정량 평가
+    app.session_state["phase"] = phase_index("정량 평가")
 
     app.run(timeout=20)
 

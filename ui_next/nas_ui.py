@@ -1173,7 +1173,7 @@ def render_nas_catalog(
             else f"{sample.display_name} 마스크를 불러왔지만 ASOS 관측은 연결되지 않았습니다. "
             "기상 단계에서 입력을 확인하세요."
         )
-        go_to_phase(1)
+        go_to_phase("기상")
     if predict_clicked and sample is not None:
         try:
             with st.spinner("NAS 4시점과 날짜·기상을 다중시점 기준선에 전송하는 중입니다..."):

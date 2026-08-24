@@ -303,7 +303,9 @@ def test_recovered_sample_has_exact_provenance_and_forbids_metric_validation() -
     assert sample.weather_rows == ()
     assert sample.water_level_config is None
     assert sample.pixel_area_m2 is None
-    assert sample.recommended_model_id == "persistence"
+    # persistence 는 직전 관측을 그대로 반복해 예측선이 평평하다. 3D 산포 표현이
+    # 무의미해져 화면 권장에서 뺐다(어댑터 자체는 API에 그대로 있다).
+    assert sample.recommended_model_id == "irregular-area-trend"
     assert sample.synthetic_masks is False
     assert sample.derived_demo is True
     assert sample.raw_source_available is False
@@ -351,7 +353,12 @@ def test_nas_busan_sample_uses_manifest_assets_and_keeps_missing_levels_null() -
         date(2020, 4, 17),
     )
     assert sample.historical_water_levels_m == (None, None, None, None)
-    assert sample.water_level_config is None
+    # 수위 계수는 김해 게이지 관측 8쌍(r=+0.919)에서 잰 실측값이라 measured=True 다.
+    # illustrative=False 이므로 가짜 정답 수위는 생기지 않고 예측 수위만 산출된다 —
+    # 이 구분이 깨지면 실자료 평가가 위조된 정답과 비교된다.
+    config = sample.water_level_config
+    assert config is not None and config.measured and not config.illustrative
+    assert sample.synthetic_reference_levels(30) == ()
     assert sample.synthetic_reference_levels(30) == ()
     assert sample.weather_rows == ()
     assert sample.forecast_weather_payload(30) == ()

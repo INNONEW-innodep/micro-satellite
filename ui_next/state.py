@@ -15,6 +15,32 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 
+PHASES: tuple[tuple[str, str, str], ...] = (
+    ("따라하기", "샘플→탐지→수위→예측 한 번에", ":material/school:"),
+    ("데이터", "마스크·날짜·빠른 테스트", ":material/database:"),
+    ("기상", "ASOS 관측·시나리오", ":material/cloud:"),
+    ("예측 실행", "모델 선택·실행", ":material/model_training:"),
+    ("결과", "마스크·면적·수위", ":material/monitoring:"),
+    ("정량 평가", "실모델 검증·실측 수위·기상", ":material/fact_check:"),
+    ("이해 가이드", "원천자료·모델·메뉴 설명", ":material/menu_book:"),
+    ("API 가이드", "연계 명세·예제", ":material/api:"),
+)
+
+
+def phase_index(title: str) -> int:
+    """제목으로 워크플로 단계 번호를 찾는다.
+
+    번호를 코드나 테스트에 직접 적으면 단계를 하나 끼워 넣을 때마다 모든 이동이
+    조용히 한 칸씩 어긋난다. 제목은 화면에 보이는 값이라 바뀌면 바로 드러난다.
+    Streamlit 의존이 없는 이 모듈에 두어야 테스트에서도 그대로 쓸 수 있다.
+    """
+
+    for index, (name, _subtitle, _icon) in enumerate(PHASES):
+        if name == title:
+            return index
+    raise KeyError(f"unknown workflow phase: {title!r}")
+
+
 FINGERPRINTS_KEY = "_config_fingerprints"
 
 # A changed upstream configuration removes only artifacts derived from it.
@@ -327,3 +353,23 @@ def openapi_operation_rows(spec: Mapping[str, Any]) -> list[dict[str, str]]:
                 }
             )
     return sorted(rows, key=lambda row: (row["path"], row["method"]))
+
+
+# 예측선이 평평해 3D 표현이 의미를 잃는 기준선. API에는 그대로 남기고 화면
+# 선택지에서만 감춘다 — 기존 연동이 model_id로 계속 호출할 수 있어야 한다.
+HIDDEN_MODEL_IDS: frozenset[str] = frozenset({"persistence"})
+
+
+def selectable_models(models: Sequence[Mapping[str, Any]]) -> list[Mapping[str, Any]]:
+    """화면에서 고를 수 있는 모델만 남긴다.
+
+    전부 걸러지면 숨김 규칙을 무시하고 원본을 돌려준다. 고를 모델이 하나도 없는
+    화면보다는 감춰야 할 모델이라도 보이는 편이 낫다.
+    """
+
+    visible = [
+        model
+        for model in models
+        if str(model.get("id") or model.get("model_id") or "") not in HIDDEN_MODEL_IDS
+    ]
+    return visible or list(models)

@@ -25,7 +25,7 @@ if str(MODULE_DIR) not in sys.path:
 
 from api_client import APIClient, APIError, Endpoints, UploadPart, weather_records
 from crop_ui import render_crop_detection_page
-from eda import render_input_eda, render_result_eda, render_weather_eda
+from eda import axis_range_for, render_input_eda, render_result_eda, render_weather_eda
 from forecast_analysis import (
     cumulative_rmse,
     forecast_window_options,
@@ -45,19 +45,20 @@ from state import (
     fingerprint,
     normalize_weather_rows,
     openapi_operation_rows,
+    PHASES,
+    selectable_models,
+    phase_index,
     validate_input_rows,
 )
 from theme import compact_header_html, inject_theme, transition_overlay_html
+from walkthrough import render_walkthrough_phase
 
-PHASES = (
-    ("데이터", "마스크·날짜·빠른 테스트", ":material/database:"),
-    ("기상", "ASOS 관측·시나리오", ":material/cloud:"),
-    ("예측 실행", "모델 선택·실행", ":material/model_training:"),
-    ("결과", "마스크·면적·수위", ":material/monitoring:"),
-    ("정량 평가", "실모델 검증·실측 수위·기상", ":material/fact_check:"),
-    ("이해 가이드", "원천자료·모델·메뉴 설명", ":material/menu_book:"),
-    ("API 가이드", "연계 명세·예제", ":material/api:"),
-)
+
+PHASE_LOCK_REASONS = {
+    "기상": "데이터 단계에서 입력 마스크를 먼저 불러오세요.",
+    "예측 실행": "데이터와 기상 입력을 먼저 확정하세요.",
+    "결과": "예측을 한 번 실행하면 열립니다.",
+}
 
 SERVICE_MODES = ("수체 시계열 예측", "작물 탐지")
 SERVICE_MODE_LABELS = {
@@ -236,7 +237,7 @@ def render_sidebar() -> None:
                     st.session_state.pop("prediction_context", None)
                     st.session_state.artifact_cache = {}
                     st.session_state.pop("bundle_cache", None)
-                    go_to_phase(3)
+                    go_to_phase(phase_index("결과"))
                 except APIError as exc:
                     st.error(format_api_error(exc))
         if not recent:
@@ -244,6 +245,25 @@ def render_sidebar() -> None:
                 st.caption(st.session_state.recent_predictions_error)
             else:
                 st.caption("저장된 실행이 없습니다.")
+
+
+def current_phase() -> int:
+    """현재 단계 번호. 값이 깨져 있으면 첫 화면으로 되돌린다.
+
+    session_state에 잘못된 값이 한 번 들어가면 헤더가 매 렌더마다 죽어 새로고침
+    해도 복구되지 않는다. 여기서 걸러 내면 최악이라도 첫 화면이다.
+    """
+
+    raw = st.session_state.get("phase", 0)
+    try:
+        index = int(raw)
+    except (TypeError, ValueError):
+        index = 0
+    if not 0 <= index < len(PHASES):
+        index = 0
+    if index != raw:
+        st.session_state.phase = index
+    return index
 
 
 def render_header() -> None:
@@ -257,7 +277,7 @@ def render_header() -> None:
             unsafe_allow_html=True,
         )
         return
-    phase = int(st.session_state.get("phase", 0))
+    phase = current_phase()
     phase_title = PHASES[phase][0]
     health = st.session_state.get("connection_status") or {}
     connected = str(health.get("status", "")).lower() in {"ok", "healthy", "ready"}
@@ -310,6 +330,7 @@ def render_phase_navigation() -> None:
         st.session_state.phase = 0
     readiness = (
         True,
+        True,
         bool(st.session_state.get("input_bundle")),
         bool(st.session_state.get("input_bundle") and st.session_state.get("weather_confirmed")),
         bool(st.session_state.get("prediction_result")),
@@ -326,11 +347,25 @@ def render_phase_navigation() -> None:
                 key=f"phase_button_{index}",
                 disabled=not readiness[index],
                 width="stretch",
-                type="primary" if st.session_state.phase == index else "secondary",
+                type="primary" if current_phase() == index else "secondary",
                 icon=icon,
-                help=subtitle,
+                help=(subtitle if readiness[index] else PHASE_LOCK_REASONS.get(title, subtitle)),
             ):
                 go_to_phase(index)
+    # 잠긴 단계를 회색 버튼으로만 두면 "고장난 화면"으로 읽힌다. 무엇을 하면
+    # 열리는지 한 줄로 알려 준다.
+    locked = [
+        title
+        for index, (title, _sub, _icon) in enumerate(PHASES)
+        if not readiness[index]
+    ]
+    if locked:
+        first = locked[0]
+        st.caption(
+            f"🔒 {' · '.join(locked)} 단계는 아직 잠겨 있습니다 — "
+            f"{PHASE_LOCK_REASONS.get(first, '앞 단계를 먼저 완료하세요.')} "
+            "처음이시면 **따라하기** 탭에서 순서대로 진행하세요."
+        )
     st.markdown('<div class="wc-divider"></div>', unsafe_allow_html=True)
 
 
@@ -388,9 +423,19 @@ def handoff_template_zip() -> bytes:
 
 
 def go_to_phase(index: int) -> None:
-    st.session_state.phase = index
-    st.session_state.transition_phase = index
+    st.session_state.phase = int(index)
+    st.session_state.transition_phase = int(index)
     st.rerun()
+
+
+def go_to_named_phase(title: str) -> None:
+    """제목으로 단계를 이동한다. 다른 모듈에는 이쪽만 넘긴다.
+
+    번호를 받는 ``go_to_phase``를 그대로 넘기면 호출부가 제목을 주는 순간
+    session_state에 문자열이 들어가 헤더 렌더에서 앱 전체가 죽는다.
+    """
+
+    go_to_phase(phase_index(title))
 
 
 def activate_sample(sample: SampleDataset, forecast_days: int = 30) -> None:
@@ -452,8 +497,15 @@ def activate_sample(sample: SampleDataset, forecast_days: int = 30) -> None:
     st.session_state.active_sample_disclaimer = sample.disclaimer_ko
 
 
-def execute_quick_sample(sample: SampleDataset, forecast_days: int = 30) -> None:
-    """Run a catalog item through the live multipart prediction endpoint."""
+def execute_quick_sample(
+    sample: SampleDataset, forecast_days: int = 30, *, navigate: bool = True
+) -> None:
+    """Run a catalog item through the live multipart prediction endpoint.
+
+    ``navigate=False`` keeps the caller on its own screen. The redirect ends the
+    script run via ``st.rerun()``, so a caller that needs to draw anything after
+    the prediction (the guided walkthrough finishes its last step) must opt out.
+    """
 
     activate_sample(sample, forecast_days)
     client = api_client()
@@ -571,7 +623,8 @@ def execute_quick_sample(sample: SampleDataset, forecast_days: int = 30) -> None
     st.session_state.artifact_cache = {}
     st.session_state.pop("bundle_cache", None)
     st.session_state.pop("recent_predictions", None)
-    go_to_phase(3)
+    if navigate:
+        go_to_phase(phase_index("결과"))
 
 
 def sample_label(sample: SampleDataset) -> str:
@@ -659,7 +712,7 @@ def render_sample_catalog() -> None:
         st.session_state.sample_loaded_toast = (
             "입력과 기상 시나리오를 불러왔습니다. 기상 단계에서 전송값을 검토하세요."
         )
-        go_to_phase(1)
+        go_to_phase(phase_index("기상"))
     if actions[1].button(
         "선택 샘플로 바로 예측",
         type="primary",
@@ -865,7 +918,7 @@ def render_direct_upload() -> None:
         st.session_state.pop("active_sample_id", None)
         st.session_state.pop("active_sample_metadata", None)
         st.session_state.pop("active_sample_disclaimer", None)
-        go_to_phase(1)
+        go_to_phase(phase_index("기상"))
 
 
 def render_input_phase() -> None:
@@ -886,7 +939,7 @@ def render_input_phase() -> None:
         render_nas_catalog(
             activate_sample=activate_sample,
             execute_quick_sample=execute_quick_sample,
-            go_to_phase=go_to_phase,
+            go_to_phase=go_to_named_phase,
             format_api_error=format_api_error,
         )
     elif mode == "빠른 테스트":
@@ -1155,7 +1208,7 @@ def render_weather_phase() -> None:
         sync_config("weather_data", [])
         st.session_state.weather_data = []
         st.session_state.weather_confirmed = True
-        go_to_phase(2)
+        go_to_phase(phase_index("예측 실행"))
 
     if utility_buttons[1].button(
         "관측소 목록 새로고침",
@@ -1372,7 +1425,7 @@ def render_weather_phase() -> None:
         st.session_state.weather_confirmed = True
         if changed:
             st.toast("편집한 기상 데이터가 바뀌어 이전 예측을 초기화했습니다.")
-        go_to_phase(2)
+        go_to_phase(phase_index("예측 실행"))
 
 
 def model_identity(model: Mapping[str, Any]) -> str:
@@ -1418,7 +1471,7 @@ def render_prediction_phase() -> None:
             st.session_state.pop("models_error", None)
         except APIError as exc:
             st.session_state.models_error = format_api_error(exc)
-    models = st.session_state.get("models", [])
+    models = selectable_models(st.session_state.get("models", []))
     if models:
         preferred_model_id: str | None = None
         active_sample_id = st.session_state.get("active_sample_id")
@@ -1794,7 +1847,7 @@ def render_prediction_phase() -> None:
             }
             st.session_state.artifact_cache = {}
             st.session_state.pop("bundle_cache", None)
-            go_to_phase(3)
+            go_to_phase(phase_index("결과"))
         except APIError as exc:
             st.error(format_api_error(exc))
 
@@ -2268,8 +2321,7 @@ def render_prediction_chart(
             mode="lines+markers",
             line={"color": "#38bdf8", "width": 3},
             marker={"size": 10, "color": colors, "line": {"color": "#e0f2fe", "width": 1}},
-            fill="tozeroy",
-            fillcolor="rgba(14,165,233,.12)",
+            fill=None,
             customdata=[[risk_label(value)] for value in frame["risk"]],
             hovertemplate="%{x}<br>" + area_title + ": %{y:,.4f}<br>위험도: %{customdata[0]}<extra></extra>",
         ),
@@ -2300,7 +2352,11 @@ def render_prediction_chart(
         font={"color": "#cbd5e1"},
     )
     figure.update_xaxes(gridcolor="#1e293b", title_text="목표 날짜")
-    figure.update_yaxes(gridcolor="#1e293b", title_text=area_title, secondary_y=False)
+    # 면적은 0에서 멀리 떨어진 값이 좁게 움직인다. 0부터 그리면 평평해 보인다.
+    figure.update_yaxes(
+        gridcolor="#1e293b", title_text=area_title,
+        range=axis_range_for(figure, secondary_y=False), secondary_y=False,
+    )
     figure.update_yaxes(
         gridcolor="#1e293b",
         title_text="수위 (m)" if has_level else "",
@@ -2943,8 +2999,15 @@ def main() -> None:
     render_phase_navigation()
     if st.session_state.get("sample_loaded_toast"):
         st.toast(st.session_state.pop("sample_loaded_toast"))
-    phase = int(st.session_state.phase)
+    phase = current_phase()
     renderers = (
+        lambda: render_walkthrough_phase(
+            activate_sample=activate_sample,
+            execute_quick_sample=execute_quick_sample,
+            go_to_phase=go_to_named_phase,
+            format_api_error=format_api_error,
+            api_error_type=APIError,
+        ),
         render_input_phase,
         render_weather_phase,
         render_prediction_phase,

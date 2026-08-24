@@ -36,6 +36,11 @@ from typing import Any, Literal
 import plotly.graph_objects as go
 
 try:  # package imports used by pytest and other Python callers
+    from .eda import axis_range_for
+except ImportError:  # direct Streamlit execution adds ui_next/ to sys.path
+    from eda import axis_range_for
+
+try:  # package imports used by pytest and other Python callers
     from .nas_catalog import NasDatasetGroup, list_nas_dataset_groups
 except ImportError:  # direct Streamlit execution adds ui_next/ to sys.path
     from nas_catalog import NasDatasetGroup, list_nas_dataset_groups
@@ -1003,8 +1008,9 @@ def build_busan_source_area_figure(
         legend={"orientation": "h", "y": 1.14},
     )
     figure.update_xaxes(title_text="관측 날짜", gridcolor="#1e293b")
+    # 면적·수위는 0에서 시작하면 실제 변동이 선 두께에 묻힌다(축 범위 이슈).
     figure.update_yaxes(
-        title_text="수체 면적 (km²)", gridcolor="#1e293b", rangemode="tozero"
+        title_text="수체 면적 (km²)", gridcolor="#1e293b", range=axis_range_for(figure)
     )
     return figure
 

@@ -1080,9 +1080,60 @@ def build_input_water_figure(summary: InputEDASummary) -> go.Figure | None:
     )
     figure.update_layout(**_DARK_LAYOUT, height=330, title={"text": title, "x": 0.01})
     figure.update_xaxes(title_text="관측 날짜 / 프레임", gridcolor="#1e293b")
-    figure.update_yaxes(title_text=y_title, gridcolor="#1e293b", rangemode="tozero")
+    # 0부터 그리면 안 된다. 수체 면적은 1만 px 근처에서 수백 px씩 움직이는데
+    # 축이 0에서 시작하면 그 변화가 선 두께에 묻혀 "값이 안 변한다"로 보인다.
+    figure.update_yaxes(
+        title_text=y_title, gridcolor="#1e293b", range=padded_range(y)
+    )
     return figure
 
+
+
+def padded_range(
+    values: Sequence[float] | Sequence[int], *, pad_ratio: float = 0.18
+) -> list[float] | None:
+    """데이터 범위에 여백을 붙인 축 범위. 변화가 보이도록 0에서 시작하지 않는다.
+
+    값이 모두 같으면 축이 한 점으로 붕괴하므로 그때만 값 주변으로 넓힌다.
+    """
+
+    numbers = [float(v) for v in values if v is not None]
+    if not numbers:
+        return None
+    low, high = min(numbers), max(numbers)
+    span = high - low
+    if span <= 0:
+        pad = abs(high) * pad_ratio or 1.0
+        return [high - pad, high + pad]
+    pad = span * pad_ratio
+    return [low - pad, high + pad]
+
+
+def axis_range_for(figure, *, secondary_y: bool | None = None, pad_ratio: float = 0.18):
+    """figure 안 trace 들의 y 값에서 축 범위를 만든다.
+
+    면적·수위처럼 0에서 멀리 떨어진 값이 좁은 폭으로 움직이는 계열은 0부터
+    그리면 변화가 보이지 않는다. 해당 축에 실린 trace 만 골라 범위를 잡는다.
+    """
+
+    values: list[float] = []
+    for trace in figure.data:
+        if secondary_y is not None:
+            on_secondary = getattr(trace, "yaxis", "y") == "y2"
+            if on_secondary != secondary_y:
+                continue
+        # numpy 배열에 ``or`` 를 쓰면 truth value 예외가 난다. None 검사만 한다.
+        series = getattr(trace, "y", None)
+        if series is None:
+            continue
+        for item in series:
+            if item is None:
+                continue
+            try:
+                values.append(float(item))
+            except (TypeError, ValueError):
+                continue
+    return padded_range(values, pad_ratio=pad_ratio)
 
 def build_weather_figure(summary: WeatherEDASummary) -> go.Figure | None:
     """Return a dark rainfall + temperature/humidity chart."""

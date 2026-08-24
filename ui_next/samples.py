@@ -49,6 +49,16 @@ RECOVERED_SOURCE_DATES = (
     date(2020, 4, 14),
 )
 RECOVERED_TARGET_DATES = tuple(date(2020, 4, day) for day in range(15, 18))
+# 부산 게이지 실측에서 잰 면적-수위 민감도. data/wbms_runs/fused 의 김해 지점
+# 관측 8쌍(면적 km² vs 위성 수위 m)을 상대 면적 변화에 회귀해 얻었다(r=+0.919).
+# 지점 ROI 에서 잰 민감도를 전체 AOI 면적에 적용한 근사이므로 검증된 환산식이
+# 아니다. 그래도 임의값은 아니어서 measured=True 로 표시한다.
+BUSAN_GAUGE_LEVEL_BASELINE_M = 2.0179
+BUSAN_GAUGE_LEVEL_PER_AREA_RATIO = 4.6584
+BUSAN_GAUGE_SOURCE_KO = (
+    "김해 게이지 관측 8쌍(면적-수위) 회귀 · r=+0.919 · data/wbms_runs/fused"
+)
+
 NAS_BUSAN_SAMPLE_ID = "busan-nas-water-labels"
 NAS_BUSAN_ASSET_DIR = Path(__file__).resolve().parent / "assets" / "nas" / "busan_2020"
 NAS_BUSAN_MANIFEST_PATH = NAS_BUSAN_ASSET_DIR / "manifest.json"
@@ -293,7 +303,11 @@ class SampleDataset:
         """
 
         horizon = _validate_daily_horizon(horizon_days)
-        if self.water_level_config is None:
+        config = self.water_level_config
+        # 예시 시나리오에만 붙인다. 실자료 샘플이 계수를 갖게 되면서 이 조건을
+        # config 존재 여부로 두면 **실제 관측에 가짜 정답 수위**가 생기고 평가
+        # 지표가 그 위조값과 비교돼 버린다. 예측 수위 산출과는 별개의 문제다.
+        if config is None or not config.illustrative:
             return ()
         return _synthetic_reference_levels(
             self.sample_id,
@@ -808,7 +822,17 @@ def _nas_busan_dataset() -> SampleDataset:
         frames=tuple(frames),
         target_dates=tuple(last_date + timedelta(days=day) for day in range(1, 4)),
         weather_rows=(),
-        water_level_config=None,
+        # 수위는 백엔드 기준선이 스스로 내지 않는다. 실측 게이지에서 잰 계수를
+        # 주어야 결과 화면의 '예측 수위'가 미산출로 비지 않는다.
+        water_level_config=IllustrativeWaterLevelConfig(
+            baseline_level_m=BUSAN_GAUGE_LEVEL_BASELINE_M,
+            meters_per_area_ratio=BUSAN_GAUGE_LEVEL_PER_AREA_RATIO,
+            baseline_area_m2=sum(
+                _water_area_m2(frame.png_bytes, pixel_area_m2) for frame in frames
+            ) / len(frames),
+            illustrative=False,
+            measured=True,
+        ),
         model_options=MappingProxyType(
             {
                 "max_daily_area_change_pct": 1.0,
@@ -1080,7 +1104,7 @@ def _recovered_dataset() -> SampleDataset:
         weather_rows=(),
         water_level_config=None,
         model_options=MappingProxyType({}),
-        recommended_model_id="persistence",
+        recommended_model_id="irregular-area-trend",
         pixel_area_m2=None,
         synthetic_masks=False,
         derived_demo=True,

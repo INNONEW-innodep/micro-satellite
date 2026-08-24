@@ -27,6 +27,11 @@ from typing import Any, Final
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+try:  # package imports used by pytest and other Python callers
+    from .eda import axis_range_for
+except ImportError:  # direct Streamlit execution adds ui_next/ to sys.path
+    from eda import axis_range_for
+
 NAS_SOURCE_PROFILE_PATH: Final[Path] = (
     Path(__file__).resolve().parent / "assets" / "nas" / "nas_source_profile.json"
 )
@@ -1212,9 +1217,11 @@ def _university_view(
         secondary_y=True,
     )
     figure.update_yaxes(
-        title_text="수체면적 (km²)", rangemode="tozero", secondary_y=False
+        title_text="수체면적 (km²)", range=axis_range_for(figure, secondary_y=False), secondary_y=False
     )
-    figure.update_yaxes(title_text="수위 (EL.m)", rangemode="tozero", secondary_y=True)
+    figure.update_yaxes(
+        title_text="수위 (EL.m)", range=axis_range_for(figure, secondary_y=True), secondary_y=True
+    )
     _style_figure(
         figure, title="단일시점 보고 결과 · 서로 다른 단위와 지점을 분리해 해석"
     )
