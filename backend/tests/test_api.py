@@ -30,13 +30,17 @@ def test_health_and_models(tmp_path: Path) -> None:
     client = _client(tmp_path)
     health = client.get("/api/v1/health")
     assert health.status_code == 200
-    assert health.json()["models_loaded"] == 3
+    assert health.json()["models_loaded"] == 5
     models = client.get("/api/v1/models").json()
     assert {item["id"] for item in models} == {
+        "gauge-level-forecast",
         "irregular-area-trend",
+        "level-area-bridge",  # 2026-10-15: 면적을 수위 전망에 종속시키는 다리 모델
         "persistence",
         "weather-morphology",
     }
+    gauge = next(item for item in models if item["id"] == "gauge-level-forecast")
+    assert gauge["produces_water_level"] is True
     persistence = next(item for item in models if item["id"] == "persistence")
     assert persistence["produces_water_level"] is True
 

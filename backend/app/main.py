@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import logging
+import os
+
 import json
 from datetime import date
 from typing import Annotated, Any, TypeVar
@@ -23,8 +26,17 @@ from .schemas import (
     WaterLevelConfig,
     WeatherRow,
 )
+from .adapters.gauge_level import GaugeLevelForecastAdapter
 from .adapters.wbms_fusion import WbmsFusionAdapter
 from .adapters.wbms_segmentation import WbmsSegmentationJobAdapter
+from .gauge.forecasters import build_forecaster_registry
+from .gauge.jobs import GaugeTrainJobs
+from .gauge.regions import RegionRegistry
+from .gauge.router import router as gauge_router
+from .gauge.service import GaugeForecastService
+from .segmentation.registry import SegmenterRegistry
+from .segmentation.router import router as segmenters_router
+from .segmentation.wbms_plugin import WbmsDockerSegmenter
 from .services.inputs import UploadedBytes, load_mask_sequence
 from .services.prediction import PredictionService
 from .services.store import ArtifactNotFoundError, FileResultStore, ResultNotFoundError
@@ -36,9 +48,18 @@ from .wbms.runner import DockerRunner
 T = TypeVar("T")
 
 
+def _ensure_logging() -> None:
+    """루트 로거에 핸들러가 없으면(uvicorn 은 자기 로거만 꾸민다) 시각·수준·이름이 붙는 핸들러를 하나 단다 — 오류 로그가 컨테이너 로그에 남게."""
+
+    root = logging.getLogger()
+    if not root.handlers:
+        logging.basicConfig(level=os.getenv("BACKEND_LOG_LEVEL", "INFO").upper(), format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+
+
 def create_app(
     settings: Settings | None = None, wbms_settings: WbmsSettings | None = None
 ) -> FastAPI:
+    _ensure_logging()
     settings = settings or Settings.from_env()
     wbms_settings = wbms_settings or WbmsSettings.from_env()
     registry = build_registry(settings.predictor_plugins)
@@ -52,7 +73,7 @@ def create_app(
         description=SERVICE_DESCRIPTION,
         openapi_tags=[
             {"name": name, "description": TAG_DOCS[name]}
-            for name in ("system", "predictions", "weather", "wbms")
+            for name in ("system", "scenes", "predictions", "weather", "wbms", "regions")
         ],
     )
     app.add_middleware(
@@ -62,16 +83,38 @@ def create_app(
         allow_headers=["*"],
     )
     app.state.settings = settings
+    # 2026-10-20: 오류 응답 통일(한국어 사유·필드별 안내·요청 id·최근 오류 조회) + 오류 로그
+    from .errors import install_error_handlers
+
+    install_error_handlers(app)
     app.state.registry = registry
     app.state.store = store
     app.state.prediction_service = prediction_service
     app.state.wbms_settings = wbms_settings
     app.state.wbms_segmentation = WbmsSegmentationJobAdapter(wbms_settings, wbms_runner)
     app.state.wbms_fusion = WbmsFusionAdapter(wbms_settings, wbms_runner)
+    # 수체 탐지 어댑터 레지스트리 — 인도 WBMS 도커 모델이 첫 내장 어댑터
+    segmenters = SegmenterRegistry()
+    segmenters.register(WbmsDockerSegmenter(app.state.wbms_segmentation))
+    segmenters.load_plugins(settings.segmenter_plugins)
+    app.state.segmenters = segmenters
+    # 지역 레지스트리 + 수위계 시계열 예측기 (플러그인 교체 가능)
+    app.state.regions = RegionRegistry(settings.regions_dir, settings.regions_user_dir)
+    app.state.gauge_forecasters = build_forecaster_registry(settings.gauge_forecaster_plugins)
+    app.state.gauge_service = GaugeForecastService(app.state.regions, app.state.gauge_forecasters)
+    # 백그라운드 학습 잡(async_run=true) — 프로세스 메모리, 작업자 스레드 1개
+    app.state.gauge_train_jobs = GaugeTrainJobs()
+    # 기존 예측 API에서도 학습 수위 모델을 고를 수 있게 한다 — persistence 만 수위를 내던 문제의 해법
+    registry.register(GaugeLevelForecastAdapter(app.state.gauge_service), built_in=True)
+    # 면적을 수위 전망에 종속시키는 다리 모델 (2026-10-15): 면적 = 마지막 탐지 면적 + 기울기 × 수위 변화
+    from .adapters.level_area_bridge import LevelAreaBridgeAdapter
+
+    registry.register(LevelAreaBridgeAdapter(app.state.gauge_service), built_in=True)
 
     @app.get("/", include_in_schema=False)
     async def root() -> RedirectResponse:
-        return RedirectResponse(url="/docs")
+        # 서비스 화면이 정문. API 문서는 /docs, 쉬운 화면 /easy, 모델 평가 /eval.
+        return RedirectResponse(url="/app")
 
     @app.get(
         f"{settings.api_prefix}/health",
@@ -315,6 +358,31 @@ def create_app(
 
     app.include_router(weather_router, prefix=settings.api_prefix)
     app.include_router(wbms_router, prefix=settings.api_prefix)
+    app.include_router(gauge_router, prefix=settings.api_prefix)
+    app.include_router(segmenters_router, prefix=settings.api_prefix)
+    # 쉬운 화면 — 위성 영상 1장을 올려 결과를 받는 단일 페이지 (/easy). 외부 의존 없음.
+    from .easy_ui import mount_easy_ui
+    from .pipeline import install_pipeline
+
+    # 입구 하나짜리 장면 파이프라인 — 등록→탐지→면적→수위→예측→규약 파일·로그 (/api/v1/scenes)
+    install_pipeline(app)
+    # 서비스·평가 화면용 API — 지오메트리·준비상태·WAMIS 지점·수위/기상 수집 잡·장면 재예측 (파이프라인 뒤에)
+    from .screens_api import install_screens_api
+
+    install_screens_api(app)
+    mount_easy_ui(app)
+    # 서비스 화면 (/app) — 자료 넣기·위치 확인 → 탐지 → 시각화 → 예측
+    from .service_ui import mount_service_ui
+
+    mount_service_ui(app)
+    # 모델 평가 화면 (/eval) — 지역 → 수위·기상 자료 수집 → 학습 → 성능 평가 → 시험
+    from .eval_ui import mount_eval_ui
+
+    mount_eval_ui(app)
+    # 간단 화면 /simple — 지역·날짜 고르고 버튼 하나로 그림·수위·면적 (2026-10-15)
+    from .simple_ui import mount_simple_ui
+
+    mount_simple_ui(app)
     return app
 
 

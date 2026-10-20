@@ -179,3 +179,23 @@ class ConvLSTMAdapter(PredictionAdapter):
 직접 수위를 출력하거나 현장 기준으로 보정한 `water_level_config_json`을 제공해야 합니다.
 모델(관측 수위가 있는 persistence 포함)이 수위를 반환하면 그 값이 우선하며, 보정식은 모델
 수위가 없는 경우에만 적용됩니다.
+
+## 지역 레지스트리와 지상 수위계 시계열 예측 (`regions` 태그, 2026-09-08)
+
+위성 관측은 지점당 수 시점뿐이라 시계열 예측을 학습·검증할 표본이 되지 않습니다. 이
+계층은 지역 레지스트리(`regions/<id>/`, 운영 중 추가분은 `REGIONS_USER_DIR`)의 **수위계
+일 시계열**로 지점×예측일수(1..30)마다 모델을 고르고 시험 연도 오차를 보고합니다.
+
+- 규율: 시간 분할 → 검증 연도별 폴드(rolling origin)에서 persistence 대비 MSE 비율 평균이
+  최소인 후보 선택 → 학습+검증 재적합 → **시험 연도**(학습·선택 미사용) 오차 보고 → 전체
+  자료로 배포 파라미터 적합. `persistence`는 skill 기준선일 뿐 후보가 아닙니다.
+- 내장 예측기: `climatology`, `ridge_ar`, `seasonal_anomaly_ar`, `mean_reversion`, `analog_knn`,
+  `ensemble_mean`. 새 모델은 `GaugeForecaster`를 구현해 `GAUGE_FORECASTER_PLUGINS`로 등록합니다.
+- 전망(`GET …/forecast?as_of=`)은 원점까지의 관측만 쓰고, 원점이 시험 연도 안이면 시험을
+  보지 않은 파라미터를 씁니다. 밴드는 검증 잔차의 경험적 산포이지 신뢰구간이 아닙니다.
+- 데이터 입력: `POST /regions`(지역 정의), `POST /regions/{id}/gauge/{지점}/series`(JSON) 또는
+  `…/series/file`(CSV), 그다음 `POST /regions/{id}/gauge/train`.
+
+수체 탐지 쪽은 `GET /segmenters`가 교체 가능한 어댑터(`SegmentationAdapter`,
+`SEGMENTER_PLUGINS`)와 각 어댑터가 받는 센서·테스트베드(`backend/app/wbms/catalog.json`)를
+보여 줍니다. 인도 WBMS 도커 모델이 첫 내장 어댑터입니다.
