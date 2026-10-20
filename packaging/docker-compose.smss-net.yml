@@ -1,0 +1,18 @@
+# 3세부(세명소프트) 컨테이너와 같은 도커 네트워크로 직결할 때만 덧붙이는 오버레이.
+# 세명소프트 연계 목표안: "smss-net 공유 후 서비스명으로 직결. 외부 DNS·프록시 의존 제거"
+#
+#   1) 네트워크가 먼저 있어야 한다(생성 주체는 3세부와 협의):  docker network create smss-net
+#   2) 기동:  docker compose -f docker-compose.yml -f docker-compose.smss-net.yml up -d
+#   3) 3세부 컨테이너에서 우리 API 는  http://watercast:8000/api/v1/...  로 부른다.
+#
+# 네트워크 이름이 다르게 정해지면 SMSS_NET 환경변수로 바꾼다:  SMSS_NET=smss-shared docker compose ...
+networks:
+  smss-net:
+    name: ${SMSS_NET:-smss-net}
+    external: true
+
+services:
+  watercast:
+    networks:
+      - default
+      - smss-net

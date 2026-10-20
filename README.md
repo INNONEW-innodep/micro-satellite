@@ -1,10 +1,25 @@
-# WATERCAST · 수체 시계열 예측 과제용 애플리케이션
+# WATERCAST · 초소형위성 수체·수위 플랫폼
 
-이 저장소의 실행 애플리케이션은 앞단 시스템이 만든 **수체 마스크 시계열**을 받아 미래
-마스크·수체 면적·선택적 수위를 예측하고, 결과 전체를 REST API로 제공하는 구조입니다.
-현재 저장소에는 검증된 학습 가중치가 없으므로 내장 모델은 정확도 모델이 아닌
-`persistence`, `irregular-area-trend`, `weather-morphology` **연동 기준선**입니다. 실제 모델은 어댑터 하나를
-등록해 UI나 API를 바꾸지 않고 교체할 수 있습니다.
+**플랫폼 개념.** 어떤 지역이든 (1) 위성 장면(SAR·광학)이 들어오면 수체를 탐지해 면적과
+위성 수위를 산출하고, (2) 그 지역에 지상 수위계 시계열이 있으면 지점별 수위 예측 모델을
+학습·검증·전망한다. 둘 다 있으면 같은 지점에서 위성 수위와 수위계를 대조한다. 데이터는
+`regions/<id>/`(지역 레지스트리) 또는 `POST /api/v1/regions…`로 들어오고, 모델은 세 종류의
+플러그인 레지스트리로 갈아끼운다.
+
+| 단계 | 입력 구멍 | 교체 가능한 모델 | 지금 들어 있는 것 |
+|---|---|---|---|
+| 수체 탐지 | `data/incoming/handover/05_l1_pre/…` 전처리 장면 + `wbms/catalog.json` 센서·테스트베드 | `SegmentationAdapter` (`SEGMENTER_PLUGINS`) | 인도 WBMS U-Net (도커, 부산 ICEYE 4씬 IoU 0.925~0.962) |
+| 수체 면적 시계열 | 마스크 시퀀스 업로드 `POST /predictions` | `PredictionAdapter` (`PREDICTOR_PLUGINS`) | 기준선 3종 (정확도 주장 없음) |
+| **수위 시계열 예측** | `regions/<id>/gauge/series.json` 또는 `POST /regions/{id}/gauge/{지점}/series` | `GaugeForecaster` (`GAUGE_FORECASTER_PLUGINS`) | 6종 후보를 지점×예측일수마다 검증 연도별 폴드로 선택 — **persistence는 기준선일 뿐 선택되지 않음** |
+
+내장 지역 3개 (자세한 데이터 현황은 [regions/README.md](regions/README.md)):
+- **낙동강 하구(부산·김해)** — ICEYE SAR 4 + PlanetScope 4시점, GT 라벨, WBMS 탐지·위성 수위, WAMIS 수위계 6지점 10개년. 탐지 정확도부터 수위 예측까지 전부 실증. 시험 연도(2024) 36셀 중 34셀이 직전값 유지보다 우수.
+- **금강 대청댐** — PlanetScope 10시점(2019·2022), 위성 수위 3지점(대청댐은 실측 대비 RMSE 0.36 m), WAMIS 수위계 3지점 2019~2024. GT 라벨이 없어 탐지 정확도만 검증 불가. 18/18셀 우수.
+- **한강(대조군)** — 위성 없이 수위계 5지점만. 30/30셀 우수. "시계열만 있어도 예측이 만들어진다"의 증거.
+
+이 저장소의 실행 애플리케이션은 FastAPI + Streamlit(업무 UI `ui_next`)이고, 면적 시계열
+경로의 내장 모델은 `persistence`, `irregular-area-trend`, `weather-morphology` **연동
+기준선**입니다. 실제 모델은 어댑터 하나를 등록해 UI나 API를 바꾸지 않고 교체할 수 있습니다.
 
 ```mermaid
 flowchart LR
@@ -17,6 +32,21 @@ flowchart LR
     F --> G[공통 후처리<br/>면적·선택 수위·위험 규칙]
     G --> H[JSON·CSV·NPY·PNG·TIFF·ZIP]
 ```
+
+## 화면 구성 (2026-09-08 개편)
+
+업무 UI(`ui_next`)는 **쉬운 화면(슬라이드)**이 기본이다. 지역 카드 하나를 고르면 여섯 장을
+순서대로 넘긴다: ① 지역 선택 → ② 데이터 둘러보기 → ③ 위성 수체 탐지(원본·탐지·정답 사진,
+IoU) → ④ 시계열 예측(지점 수위: 모델 선택·과거 원점 검증·기상청 관측 병기 / 수체 면적:
+위성 탐지 마스크 시계열 + 기상) → ⑤ 결과 그래프 → ⑥ 성능 평가(예측일수별 RMSE·MSE·MAE·
+개선율, 백테스트, 탐지 IoU, 지역 비교). 사이드바 **위성 파이프라인(입력→예측)** 모드는 위성 장면 한 장이 전처리·탐지·수위/면적·예측·평가를
+거치는 길을 그대로 보여 주고 맨 아래에서 새 장면을 등록한다. **고급 화면(상세 탭)**으로 바꾸면 기존
+화면 전부(따라하기·데이터 업로드·정량 평가·지역 발표·API 가이드)가 그대로 나온다. 작물 탐지는
+별도 업무 전환으로 유지된다.
+
+지역별 사진·마스크 자산은 `scripts/make_region_scene_assets.py`가 `regions/<id>/satellite/`에
+만들고(`scenes.json` + 퀵룩 PNG + 센서별 공통 격자 마스크), API `GET /regions/{id}/satellite/scenes`가
+서빙한다. 마스크 시계열은 `ui_next/region_samples.py`가 읽어 면적 예측 샘플로 자동 등록한다.
 
 ## 바로 실행
 
@@ -124,6 +154,22 @@ manifest를 다시 읽으며 다음 API로 전체 결과를 가져갈 수 있습
 | `GET` | `/api/v1/predictions/{id}/files` | JSON·CSV·마스크 파일 목록 |
 | `GET` | `/api/v1/predictions/{id}/files/{name}` | 개별 산출물 |
 | `GET` | `/api/v1/predictions/{id}/bundle` | 전체 결과 ZIP |
+| `GET` | `/api/v1/segmenters` | 교체 가능한 수체 탐지 어댑터와 수용 가능한 센서·테스트베드 |
+| `POST` | `/api/v1/wbms/segmentation/jobs` | 인도 WBMS 모델로 장면 탐지(호스트 docker 필요) |
+| `GET` | `/api/v1/regions` | 지역 레지스트리(위성/수위계 보유·지점·학습 상태) |
+| `POST` | `/api/v1/regions/{id}/gauge/{지점}/series` | 지점 수위 시계열 업로드(JSON) — `…/series/file`은 CSV |
+| `POST` | `/api/v1/regions/{id}/gauge/train` | 지점별 수위 예측 모델 학습·선택·평가 |
+| `GET` | `/api/v1/regions/{id}/gauge/evaluation` | 지점×예측일수 오차표(MSE/RMSE/MAE·skill) |
+| `GET` | `/api/v1/regions/{id}/gauge/{지점}/forecast` | 원점 기준 D+1..D+30 전망(+실측 대조) |
+| `GET` | `/api/v1/regions/{id}/gauge/{지점}/backtest` | 시험 연도 백테스트 궤적 |
+| `GET` | `/api/v1/gauge/forecasters` | 교체 가능한 수위 예측기 목록 |
+| `GET` | `/api/v1/regions/{id}/satellite/scenes` | 위성 장면 목록·퀵룩/탐지 오버레이 이미지 URL·마스크 프레임 |
+| `GET` | `/api/v1/regions/{id}/satellite/levels` | 위성 산출 수위와 같은 날 수위계 대조 |
+| `GET` | `/api/v1/regions/{id}/satellite/detection` | 탐지 정확도 기록(씬별 IoU) |
+| `GET` | `/api/v1/regions/{id}/satellite/timeseries` | 위성 기반 수위·면적 시계열 지표(m·cm 병기) |
+| `GET` | `/api/v1/regions/{id}/satellite/area-series` | 공통 격자 기준 수체 면적 시계열(날짜 간 비교 가능) + 기존 씬별 면적 병기 |
+| `POST` | `/api/v1/regions/{id}/satellite/scenes` | 새 위성 장면 등록(전처리 GeoTIFF + 선택 마스크) → 퀵룩·마스크 프레임·예측 샘플 |
+| `GET` | `/api/v1/gauge/model-guide` | 개선율·지표·모델 설명, LSTM 미사용 이유 |
 
 자세한 multipart 필드와 curl 예제는 [백엔드 문서](backend/README.md), 기상 필드와 출처는
 [기상 연동 문서](weather_service/README.md), 화면 사용법은 [UI 문서](ui_next/README.md)에 있습니다.
@@ -148,9 +194,39 @@ U-Net처럼 원천영상 한 장을 0/1 마스크로 바꾸는 모델은 앞단 
 업로드 화면의 **1세부 전달 규격 템플릿 ZIP**에는 `frames.csv`, 좌표·NoData·탐지 모델 계보를
 적는 `metadata.json`, 초보자용 체크리스트가 들어 있습니다.
 
+## 수위 시계열 예측 모델 교체
+
+`GaugeForecaster`를 구현하고 `GAUGE_FORECASTER_PLUGINS='pkg.mod:Class'`로 등록하면 학습 후보에
+들어간다(규약은 `backend/app/gauge/forecasters.py` 머리말). 수체 탐지 모델은 `SegmentationAdapter`를
+구현해 `SEGMENTER_PLUGINS`로 등록하며, 센서·테스트베드 표는 `backend/app/wbms/catalog.json`이
+단일 근거다. 새 지역을 붙이는 절차는 [regions/README.md](regions/README.md)에 있다.
+
+## 발표자료·스크린샷 자동 생성
+
+모든 수치는 `regions/*/models/gauge/evaluation.json`·`satellite/*.json` 등 산출물 파일에서 읽으므로
+재학습 뒤 아래를 다시 실행하면 자료가 갱신된다(python-pptx·Playwright 는 `pipeline_ui/.venv`).
+
+```bash
+# 1) 재학습 (GPU venv, 5 플러그인) → regions/*/models/gauge/
+PYTHONPATH=. python scripts/train_gauge_models.py --plugins "$GAUGE_FORECASTER_PLUGINS"
+# 2) 모델 그림 + 모델 비교 자료 (docs/presentation/수위예측모델_비교.{md,pptx})
+pipeline_ui/.venv/bin/python scripts/make_model_figures.py && pipeline_ui/.venv/bin/python scripts/make_model_presentation.py
+# 3) 화면 스크린샷 33장 → docs/presentation/screens/  (백엔드 18765 + Streamlit 18766 을 먼저 띄운다)
+REGIONS_USER_DIR=/tmp/user_regions GAUGE_FORECASTER_PLUGINS=... uvicorn backend.app.main:app --port 18765 &
+WATER_API_URL=http://127.0.0.1:18765 WATER_UI_STATIC_TABLES=1 streamlit run ui_next/app.py --server.headless true --server.port 18766 &
+pipeline_ui/.venv/bin/python scripts/capture_ui_screens.py --ui http://127.0.0.1:18766
+# 4) 성과 발표자료 (docs/presentation/과제성과_위성수체수위_시계열예측.{md,pptx}, 28장)
+pipeline_ui/.venv/bin/python scripts/make_results_deck.py
+```
+
+`WATER_UI_STATIC_TABLES=1` 은 표를 데이터 그리드 대신 HTML 표(`st.table`)로 그린다 — 캡처·인쇄용이며 발표 화면에서도 쓸 수 있다.
+
 ## 코드 구분
 
 - `backend/`: 실제 실행 FastAPI, 모델 어댑터, 결과 저장/내보내기
+- `backend/app/gauge/`: 지역 레지스트리·수위계 시계열 예측기·학습/평가·API
+- `backend/app/segmentation/`: 수체 탐지 어댑터 레지스트리(WBMS 내장 플러그인)
+- `regions/`: 지역 레지스트리(내장 2개)와 학습 산출물
 - `weather_service/`: 기상청 ASOS 일 관측 클라이언트와 명시적 sample provider
 - `ui_next/`: 백엔드만 호출하는 새 Streamlit 업무 UI
 - `ui_next/crop_detection.py`: 작물/식생 후보 색상지수 기준선과 마스크·오버레이 생성
