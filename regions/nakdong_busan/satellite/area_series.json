@@ -1,0 +1,269 @@
+{
+ "schema": "watercast.satellite.area-series/1",
+ "region_id": "nakdong_busan",
+ "generated_at": "2026-09-15T06:14:07+00:00",
+ "generated_by": "scripts/build_common_frame_area.py",
+ "source_scenes": "satellite/scenes.json",
+ "water_threshold": 127,
+ "sensors": {
+  "ICEYE": {
+   "frame": {
+    "bounds_epsg32652": [
+     479038.7,
+     3847364.7,
+     528783.6,
+     3915252.0
+    ],
+    "width": 469,
+    "height": 640,
+    "pixel_area_m2": 11249.993,
+    "coverage_km2": 3376.8
+   },
+   "common_valid_footprint_km2": 611.8,
+   "n_scenes": 4,
+   "correlations": {
+    "raw_area_vs_footprint_km2": 0.906,
+    "common_frame_area_vs_footprint_km2": 0.8916,
+    "common_valid_area_vs_footprint_km2": -0.1594,
+    "common_frame_area_vs_frame_valid_fraction": -0.2506,
+    "note_ko": "원면적이 촬영범위와 함께 움직이면(상관 높음) 그 계열은 수문 신호가 아니라 촬영 기하를 보고 있는 것이다."
+   },
+   "rows": [
+    {
+     "date": "2020-03-02",
+     "scene_id": "20200302_ICEYE",
+     "area_km2_common_frame": 40.207,
+     "area_km2_scene_footprint": 40.1453,
+     "scene_footprint_km2": 4378.3,
+     "scene_footprint_bounds_epsg32652": [
+      473010.364,
+      3847364.664,
+      531723.364,
+      3921935.664
+     ],
+     "valid_area_km2": 887.01,
+     "frame_valid_fraction": 0.247,
+     "area_km2_common_valid_footprint": 36.259,
+     "gt_area_km2": 39.161,
+     "gauge_levels": {
+      "낙동강하구언(내)": 0.0089,
+      "구포대교": 2.3863,
+      "삼랑진교": 1.6733,
+      "양산교": 0.6325,
+      "호포대교": 1.7779,
+      "정천교": 1.6375
+     }
+    },
+    {
+     "date": "2020-03-30",
+     "scene_id": "20200330_ICEYE",
+     "area_km2_common_frame": 36.607,
+     "area_km2_scene_footprint": 36.4588,
+     "scene_footprint_km2": 3825.1,
+     "scene_footprint_bounds_epsg32652": [
+      476715.62,
+      3842855.282,
+      528783.62,
+      3916319.282
+     ],
+     "valid_area_km2": 885.78,
+     "frame_valid_fraction": 0.2621,
+     "area_km2_common_valid_footprint": 35.854,
+     "gt_area_km2": 35.685,
+     "gauge_levels": {
+      "낙동강하구언(내)": 0.009,
+      "구포대교": 2.4033,
+      "삼랑진교": 1.6808,
+      "양산교": 0.6304,
+      "호포대교": 1.7883,
+      "정천교": 1.5429
+     }
+    },
+    {
+     "date": "2020-04-15",
+     "scene_id": "20200415_ICEYE",
+     "area_km2_common_frame": 36.742,
+     "area_km2_scene_footprint": 36.6266,
+     "scene_footprint_km2": 3585.7,
+     "scene_footprint_bounds_epsg32652": [
+      479038.674,
+      3843692.998,
+      529147.674,
+      3915251.998
+     ],
+     "valid_area_km2": 844.93,
+     "frame_valid_fraction": 0.2502,
+     "area_km2_common_valid_footprint": 36.011,
+     "gt_area_km2": 36.439,
+     "gauge_levels": {
+      "낙동강하구언(내)": 0.0088,
+      "구포대교": 2.3846,
+      "삼랑진교": 1.6642,
+      "양산교": 0.6117,
+      "호포대교": 1.7779,
+      "정천교": 1.5933
+     }
+    },
+    {
+     "date": "2020-04-16",
+     "scene_id": "20200416_ICEYE",
+     "area_km2_common_frame": 39.127,
+     "area_km2_scene_footprint": 39.2184,
+     "scene_footprint_km2": 4540.9,
+     "scene_footprint_bounds_epsg32652": [
+      472996.885,
+      3842770.01,
+      534316.885,
+      3916822.01
+     ],
+     "valid_area_km2": 895.58,
+     "frame_valid_fraction": 0.2644,
+     "area_km2_common_valid_footprint": 35.64,
+     "gt_area_km2": 39.881,
+     "gauge_levels": {
+      "낙동강하구언(내)": 0.0091,
+      "구포대교": 2.4163,
+      "삼랑진교": 1.6996,
+      "양산교": 0.5971,
+      "호포대교": 1.7929,
+      "정천교": 1.5608
+     }
+    }
+   ]
+  },
+  "PlanetScope": {
+   "frame": {
+    "bounds_epsg32652": [
+     480933.0,
+     3888207.0,
+     509310.0,
+     3914898.0
+    ],
+    "width": 640,
+    "height": 602,
+    "pixel_area_m2": 1965.952,
+    "coverage_km2": 757.44
+   },
+   "common_valid_footprint_km2": 460.39,
+   "n_scenes": 4,
+   "correlations": {
+    "raw_area_vs_footprint_km2": -0.3156,
+    "common_frame_area_vs_footprint_km2": 0.5394,
+    "common_valid_area_vs_footprint_km2": -0.89,
+    "common_frame_area_vs_frame_valid_fraction": 0.6005,
+    "note_ko": "원면적이 촬영범위와 함께 움직이면(상관 높음) 그 계열은 수문 신호가 아니라 촬영 기하를 보고 있는 것이다."
+   },
+   "rows": [
+    {
+     "date": "2020-02-18",
+     "scene_id": "20200218_PlanetScope",
+     "area_km2_common_frame": 30.152,
+     "area_km2_scene_footprint": 38.2913,
+     "scene_footprint_km2": 1194.6,
+     "scene_footprint_bounds_epsg32652": [
+      476838.0,
+      3888207.0,
+      509310.0,
+      3924996.0
+     ],
+     "valid_area_km2": 845.16,
+     "frame_valid_fraction": 0.8228,
+     "area_km2_common_valid_footprint": 25.292,
+     "gt_area_km2": 29.084,
+     "gauge_levels": {
+      "낙동강하구언(내)": 0.0091,
+      "구포대교": 2.3938,
+      "삼랑진교": 1.6788,
+      "양산교": 0.6171,
+      "호포대교": 1.7883,
+      "정천교": 1.64
+     }
+    },
+    {
+     "date": "2020-03-12",
+     "scene_id": "20200312_PlanetScope",
+     "area_km2_common_frame": 28.87,
+     "area_km2_scene_footprint": 33.2651,
+     "scene_footprint_km2": 1107.3,
+     "scene_footprint_bounds_epsg32652": [
+      478884.0,
+      3887565.0,
+      509850.0,
+      3923325.0
+     ],
+     "valid_area_km2": 775.66,
+     "frame_valid_fraction": 0.8149,
+     "area_km2_common_valid_footprint": 25.715,
+     "gt_area_km2": 27.458,
+     "gauge_levels": {
+      "낙동강하구언(내)": 0.0089,
+      "구포대교": 2.38,
+      "삼랑진교": 1.6704,
+      "양산교": 0.6617,
+      "호포대교": 1.7717,
+      "정천교": 1.5771
+     }
+    },
+    {
+     "date": "2020-03-25",
+     "scene_id": "20200325_PlanetScope",
+     "area_km2_common_frame": 30.148,
+     "area_km2_scene_footprint": 65.3047,
+     "scene_footprint_km2": 1115.6,
+     "scene_footprint_bounds_epsg32652": [
+      480582.0,
+      3879009.0,
+      511668.0,
+      3914898.0
+     ],
+     "valid_area_km2": 775.55,
+     "frame_valid_fraction": 0.7894,
+     "area_km2_common_valid_footprint": 25.65,
+     "gt_area_km2": 29.993,
+     "gauge_levels": {
+      "낙동강하구언(내)": 0.0089,
+      "구포대교": 2.3904,
+      "삼랑진교": 1.6758,
+      "양산교": 0.6208,
+      "호포대교": 1.7821,
+      "정천교": 1.505
+     }
+    },
+    {
+     "date": "2020-04-14",
+     "scene_id": "20200414_PlanetScope",
+     "area_km2_common_frame": 30.974,
+     "area_km2_scene_footprint": 40.0362,
+     "scene_footprint_km2": 1155.8,
+     "scene_footprint_bounds_epsg32652": [
+      480933.0,
+      3884394.0,
+      512709.0,
+      3920766.0
+     ],
+     "valid_area_km2": 812.62,
+     "frame_valid_fraction": 0.8835,
+     "area_km2_common_valid_footprint": 25.652,
+     "gt_area_km2": 29.544,
+     "gauge_levels": {
+      "낙동강하구언(내)": 0.0089,
+      "구포대교": 2.3904,
+      "삼랑진교": 1.6717,
+      "양산교": 0.6188,
+      "호포대교": 1.7833,
+      "정천교": 1.59
+     }
+    }
+   ]
+  }
+ },
+ "notes_ko": [
+  "area_km2_common_frame 이 시계열로 비교 가능한 면적이다. 센서별 공통 격자(frame.bounds_epsg32652) 라는 '같은 창'으로 모든 날짜를 세기 때문이다.",
+  "area_km2_scene_footprint 은 scenes.json 의 기존 water_area_km2 — 씬마다 자기 촬영범위 안에서 센 값이라 날짜 간 비교에 쓰면 안 된다. 촬영범위가 넓어지거나 옮겨가면 물이 늘지 않아도 면적이 커진다.",
+  "scene_footprint_km2 는 그 씬 원본의 외곽 상자 넓이(km²), valid_area_km2 는 그 안에서 실제 자료가 있는 넓이(km²)다. 두 값이 날짜마다 다르다는 것이 원계열을 못 믿는 이유 그 자체다.",
+  "frame_valid_fraction 은 공통 격자 안에서 그 씬에 실제 자료가 있는 화소 비율이다. 1 보다 작으면 그 날짜의 공통격자 면적도 '덜 본 만큼' 과소평가된다 — 계열 해석 전에 반드시 확인할 것.",
+  "area_km2_common_valid_footprint 는 그 센서 모든 씬의 유효영역 교집합(진짜로 고정된 창)에서 센 면적이다. frame_valid_fraction 이 날짜마다 다를 때는 이 값이 가장 공정한 비교 대상이다.",
+  "gt_area_km2 는 사람이 그린 GT 라벨을 같은 공통 격자로 옮겨(탐지 유효영역으로 한정해) 센 면적이다. 탐지 면적과 GT 면적을 같은 창에서 비교해야 '탐지가 틀렸나, 창이 달랐나'를 가릴 수 있다.",
+  "gauge_levels 는 같은 날짜 지상 수위계(regions/<id>/gauge/series.json) 실측 수위(m)다. 면적과 수위를 같은 행에 두면 면적 변화가 수문학적으로 말이 되는지 바로 확인할 수 있다."
+ ]
+}

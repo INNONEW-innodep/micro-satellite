@@ -1,0 +1,207 @@
+{
+  "schema": "watercast.region/1",
+  "id": "geum_daecheong",
+  "name": "금강 대청댐 (대전·청주)",
+  "description": "대청댐 본댐·조정지댐·방수로. PlanetScope 광학 10시점(2019 봄 5·2022 5월 5)과 WAMIS 수위계 3지점(2019~2024)을 보유. SAR·GT 라벨은 없어 탐지 정확도 검증은 불가하고, 위성 수위와 실측 대조·수위 예측만 실증한다.",
+  "crs": "EPSG:32652",
+  "bbox_wgs84": [
+    127.4,
+    36.4,
+    127.55,
+    36.55
+  ],
+  "weather": {
+    "provider": "KMA_ASOS",
+    "station_id": "133",
+    "station_name": "대전"
+  },
+  "satellite": {
+    "available": true,
+    "sensors": [
+      "PlanetScope"
+    ],
+    "wbms_testbed": "dcd",
+    "scenes": {
+      "PlanetScope": [
+        "2019-03-23",
+        "2019-03-29",
+        "2019-04-03",
+        "2019-04-04",
+        "2019-04-27",
+        "2022-05-14",
+        "2022-05-16",
+        "2022-05-17",
+        "2022-05-22",
+        "2022-05-23"
+      ]
+    },
+    "levels_file": "satellite/levels.json",
+    "gt_labels_available": false,
+    "notes": "WBMS ②③ 만 지원(①④⑤ TESTBED_UNSUPPORTED). 광학 모델은 부산과 공용(WBMS_Optic_PlanetScope.h5). 원본은 04_raw/planet_dcd(1B 비정사) → 정사+대기보정 후 Pre 10씬 동봉.",
+    "scenes_file": "satellite/scenes.json",
+    "locations": {
+      "daecheong": {
+        "name_ko": "대청댐 본댐 저수위 타일(627 m)",
+        "gauge_station": "대청댐",
+        "obscd": "3008110",
+        "river": "금강",
+        "crs": "EPSG:32652",
+        "bbox_epsg32652": [
+          364365.0,
+          4038324.0,
+          364515.0,
+          4038474.0
+        ],
+        "bbox_lonlat": [
+          [
+            127.485863,
+            36.481971
+          ],
+          [
+            127.487537,
+            36.481993
+          ],
+          [
+            127.487564,
+            36.480641
+          ],
+          [
+            127.48589,
+            36.48062
+          ]
+        ],
+        "center_lonlat": [
+          127.486714,
+          36.481306
+        ],
+        "anchor_lonlat": [
+          127.48056,
+          36.47861
+        ],
+        "snap_distance_m": null,
+        "note_ko": "본댐 저수위 — AOI v4(WAMIS 지점좌표 반경 1.5km 실측정합 타일, 지점거리 627 m, LOO 1.20 m)",
+        "source": "aoi_dcd.geojson"
+      },
+      "jojeongji": {
+        "name_ko": "대청조정지댐 타일(750 m)",
+        "gauge_station": "대청조정지댐",
+        "obscd": "3008680",
+        "river": "금강",
+        "crs": "EPSG:32652",
+        "bbox_epsg32652": [
+          361815.0,
+          4035324.0,
+          361965.0,
+          4035474.0
+        ],
+        "bbox_lonlat": [
+          [
+            127.457942,
+            36.454571
+          ],
+          [
+            127.459615,
+            36.454592
+          ],
+          [
+            127.459642,
+            36.453241
+          ],
+          [
+            127.457969,
+            36.453219
+          ]
+        ],
+        "center_lonlat": [
+          127.458792,
+          36.453906
+        ],
+        "anchor_lonlat": [
+          127.45222,
+          36.44972
+        ],
+        "snap_distance_m": null,
+        "note_ko": "대청조정지댐 — AOI v4(지점거리 750 m, LOO 0.19 m)",
+        "source": "aoi_dcd.geojson"
+      },
+      "bangsuro": {
+        "name_ko": "대청댐방수로 타일(269 m)",
+        "gauge_station": "대청댐방수로",
+        "obscd": "3008685",
+        "river": "금강",
+        "crs": "EPSG:32652",
+        "bbox_epsg32652": [
+          363465.0,
+          4037874.0,
+          363615.0,
+          4038024.0
+        ],
+        "bbox_lonlat": [
+          [
+            127.475899,
+            36.477788
+          ],
+          [
+            127.477573,
+            36.477809
+          ],
+          [
+            127.477599,
+            36.476458
+          ],
+          [
+            127.475926,
+            36.476436
+          ]
+        ],
+        "center_lonlat": [
+          127.476749,
+          36.477123
+        ],
+        "anchor_lonlat": [
+          127.47972,
+          36.4775
+        ],
+        "snap_distance_m": null,
+        "note_ko": "대청댐방수로 — AOI v4 지점근접 타일(지점거리 269 m, LOO 0.24 m). 관측변동 0.76 m 로 신호 미약(참고용)",
+        "source": "aoi_dcd.geojson"
+      }
+    },
+    "level_area": {
+      "station": "대청댐",
+      "slope_km2_per_m": 0.47,
+      "source": "NGII 3 m DEM 수위-면적 곡선 73.5~76.5 m 구간(본댐 호수, 공통 격자 안) — scripts/eval_dcd_dem_hypsometry.py",
+      "note_ko": "호수 밑 지형이 없는 DEM 이라 73 m 아래 곡선은 신뢰 불가. 위성 2022-05 5장 적합값(+2.7 km²/m, n=5, 수위폭 0.54 m)과 다르다 — K-water 공식 수위-저수면적 곡선을 받으면 교체."
+    }
+  },
+  "gauge": {
+    "available": true,
+    "series_file": "gauge/series.json",
+    "satellite_location_links": {
+      "대청댐": "daecheong",
+      "대청조정지댐": "jojeongji",
+      "대청댐방수로": "bangsuro"
+    }
+  },
+  "forecast": {
+    "artifacts_dir": "models/gauge",
+    "horizons_report": [
+      1,
+      3,
+      5,
+      7,
+      10,
+      14,
+      30
+    ],
+    "horizon_max": 30,
+    "split": {
+      "train_end": "2020-12-31",
+      "val_start": "2021-01-01",
+      "val_end": "2023-12-31",
+      "test_start": "2024-01-01",
+      "test_end": "2024-12-31"
+    },
+    "split_note": "자료가 2019년부터라 검증 3폴드(2021·2022·2023). 시험 2024."
+  }
+}

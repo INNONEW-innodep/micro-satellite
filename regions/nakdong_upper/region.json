@@ -1,0 +1,49 @@
+{
+  "schema": "watercast.region/1",
+  "id": "nakdong_upper",
+  "name": "낙동강 상류 (안동·상주·구미)",
+  "description": "위성 장면 없이 WAMIS 지상 수위계 10개년(2015~2024) 일 자료만으로 만든 지역. 안동댐 하류 본류(구담교)를 따라 상주보·구미까지, 보(洑)로 조절되는 상류 본류 구간. 위성 장면이 등록되면 탐지·대조 기능이 열린다.",
+  "crs": "EPSG:5186",
+  "bbox_wgs84": [
+    128.1,
+    35.95,
+    128.85,
+    36.6
+  ],
+  "weather": {
+    "provider": "KMA_ASOS",
+    "station_id": "136",
+    "station_name": "안동"
+  },
+  "satellite": {
+    "available": false,
+    "sensors": [],
+    "scenes": {}
+  },
+  "gauge": {
+    "available": true,
+    "series_file": "gauge/series.json",
+    "satellite_location_links": {}
+  },
+  "forecast": {
+    "artifacts_dir": "models/gauge",
+    "horizons_report": [
+      1,
+      3,
+      5,
+      7,
+      10,
+      14,
+      30
+    ],
+    "horizon_max": 30,
+    "split": {
+      "train_end": "2018-12-31",
+      "val_start": "2019-01-01",
+      "val_end": "2023-12-31",
+      "test_start": "2024-01-01",
+      "test_end": "2024-12-31"
+    },
+    "split_note": "검증 2019~2023은 연도별 5폴드 rolling-origin(각 폴드는 그 해 이전 전부로 학습). 시험 2024는 학습·선택에 미사용."
+  }
+}

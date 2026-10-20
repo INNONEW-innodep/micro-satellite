@@ -1,0 +1,381 @@
+{
+ "schema": "watercast.satellite.timeseries-eval/1",
+ "region_id": "nakdong_busan",
+ "source": "data/eval/timeseries_metrics.json (scripts/eval_timeseries_metrics.py, 2026-08-21)",
+ "period_ko": "부산 4지점(정천교·후포·김해·구포) · 2020-02-18~04-16 갈수기 · 위성 8시점(ICEYE 4 + PlanetScope 4)",
+ "units_note_ko": "수위 RMSE/MAE는 m와 cm 병기, MSE는 m²와 cm²(=m²×10⁴) 병기. 면적은 km².",
+ "series": {
+  "A_level_correction": {
+   "label_ko": "위성 수위 당일 보정 정확도 (융합 LSTM, in-sample 30표본)",
+   "warning_ko": "in-sample 30표본 (융합 LSTM 학습표본과 동일) — 일반화 성능 아님. 지점별 R²는 지점 내 변동(수 cm) 대비 지표라 음수가 정상 — RMSE/MAE로 판단",
+   "corrected": {
+    "mse_m2": 0.000686,
+    "mse_cm2": 6.86,
+    "rmse_m": 0.0262,
+    "rmse_cm": 2.62,
+    "mae_m": 0.0216,
+    "mae_cm": 2.16,
+    "bias_m": -0.0096,
+    "bias_cm": -0.96,
+    "max_abs_err_m": 0.0535,
+    "max_abs_err_cm": 5.35,
+    "n": 30,
+    "r2": 0.995,
+    "mape_pct": 1.17
+   },
+   "satellite_debiased": {
+    "mse_m2": 0.003249,
+    "mse_cm2": 32.49,
+    "rmse_m": 0.057,
+    "rmse_cm": 5.7,
+    "mae_m": 0.0336,
+    "mae_cm": 3.36,
+    "bias_m": 0.0,
+    "bias_cm": 0.0,
+    "max_abs_err_m": 0.2348,
+    "max_abs_err_cm": 23.48,
+    "n": 30,
+    "r2": 0.9762,
+    "mape_pct": 2.07
+   },
+   "per_station": {
+    "gimhae": {
+     "corrected": {
+      "mse_m2": 0.000408,
+      "mse_cm2": 4.08,
+      "rmse_m": 0.0202,
+      "rmse_cm": 2.02,
+      "mae_m": 0.0174,
+      "mae_cm": 1.74,
+      "bias_m": 0.0161,
+      "bias_cm": 1.61,
+      "max_abs_err_m": 0.0366,
+      "max_abs_err_cm": 3.66,
+      "n": 8,
+      "r2": -1.1813,
+      "mape_pct": 1.2
+     }
+    },
+    "gupo": {
+     "corrected": {
+      "mse_m2": 0.001327,
+      "mse_cm2": 13.27,
+      "rmse_m": 0.0364,
+      "rmse_cm": 3.64,
+      "mae_m": 0.0355,
+      "mae_cm": 3.55,
+      "bias_m": -0.0355,
+      "bias_cm": -3.55,
+      "max_abs_err_m": 0.0535,
+      "max_abs_err_cm": 5.35,
+      "n": 8,
+      "r2": -13.398,
+      "mape_pct": 1.48
+     }
+    },
+    "hupo": {
+     "corrected": {
+      "mse_m2": 0.00018,
+      "mse_cm2": 1.8,
+      "rmse_m": 0.0134,
+      "rmse_cm": 1.34,
+      "mae_m": 0.0098,
+      "mae_cm": 0.98,
+      "bias_m": -0.0093,
+      "bias_cm": -0.93,
+      "max_abs_err_m": 0.0312,
+      "max_abs_err_cm": 3.12,
+      "n": 8,
+      "r2": -0.479,
+      "mape_pct": 0.55
+     }
+    },
+    "jeongcheon": {
+     "corrected": {
+      "mse_m2": 0.000876,
+      "mse_cm2": 8.76,
+      "rmse_m": 0.0296,
+      "rmse_cm": 2.96,
+      "mae_m": 0.0246,
+      "mae_cm": 2.46,
+      "bias_m": -0.0099,
+      "bias_cm": -0.99,
+      "max_abs_err_m": 0.0464,
+      "max_abs_err_cm": 4.64,
+      "n": 6,
+      "r2": 0.0126,
+      "mape_pct": 1.55
+     }
+    }
+   },
+   "reference_ko": "LODO 0.0453 m / 위성 미사용 0.0199 m (정식 프로토콜, 인수문서)",
+   "lodo_rmse_m": 0.0453,
+   "lodo_rmse_cm": 4.53,
+   "baseline_no_satellite_rmse_m": 0.0199,
+   "baseline_no_satellite_rmse_cm": 1.99
+  },
+  "B_persistence_reference": {
+   "label_ko": "위성 시계열 persistence 참고치 (8시점 불규칙 간격 walk-forward, 예측 모델 아님)",
+   "horizon_days": {
+    "min": 1,
+    "max": 20,
+    "mean": 8.9
+   },
+   "persistence_of_corrected": {
+    "mse_m2": 0.000572,
+    "mse_cm2": 5.72,
+    "rmse_m": 0.0239,
+    "rmse_cm": 2.39,
+    "mae_m": 0.0199,
+    "mae_cm": 1.99,
+    "bias_m": -0.0057,
+    "bias_cm": -0.57,
+    "max_abs_err_m": 0.0495,
+    "max_abs_err_cm": 4.95,
+    "n": 26,
+    "r2": 0.9958,
+    "mape_pct": 1.08
+   },
+   "persistence_of_gauge": {
+    "mse_m2": 0.000374,
+    "mse_cm2": 3.74,
+    "rmse_m": 0.0193,
+    "rmse_cm": 1.93,
+    "mae_m": 0.0129,
+    "mae_cm": 1.29,
+    "bias_m": 0.0044,
+    "bias_cm": 0.44,
+    "max_abs_err_m": 0.05,
+    "max_abs_err_cm": 5.0,
+    "n": 26,
+    "r2": 0.9973,
+    "mape_pct": 0.78
+   }
+  },
+  "E_by_horizon": {
+   "label_ko": "지평별 persistence 오차 (관측쌍 99건)",
+   "n_pairs": 99,
+   "bins": [
+    {
+     "mse_m2": 0.000565,
+     "mse_cm2": 5.65,
+     "rmse_m": 0.0238,
+     "rmse_cm": 2.38,
+     "mae_m": 0.0207,
+     "mae_cm": 2.07,
+     "bias_m": -0.0031,
+     "bias_cm": -0.31,
+     "max_abs_err_m": 0.0362,
+     "max_abs_err_cm": 3.62,
+     "n": 13,
+     "r2": 0.9962,
+     "mape_pct": 1.14,
+     "norm_mse": 0.00058,
+     "horizon": "1~7일"
+    },
+    {
+     "mse_m2": 0.00064,
+     "mse_cm2": 6.4,
+     "rmse_m": 0.0253,
+     "rmse_cm": 2.53,
+     "mae_m": 0.02,
+     "mae_cm": 2.0,
+     "bias_m": -0.0059,
+     "bias_cm": -0.59,
+     "max_abs_err_m": 0.0495,
+     "max_abs_err_cm": 4.95,
+     "n": 12,
+     "r2": 0.9952,
+     "mape_pct": 1.08,
+     "norm_mse": 0.00066,
+     "horizon": "8~14일"
+    },
+    {
+     "mse_m2": 0.000547,
+     "mse_cm2": 5.47,
+     "rmse_m": 0.0234,
+     "rmse_cm": 2.34,
+     "mae_m": 0.0201,
+     "mae_cm": 2.01,
+     "bias_m": -0.0022,
+     "bias_cm": -0.22,
+     "max_abs_err_m": 0.0462,
+     "max_abs_err_cm": 4.62,
+     "n": 34,
+     "r2": 0.9962,
+     "mape_pct": 1.11,
+     "norm_mse": 0.00056,
+     "horizon": "15~28일"
+    },
+    {
+     "mse_m2": 0.000545,
+     "mse_cm2": 5.45,
+     "rmse_m": 0.0233,
+     "rmse_cm": 2.33,
+     "mae_m": 0.0195,
+     "mae_cm": 1.95,
+     "bias_m": 0.0017,
+     "bias_cm": 0.17,
+     "max_abs_err_m": 0.0536,
+     "max_abs_err_cm": 5.36,
+     "n": 40,
+     "r2": 0.9961,
+     "mape_pct": 1.11,
+     "norm_mse": 0.00056,
+     "horizon": "29~58일"
+    }
+   ]
+  },
+  "F_change": {
+   "label_ko": "변화량(Δ) 추적 정확도 — 무변화 기준선 대비 skill",
+   "level": {
+    "mse_m2": 0.000484,
+    "mse_cm2": 4.84,
+    "rmse_m": 0.022,
+    "rmse_cm": 2.2,
+    "mae_m": 0.0155,
+    "mae_cm": 1.55,
+    "n": 99,
+    "skill_vs_no_change": 0.167,
+    "rel_err_pct_of_change": 91.2,
+    "sign_agreement": "56/64"
+   },
+   "area_km2": {
+    "ICEYE": {
+     "n": 6,
+     "mse": 1.376812,
+     "rmse": 1.1734,
+     "mae": 0.9825,
+     "zero_baseline_mse": 9.992787,
+     "skill_vs_no_change": 0.862,
+     "rel_err_pct_of_change": 37.1,
+     "sign_agreement": "5/6",
+     "true_change_rms": 3.1611
+    },
+    "PlanetScope": {
+     "n": 6,
+     "mse": 0.865188,
+     "rmse": 0.9302,
+     "mae": 0.7432,
+     "zero_baseline_mse": 449.021543,
+     "skill_vs_no_change": 0.998,
+     "rel_err_pct_of_change": 4.4,
+     "sign_agreement": "6/6",
+     "true_change_rms": 21.1901
+    }
+   }
+  },
+  "C_area": {
+   "label_ko": "위성 탐지 면적 vs GT 라벨 면적 (씬별)",
+   "per_scene": [
+    {
+     "sensor": "ICEYE",
+     "date": "2020-03-02",
+     "wb_km2": 40.145,
+     "gt_km2": 39.327,
+     "err_km2": 0.818,
+     "abs_pct_err": 2.08
+    },
+    {
+     "sensor": "ICEYE",
+     "date": "2020-03-30",
+     "wb_km2": 36.459,
+     "gt_km2": 35.552,
+     "err_km2": 0.907,
+     "abs_pct_err": 2.55
+    },
+    {
+     "sensor": "ICEYE",
+     "date": "2020-04-15",
+     "wb_km2": 36.627,
+     "gt_km2": 36.298,
+     "err_km2": 0.329,
+     "abs_pct_err": 0.91
+    },
+    {
+     "sensor": "ICEYE",
+     "date": "2020-04-16",
+     "wb_km2": 39.218,
+     "gt_km2": 40.113,
+     "err_km2": -0.895,
+     "abs_pct_err": 2.23
+    },
+    {
+     "sensor": "PlanetScope",
+     "date": "2020-02-18",
+     "wb_km2": 38.291,
+     "gt_km2": 36.957,
+     "err_km2": 1.334,
+     "abs_pct_err": 3.61
+    },
+    {
+     "sensor": "PlanetScope",
+     "date": "2020-03-12",
+     "wb_km2": 33.265,
+     "gt_km2": 31.631,
+     "err_km2": 1.634,
+     "abs_pct_err": 5.17
+    },
+    {
+     "sensor": "PlanetScope",
+     "date": "2020-03-25",
+     "wb_km2": 65.305,
+     "gt_km2": 65.063,
+     "err_km2": 0.242,
+     "abs_pct_err": 0.37
+    },
+    {
+     "sensor": "PlanetScope",
+     "date": "2020-04-14",
+     "wb_km2": 40.036,
+     "gt_km2": 38.419,
+     "err_km2": 1.618,
+     "abs_pct_err": 4.21
+    }
+   ],
+   "summary": {
+    "ICEYE": {
+     "n": 4,
+     "mse_km2sq": 0.6,
+     "mae_km2": 0.737,
+     "mape_pct": 1.94,
+     "bias_km2": 0.29
+    },
+    "PlanetScope": {
+     "n": 4,
+     "mse_km2sq": 1.782,
+     "mae_km2": 1.207,
+     "mape_pct": 3.34,
+     "bias_km2": 1.207
+    }
+   }
+  },
+  "G_iitp": {
+   "label_ko": "IITP 성과지표 정합값 (정규화 MSE, persistence 1-step)",
+   "definition_ko": "변수별 [0,1] min-max 정규화(수위 범위 0.985 m·면적 범위 33.4 km²) 후 persistence 1-step 예측 MSE, 동가중 평균",
+   "level_norm_mse": 0.00039,
+   "area_norm_mse": 0.27014,
+   "composite_norm_mse": 0.13526,
+   "target": 0.38,
+   "achieved": true,
+   "caveat_ko": "면적 정규화 MSE 의 96 % 가 광학 3/25 씬 1건에서 나온다. 그런데 그 '면적 급증(33→65 km²)'은 홍수가 아니라 촬영범위가 03-12 보다 남쪽으로 8.6 km 옮겨가 하구·바다를 담은 결과다. 급증분 +32.04 km² 중 +30.82 km²(96 %)가 공통 격자 밖 남쪽 띠에서 나왔고, 공통 격자 안 변화는 +1.22 km²(28.870→30.148 km², +4.4 %)뿐이다. 그 씬의 GT 라벨도 공통 격자에서 29.993 km² 로 탐지와 일치하므로 탐지 모델은 틀리지 않았다 — 비교 불가능한 계열이 문제였다. 따라서 이 값을 '이벤트 예측(ConvLSTM+기상 융합)의 필요성'의 근거로 인용하지 말 것. n=6(인접 씬쌍)도 병기할 것.",
+   "series_variant_ko": "씬 footprint 계열 — 씬마다 자기 촬영범위에서 센 면적. 공표값이므로 그대로 둔다.",
+   "correction": {
+    "label_ko": "공통 격자 계열로 다시 계산한 값 (정정) — 원래 값은 위에 그대로 둔다",
+    "level_norm_mse": 0.00039,
+    "area_norm_mse": 0.04235,
+    "composite_norm_mse": 0.02137,
+    "target": 0.38,
+    "achieved": true,
+    "definition_ko": "같은 계산식·같은 수위 항. 면적 계열만 센서별 공통 격자(비교 가능한 창)로 바꿔 넣었다(면적 범위 12.4 km²).",
+    "source": "data/eval/timeseries_metrics_common_frame.json · docs/presentation/면적계열_공통격자_정정.md (scripts/eval_timeseries_common_frame.py)"
+   }
+  }
+ },
+ "honesty_ko": [
+  "위성 시계열은 지점당 8시점뿐이라 학습 예측 모델을 만들 수 없다. 여기 지표는 (1) 관측일 보정 정확도, (2) 직전값 유지(persistence) 참고치, (3) 변화 추적 정확도이며, 학습 모델의 '미래 예측 정확도'가 아니다.",
+  "미래 예측 성능은 수위계 10개년으로 학습·시험한 지점별 모델 평가(gauge evaluation)에서 본다.",
+  "in-sample 수치(A)는 대표값으로 인용하지 않는다. 대표는 LODO 4.5 cm와 IITP 정합값 0.135.",
+  "면적 시계열은 공통 격자(regions/<id>/satellite/area_series.json 의 area_km2_common_frame)로만 비교한다. scenes.json 의 water_area_km2 는 씬마다 촬영범위가 달라 계열로 쓰면 안 된다 — 2020-03-25 의 65 km² 가 그 예다."
+ ]
+}

@@ -1,0 +1,49 @@
+{
+  "schema": "watercast.region/1",
+  "id": "han_river",
+  "name": "한강 본류·댐 (대조군)",
+  "description": "위성 자료 없이 지상 수위계 10개년 자료만 있는 지역. '수위 시계열만 있어도 예측 모델이 만들어진다'는 플랫폼 경로를 보여 주는 대조군.",
+  "crs": "EPSG:5186",
+  "bbox_wgs84": [
+    126.9,
+    36.95,
+    128.05,
+    37.6
+  ],
+  "weather": {
+    "provider": "KMA_ASOS",
+    "station_id": "108",
+    "station_name": "서울"
+  },
+  "satellite": {
+    "available": false,
+    "sensors": [],
+    "scenes": {}
+  },
+  "gauge": {
+    "available": true,
+    "series_file": "gauge/series.json",
+    "satellite_location_links": {}
+  },
+  "forecast": {
+    "artifacts_dir": "models/gauge",
+    "horizons_report": [
+      1,
+      3,
+      5,
+      7,
+      10,
+      14,
+      30
+    ],
+    "horizon_max": 30,
+    "split": {
+      "train_end": "2018-12-31",
+      "val_start": "2019-01-01",
+      "val_end": "2023-12-31",
+      "test_start": "2024-01-01",
+      "test_end": "2024-12-31"
+    },
+    "split_note": "검증 2019~2023은 연도별 5폴드 rolling-origin(각 폴드는 그 해 이전 전부로 학습). 시험 2024는 학습·선택에 미사용."
+  }
+}

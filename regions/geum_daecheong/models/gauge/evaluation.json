@@ -1,0 +1,1499 @@
+{
+ "schema": "watercast.gauge.evaluation/1",
+ "region_id": "geum_daecheong",
+ "generated_at": "2026-09-08T11:08:46+00:00",
+ "split": {
+  "train_end": "2020-12-31",
+  "val_start": "2021-01-01",
+  "val_end": "2023-12-31",
+  "test_start": "2024-01-01",
+  "test_end": "2024-12-31"
+ },
+ "n_stations": 3,
+ "rows": [
+  {
+   "station_id": "대청댐",
+   "station_name": "대청댐",
+   "terrain": "reservoir",
+   "horizon": 1,
+   "forecaster_id": "analog_knn",
+   "forecaster_name": "유사사례 k-NN",
+   "hparams": {
+    "p": 7,
+    "k": 20
+   },
+   "val_rmse": 0.20501459536170652,
+   "test_n": 366,
+   "test_mse": 0.11446527833545099,
+   "test_rmse": 0.33832717646599275,
+   "test_mae": 0.08346206284152949,
+   "persistence_test_rmse": 0.3528855124796608,
+   "persistence_test_mse": 0.12452818491803284,
+   "climatology_test_rmse": 2.0660278678914943,
+   "skill_vs_persistence": 0.08080826512652917,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.4147392509278256,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.1470027444071409
+  },
+  {
+   "station_id": "대청댐",
+   "station_name": "대청댐",
+   "terrain": "reservoir",
+   "horizon": 3,
+   "forecaster_id": "analog_knn",
+   "forecaster_name": "유사사례 k-NN",
+   "hparams": {
+    "p": 7,
+    "k": 20
+   },
+   "val_rmse": 0.4917829117086422,
+   "test_n": 366,
+   "test_mse": 0.6581907627946728,
+   "test_rmse": 0.8112895677837062,
+   "test_mae": 0.267547240437159,
+   "persistence_test_rmse": 0.8447423840011044,
+   "persistence_test_mse": 0.7135896953278692,
+   "climatology_test_rmse": 2.0665840883161204,
+   "skill_vs_persistence": 0.07763415432693788,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.4147392509278256,
+   "uses_weather": false,
+   "weather_gain_ratio": 0.09632915687745447
+  },
+  {
+   "station_id": "대청댐",
+   "station_name": "대청댐",
+   "terrain": "reservoir",
+   "horizon": 5,
+   "forecaster_id": "analog_knn",
+   "forecaster_name": "유사사례 k-NN",
+   "hparams": {
+    "p": 7,
+    "k": 20
+   },
+   "val_rmse": 0.6398737762474548,
+   "test_n": 366,
+   "test_mse": 1.1141452901127045,
+   "test_rmse": 1.055530809646362,
+   "test_mae": 0.4042540437158468,
+   "persistence_test_rmse": 1.1271420825168086,
+   "persistence_test_mse": 1.2704492741803282,
+   "climatology_test_rmse": 2.0670674865911316,
+   "skill_vs_persistence": 0.12303048003901484,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.4147392509278256,
+   "uses_weather": false,
+   "weather_gain_ratio": 0.06410150478022802
+  },
+  {
+   "station_id": "대청댐",
+   "station_name": "대청댐",
+   "terrain": "reservoir",
+   "horizon": 7,
+   "forecaster_id": "neural_gru",
+   "forecaster_name": "GRU 순환신경망 (GPU 학습)",
+   "hparams": {
+    "window": 30,
+    "hidden": 64
+   },
+   "val_rmse": 0.7683079168739299,
+   "test_n": 366,
+   "test_mse": 1.424762187156274,
+   "test_rmse": 1.1936340256361135,
+   "test_mae": 0.6166324323907798,
+   "persistence_test_rmse": 1.2502931809840847,
+   "persistence_test_mse": 1.5632330384153013,
+   "climatology_test_rmse": 2.067471258193488,
+   "skill_vs_persistence": 0.0885797880777901,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.4147392509278256,
+   "uses_weather": false,
+   "weather_gain_ratio": 0.035839866723533786
+  },
+  {
+   "station_id": "대청댐",
+   "station_name": "대청댐",
+   "terrain": "reservoir",
+   "horizon": 10,
+   "forecaster_id": "neural_mlp",
+   "forecaster_name": "MLP 신경망 (GPU 학습)",
+   "hparams": {
+    "window": 30,
+    "hidden": 64
+   },
+   "val_rmse": 0.9360002272647631,
+   "test_n": 366,
+   "test_mse": 1.814835202992865,
+   "test_rmse": 1.3471581952365004,
+   "test_mae": 0.795879539313777,
+   "persistence_test_rmse": 1.3597533813379947,
+   "persistence_test_mse": 1.84892925806011,
+   "climatology_test_rmse": 2.067918925194752,
+   "skill_vs_persistence": 0.01843989158515258,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.4147392509278256,
+   "uses_weather": false,
+   "weather_gain_ratio": 0.01548188324275257
+  },
+  {
+   "station_id": "대청댐",
+   "station_name": "대청댐",
+   "terrain": "reservoir",
+   "horizon": 14,
+   "forecaster_id": "neural_gru",
+   "forecaster_name": "GRU 순환신경망 (GPU 학습)",
+   "hparams": {
+    "window": 30,
+    "hidden": 64
+   },
+   "val_rmse": 1.0893367732753791,
+   "test_n": 366,
+   "test_mse": 1.9020896939557534,
+   "test_rmse": 1.3791626785683238,
+   "test_mae": 0.9100379626342037,
+   "persistence_test_rmse": 1.4470948329580102,
+   "persistence_test_mse": 2.0940834555737715,
+   "climatology_test_rmse": 2.0682573647203863,
+   "skill_vs_persistence": 0.09168391121518715,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.4147392509278256,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.01568324297751278
+  },
+  {
+   "station_id": "대청댐",
+   "station_name": "대청댐",
+   "terrain": "reservoir",
+   "horizon": 30,
+   "forecaster_id": "neural_tcn",
+   "forecaster_name": "TCN 시간합성곱 (GPU 학습)",
+   "hparams": {
+    "window": 30,
+    "hidden": 32
+   },
+   "val_rmse": 1.4154219368615872,
+   "test_n": 366,
+   "test_mse": 2.351025705675815,
+   "test_rmse": 1.5333054834819495,
+   "test_mae": 1.0546085727104997,
+   "persistence_test_rmse": 1.6401878613580971,
+   "persistence_test_mse": 2.6902162205464486,
+   "climatology_test_rmse": 2.068791287318367,
+   "skill_vs_persistence": 0.12608299373116394,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.4147392509278256,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.0032778713730957643
+  },
+  {
+   "station_id": "대청댐방수로",
+   "station_name": "대청댐방수로",
+   "terrain": "mainstem",
+   "horizon": 1,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 90
+   },
+   "val_rmse": 0.14268096358100835,
+   "test_n": 366,
+   "test_mse": 0.05059024324169067,
+   "test_rmse": 0.2249227494978902,
+   "test_mae": 0.11032163568969766,
+   "persistence_test_rmse": 0.236963613448058,
+   "persistence_test_mse": 0.05615175409836066,
+   "climatology_test_rmse": 0.3818121119672803,
+   "skill_vs_persistence": 0.09904429426955974,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": -0.1732619998479828,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.05205723727394296
+  },
+  {
+   "station_id": "대청댐방수로",
+   "station_name": "대청댐방수로",
+   "terrain": "mainstem",
+   "horizon": 3,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 90
+   },
+   "val_rmse": 0.23363316734951678,
+   "test_n": 366,
+   "test_mse": 0.10958499656769827,
+   "test_rmse": 0.3310362466070721,
+   "test_mae": 0.1824621416681483,
+   "persistence_test_rmse": 0.38661549501230086,
+   "persistence_test_mse": 0.14947154098360643,
+   "climatology_test_rmse": 0.38180145081400974,
+   "skill_vs_persistence": 0.2668504261977388,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": -0.1732619998479828,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.018658052576790984
+  },
+  {
+   "station_id": "대청댐방수로",
+   "station_name": "대청댐방수로",
+   "terrain": "mainstem",
+   "horizon": 5,
+   "forecaster_id": "ensemble_mean",
+   "forecaster_name": "계열 앙상블 평균",
+   "hparams": {
+    "members": "all"
+   },
+   "val_rmse": 0.2566963383346699,
+   "test_n": 366,
+   "test_mse": 0.14635448455797218,
+   "test_rmse": 0.3825630465138683,
+   "test_mae": 0.21087420553696434,
+   "persistence_test_rmse": 0.4890050789236393,
+   "persistence_test_mse": 0.2391259672131147,
+   "climatology_test_rmse": 0.3817782706969792,
+   "skill_vs_persistence": 0.38796072102224843,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": -0.1732619998479828,
+   "uses_weather": true,
+   "weather_gain_ratio": 0.0032613919241130107
+  },
+  {
+   "station_id": "대청댐방수로",
+   "station_name": "대청댐방수로",
+   "terrain": "mainstem",
+   "horizon": 7,
+   "forecaster_id": "ensemble_mean",
+   "forecaster_name": "계열 앙상블 평균",
+   "hparams": {
+    "members": "linear"
+   },
+   "val_rmse": 0.2710723941485357,
+   "test_n": 366,
+   "test_mse": 0.14705028409756693,
+   "test_rmse": 0.3834713602051227,
+   "test_mae": 0.21996749368163027,
+   "persistence_test_rmse": 0.5264818379422599,
+   "persistence_test_mse": 0.27718312568305997,
+   "climatology_test_rmse": 0.3817412140655682,
+   "skill_vs_persistence": 0.46948327487399466,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": -0.1732619998479828,
+   "uses_weather": true,
+   "weather_gain_ratio": 0.0010197533985361051
+  },
+  {
+   "station_id": "대청댐방수로",
+   "station_name": "대청댐방수로",
+   "terrain": "mainstem",
+   "horizon": 10,
+   "forecaster_id": "ridge_arx",
+   "forecaster_name": "릿지 자기회귀 + 기상 (AR-X)",
+   "hparams": {
+    "p": 7,
+    "lam": 100.0,
+    "mode": "level"
+   },
+   "val_rmse": 0.27753627974161166,
+   "test_n": 366,
+   "test_mse": 0.13632450124282475,
+   "test_rmse": 0.36922147993152393,
+   "test_mae": 0.2352555446364792,
+   "persistence_test_rmse": 0.504579823035174,
+   "persistence_test_mse": 0.25460079781420747,
+   "climatology_test_rmse": 0.38166347912163545,
+   "skill_vs_persistence": 0.46455587565634315,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": -0.1732619998479828,
+   "uses_weather": true,
+   "weather_gain_ratio": 0.005649790166265656
+  },
+  {
+   "station_id": "대청댐방수로",
+   "station_name": "대청댐방수로",
+   "terrain": "mainstem",
+   "horizon": 14,
+   "forecaster_id": "neural_mlp",
+   "forecaster_name": "MLP 신경망 (GPU 학습)",
+   "hparams": {
+    "window": 60,
+    "hidden": 64
+   },
+   "val_rmse": 0.2784981439323799,
+   "test_n": 366,
+   "test_mse": 0.15129675122143327,
+   "test_rmse": 0.38896883065540516,
+   "test_mae": 0.2677626823665787,
+   "persistence_test_rmse": 0.4968080739028723,
+   "persistence_test_mse": 0.2468182622950818,
+   "climatology_test_rmse": 0.381686070088747,
+   "skill_vs_persistence": 0.38701152088757707,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": -0.1732619998479828,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.009645793552576443
+  },
+  {
+   "station_id": "대청댐방수로",
+   "station_name": "대청댐방수로",
+   "terrain": "mainstem",
+   "horizon": 30,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 30
+   },
+   "val_rmse": 0.287001256053862,
+   "test_n": 366,
+   "test_mse": 0.15234103029986426,
+   "test_rmse": 0.3903088908798572,
+   "test_mae": 0.2638400657984985,
+   "persistence_test_rmse": 0.48302033581283416,
+   "persistence_test_mse": 0.23330864480874305,
+   "climatology_test_rmse": 0.38099872072754853,
+   "skill_vs_persistence": 0.3470407818589524,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": -0.1732619998479828,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.058830587269168566
+  },
+  {
+   "station_id": "대청조정지댐",
+   "station_name": "대청조정지댐",
+   "terrain": "reservoir",
+   "horizon": 1,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 90
+   },
+   "val_rmse": 0.17413043057555977,
+   "test_n": 366,
+   "test_mse": 0.052402161647828516,
+   "test_rmse": 0.2289151843976902,
+   "test_mae": 0.11070595467169046,
+   "persistence_test_rmse": 0.24374934619500374,
+   "persistence_test_mse": 0.05941374377049178,
+   "climatology_test_rmse": 0.30251837414478544,
+   "skill_vs_persistence": 0.11801279767435913,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3130114697755367,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.33025787864822576
+  },
+  {
+   "station_id": "대청조정지댐",
+   "station_name": "대청조정지댐",
+   "terrain": "reservoir",
+   "horizon": 3,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 365
+   },
+   "val_rmse": 0.32030420696892536,
+   "test_n": 366,
+   "test_mse": 0.0688009743295712,
+   "test_rmse": 0.2622993982638374,
+   "test_mae": 0.1615106662156696,
+   "persistence_test_rmse": 0.2978468243326212,
+   "persistence_test_mse": 0.08871273076502734,
+   "climatology_test_rmse": 0.30256377810031215,
+   "skill_vs_persistence": 0.22445207428228353,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3130114697755367,
+   "uses_weather": false,
+   "weather_gain_ratio": 0.0022067719859187873
+  },
+  {
+   "station_id": "대청조정지댐",
+   "station_name": "대청조정지댐",
+   "terrain": "reservoir",
+   "horizon": 5,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 365
+   },
+   "val_rmse": 0.36167208350332003,
+   "test_n": 366,
+   "test_mse": 0.08252240061242731,
+   "test_rmse": 0.2872671241413248,
+   "test_mae": 0.1845106306849692,
+   "persistence_test_rmse": 0.3406642946352673,
+   "persistence_test_mse": 0.11605216163934423,
+   "climatology_test_rmse": 0.3025654413193648,
+   "skill_vs_persistence": 0.2889197456839925,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3130114697755367,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.001900882256601455
+  },
+  {
+   "station_id": "대청조정지댐",
+   "station_name": "대청조정지댐",
+   "terrain": "reservoir",
+   "horizon": 7,
+   "forecaster_id": "seasonal_anomaly_ar",
+   "forecaster_name": "계절편차 자기회귀",
+   "hparams": {
+    "p": 7,
+    "lam": 100.0
+   },
+   "val_rmse": 0.3644781818633239,
+   "test_n": 366,
+   "test_mse": 0.08064033607712626,
+   "test_rmse": 0.28397242133194245,
+   "test_mae": 0.1911517530826983,
+   "persistence_test_rmse": 0.3477422658271827,
+   "persistence_test_mse": 0.12092468344262298,
+   "climatology_test_rmse": 0.30256761543906024,
+   "skill_vs_persistence": 0.3331358513302296,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3130114697755367,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.011267682599523932
+  },
+  {
+   "station_id": "대청조정지댐",
+   "station_name": "대청조정지댐",
+   "terrain": "reservoir",
+   "horizon": 10,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 365
+   },
+   "val_rmse": 0.3688898315826654,
+   "test_n": 366,
+   "test_mse": 0.08771472272961713,
+   "test_rmse": 0.2961667144187833,
+   "test_mae": 0.1964892886731886,
+   "persistence_test_rmse": 0.3621593490040515,
+   "persistence_test_mse": 0.13115939407103838,
+   "climatology_test_rmse": 0.3025567293149895,
+   "skill_vs_persistence": 0.33123568196640807,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3130114697755367,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.01082674411268958
+  },
+  {
+   "station_id": "대청조정지댐",
+   "station_name": "대청조정지댐",
+   "terrain": "reservoir",
+   "horizon": 14,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 365
+   },
+   "val_rmse": 0.3679179421157143,
+   "test_n": 366,
+   "test_mse": 0.0945376489464003,
+   "test_rmse": 0.30746975289676914,
+   "test_mae": 0.20598239595694406,
+   "persistence_test_rmse": 0.39140886167093314,
+   "persistence_test_mse": 0.15320089699453568,
+   "climatology_test_rmse": 0.3027690477330356,
+   "skill_vs_persistence": 0.38291713168120534,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3130114697755367,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.015411095689214727
+  },
+  {
+   "station_id": "대청조정지댐",
+   "station_name": "대청조정지댐",
+   "terrain": "reservoir",
+   "horizon": 30,
+   "forecaster_id": "prophet_hybrid",
+   "forecaster_name": "Prophet + 잔차 자기회귀",
+   "hparams": {
+    "p": 7,
+    "lam": 10.0,
+    "changepoint_prior": 0.05
+   },
+   "val_rmse": 0.3773056936731839,
+   "test_n": 366,
+   "test_mse": 0.07517367245784926,
+   "test_rmse": 0.27417817647991105,
+   "test_mae": 0.18508630281536848,
+   "persistence_test_rmse": 0.4490163490579286,
+   "persistence_test_mse": 0.20161568172131156,
+   "climatology_test_rmse": 0.30151619839576765,
+   "skill_vs_persistence": 0.6271437230673357,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3130114697755367,
+   "uses_weather": false,
+   "weather_gain_ratio": 0.003251687399654646
+  }
+ ],
+ "winners_by_terrain": {
+  "reservoir": {
+   "analog_knn": 3,
+   "neural_gru": 2,
+   "neural_mlp": 1,
+   "neural_tcn": 1,
+   "mean_reversion": 5,
+   "seasonal_anomaly_ar": 1,
+   "prophet_hybrid": 1
+  },
+  "mainstem": {
+   "mean_reversion": 3,
+   "ensemble_mean": 2,
+   "ridge_arx": 1,
+   "neural_mlp": 1
+  }
+ },
+ "model_summary": {
+  "analog_knn": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.2670152528214256,
+    "median_rmse": 0.232982494955744,
+    "mean_mse": 0.07384159699362393,
+    "mean_mae": 0.09947155464480857,
+    "mean_skill": 0.07575720399963719,
+    "median_skill": 0.08080826512652917
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.4771904964243019,
+    "median_rmse": 0.35591641150282627,
+    "mean_mse": 0.284918792547359,
+    "mean_mae": 0.20276418943533717,
+    "mean_skill": 0.14744150805706768,
+    "median_skill": 0.15250427510516773
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.5925062346324937,
+    "median_rmse": 0.43168418110258283,
+    "mean_mse": 0.4615909227315799,
+    "mean_mae": 0.2700921083788706,
+    "mean_skill": 0.20584537843318382,
+    "median_skill": 0.22069846957220285
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6600266563990358,
+    "median_rmse": 0.444423947758815,
+    "mean_mse": 0.6035054414800333,
+    "mean_mae": 0.3279115282331511,
+    "mean_skill": 0.18648216911055074,
+    "median_skill": 0.2454902548886242
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.706112174516862,
+    "median_rmse": 0.42149039178711095,
+    "mean_mse": 0.7247964906474889,
+    "mean_mae": 0.38505733424408,
+    "mean_skill": 0.1646647312506213,
+    "median_skill": 0.2161028212704722
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.7508277694850524,
+    "median_rmse": 0.3803910328539343,
+    "mean_mse": 0.8583750544259418,
+    "mean_mae": 0.44586390892531885,
+    "mean_skill": 0.16530820083747919,
+    "median_skill": 0.18302244174072158
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.8722913978278792,
+    "median_rmse": 0.39988363497800705,
+    "mean_mse": 1.2126718382489792,
+    "mean_mae": 0.6003987422586522,
+    "mean_skill": 0.1029829417338541,
+    "median_skill": 0.22946280106936334
+   }
+  },
+  "climatology": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.9167861180011867,
+    "median_rmse": 0.3818121119672803,
+    "mean_mse": 1.501923002148131,
+    "mean_mae": 0.6915577059648252,
+    "mean_skill": -11.804558881603983,
+    "median_skill": -1.5961876202398289
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.9169831057434807,
+    "median_rmse": 0.38180145081400974,
+    "mean_mse": 1.5026956605811295,
+    "mean_mae": 0.691567946357967,
+    "mean_skill": -1.6640285275347362,
+    "median_skill": -0.03192449413837761
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.9171370662024918,
+    "median_rmse": 0.3817782706969792,
+    "mean_mse": 1.5033561627931118,
+    "mean_mae": 0.6916292879773783,
+    "mean_skill": -0.5871863088975564,
+    "median_skill": 0.21116638425676737
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.9172600292327057,
+    "median_rmse": 0.3817412140655682,
+    "mean_mse": 1.5039036399616326,
+    "mean_mae": 0.6917521531648854,
+    "mean_skill": -0.3390522767461659,
+    "median_skill": 0.2429406527583191
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.9173797112104589,
+    "median_rmse": 0.38166347912163545,
+    "mean_mse": 1.5044987556425446,
+    "mean_mae": 0.6920179553026228,
+    "mean_skill": -0.1943062294209893,
+    "median_skill": 0.3020661989014394
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.9175708275140563,
+    "median_rmse": 0.381686070088747,
+    "mean_mse": 1.5050139596950265,
+    "mean_mae": 0.6928702004136006,
+    "mean_skill": -0.07711920780962393,
+    "median_skill": 0.4016412562621039
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.9171020688138944,
+    "median_rmse": 0.38099872072754853,
+    "mean_mse": 1.5053231445251498,
+    "mean_mae": 0.6944893702768454,
+    "mean_skill": 0.11199677819513709,
+    "median_skill": 0.37781977468076755
+   }
+  },
+  "ensemble_mean": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2623220212655796,
+    "median_rmse": 0.2314997806976082,
+    "mean_mse": 0.07113640348530537,
+    "mean_mae": 0.10876261664215718,
+    "mean_skill": 0.10641036388427612,
+    "median_skill": 0.0979839838058213
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.4655374486253936,
+    "median_rmse": 0.3310680827057373,
+    "mean_mse": 0.2748733056472396,
+    "mean_mae": 0.21939180274265327,
+    "mean_skill": 0.1968003319116232,
+    "median_skill": 0.2299563082051581
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.5727996490598039,
+    "median_rmse": 0.3825630465138683,
+    "mean_mse": 0.4464444655345096,
+    "mean_mae": 0.2866563264153043,
+    "mean_skill": 0.2781654746207298,
+    "median_skill": 0.3237867036688554
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.6107985892506432,
+    "median_rmse": 0.3834713602051227,
+    "mean_mse": 0.5282937086730429,
+    "mean_mae": 0.33206068187923327,
+    "mean_skill": 0.3115382616749442,
+    "median_skill": 0.33334207784474557
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6415413895196239,
+    "median_rmse": 0.37169974393318517,
+    "mean_mse": 0.6030922920498184,
+    "mean_mae": 0.38148569312824354,
+    "mean_skill": 0.31359813964567046,
+    "median_skill": 0.34049584732583416
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.673027773120586,
+    "median_rmse": 0.37453758269850723,
+    "mean_mse": 0.6699661424897029,
+    "mean_mae": 0.43726676664672687,
+    "mean_skill": 0.31453571211042936,
+    "median_skill": 0.3577806419021352
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.7277801026899899,
+    "median_rmse": 0.3815124921712039,
+    "mean_mse": 0.8099166812563273,
+    "mean_mae": 0.537955832254555,
+    "mean_skill": 0.34641940405881333,
+    "median_skill": 0.3761406406436403
+   }
+  },
+  "mean_reversion": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 2,
+    "mean_rmse": 0.26890781545841375,
+    "median_rmse": 0.2289151843976902,
+    "mean_mse": 0.07584019660251734,
+    "mean_mae": 0.10931939715142808,
+    "mean_skill": 0.07235236398130629,
+    "median_skill": 0.09904429426955974
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 2,
+    "mean_rmse": 0.4763558099709669,
+    "median_rmse": 0.3310362466070721,
+    "mean_mse": 0.2922778624755807,
+    "mean_mae": 0.2171967360617132,
+    "mean_skill": 0.17084069590892656,
+    "median_skill": 0.22445207428228353
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.590000776097637,
+    "median_rmse": 0.3746166854834059,
+    "mean_mse": 0.48359557102345424,
+    "mean_mae": 0.2860067603923334,
+    "mean_skill": 0.2451709127946843,
+    "median_skill": 0.2889197456839925
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6332016669429631,
+    "median_rmse": 0.3849125668260833,
+    "mean_mse": 0.5766841520418139,
+    "mean_mae": 0.33079821687764066,
+    "mean_skill": 0.2689810310540525,
+    "median_skill": 0.2991806869897179
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.6648451488736798,
+    "median_rmse": 0.3746944791595,
+    "mean_mse": 0.6600747345368417,
+    "mean_mae": 0.3782798256425168,
+    "mean_skill": 0.27738772675095696,
+    "median_skill": 0.33123568196640807
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.6902788955407543,
+    "median_rmse": 0.36796916264078283,
+    "mean_mse": 0.7256912977163797,
+    "mean_mae": 0.4247412304285901,
+    "mean_skill": 0.3015010874852886,
+    "median_skill": 0.38291713168120534
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.732875584966891,
+    "median_rmse": 0.3903088908798572,
+    "mean_mse": 0.8235718266867121,
+    "mean_mae": 0.5138323306887161,
+    "mean_skill": 0.33884602031735844,
+    "median_skill": 0.3470407818589524
+   }
+  },
+  "neural_gru": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2702467443530979,
+    "median_rmse": 0.2263983937387962,
+    "mean_mse": 0.07708962316049418,
+    "mean_mae": 0.11840285677567075,
+    "mean_skill": 0.06697956788517179,
+    "median_skill": 0.10614039707655587
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.47116110758157453,
+    "median_rmse": 0.3264206454417968,
+    "mean_mse": 0.2836879121077566,
+    "mean_mae": 0.22184035055588755,
+    "mean_skill": 0.18118507432184974,
+    "median_skill": 0.20032315562525405
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5663988367833118,
+    "median_rmse": 0.333412494994277,
+    "mean_mse": 0.4535653620819924,
+    "mean_mae": 0.28435174177396033,
+    "mean_skill": 0.30540635428265483,
+    "median_skill": 0.300756589259893
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.6153227969409627,
+    "median_rmse": 0.36151390249329507,
+    "mean_mse": 0.546677010124485,
+    "mean_mae": 0.33688758224484167,
+    "mean_skill": 0.3058877008226822,
+    "median_skill": 0.30058496649792976
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6684398013296414,
+    "median_rmse": 0.3785688113016532,
+    "mean_mse": 0.6621287648247095,
+    "mean_mae": 0.39645895628384253,
+    "mean_skill": 0.26257604096194115,
+    "median_skill": 0.29763397150342097
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.6942221648969018,
+    "median_rmse": 0.3715852007566332,
+    "mean_mse": 0.7167784075344722,
+    "mean_mae": 0.4576917840531353,
+    "mean_skill": 0.2710470091768176,
+    "median_skill": 0.2808790980496325
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.794344363771387,
+    "median_rmse": 0.3861382220198019,
+    "mean_mse": 1.0060719877742847,
+    "mean_mae": 0.559508251644974,
+    "mean_skill": 0.2578951151593241,
+    "median_skill": 0.3609206953011014
+   }
+  },
+  "neural_lstm": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.27144265269815915,
+    "median_rmse": 0.22626642249823029,
+    "mean_mse": 0.07798180906625418,
+    "mean_mae": 0.12210673837794749,
+    "mean_skill": 0.0598597286078569,
+    "median_skill": 0.08824764653892925
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.47450308497717614,
+    "median_rmse": 0.3241812259775169,
+    "mean_mse": 0.2922305508695879,
+    "mean_mae": 0.2124375182428956,
+    "mean_skill": 0.18207692642392245,
+    "median_skill": 0.2355915970683371
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5743110283691432,
+    "median_rmse": 0.34942071022074916,
+    "mean_mse": 0.46380407611124586,
+    "mean_mae": 0.29500123876877765,
+    "mean_skill": 0.28775380676088463,
+    "median_skill": 0.3099215965345137
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.624695816418716,
+    "median_rmse": 0.36849308944251213,
+    "mean_mse": 0.5640215310097166,
+    "mean_mae": 0.34536570934078553,
+    "mean_skill": 0.2865507447737862,
+    "median_skill": 0.2901764563318161
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6676232171960481,
+    "median_rmse": 0.37645899345164496,
+    "mean_mse": 0.6617912428189633,
+    "mean_mae": 0.39134967082098654,
+    "mean_skill": 0.26559541663068204,
+    "median_skill": 0.3009871392335186
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.694385637385947,
+    "median_rmse": 0.3708591394665285,
+    "mean_mse": 0.7201692127898256,
+    "mean_mae": 0.45688011033421133,
+    "mean_skill": 0.27472498573448983,
+    "median_skill": 0.29594641399538224
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.7672991435749824,
+    "median_rmse": 0.37697582870704044,
+    "mean_mse": 0.9299636488781172,
+    "mean_mae": 0.5443362615574139,
+    "mean_skill": 0.30037394031052145,
+    "median_skill": 0.39088937083383035
+   }
+  },
+  "neural_mlp": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.27384270103836705,
+    "median_rmse": 0.22792874952415884,
+    "mean_mse": 0.0793543282032197,
+    "mean_mae": 0.12201716743390108,
+    "mean_skill": 0.043381912123155564,
+    "median_skill": 0.08771868827962048
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.4868930054483185,
+    "median_rmse": 0.32645023165958587,
+    "mean_mse": 0.3077671352275488,
+    "mean_mae": 0.23513090302180362,
+    "mean_skill": 0.13634679673380448,
+    "median_skill": 0.16243116987230277
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5886059316193805,
+    "median_rmse": 0.3561119969600939,
+    "mean_mse": 0.4796357354833454,
+    "mean_mae": 0.3029614049593573,
+    "mean_skill": 0.2348728537072646,
+    "median_skill": 0.19411056107755298
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6215450999447797,
+    "median_rmse": 0.3771096326218133,
+    "mean_mse": 0.5434338974741105,
+    "mean_mae": 0.3653065462707606,
+    "mean_skill": 0.27214459340055164,
+    "median_skill": 0.22117907360317324
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.6916613565247863,
+    "median_rmse": 0.39662788706684265,
+    "mean_mse": 0.6939469968547817,
+    "mean_mae": 0.42805166942617273,
+    "mean_skill": 0.1880764910109813,
+    "median_skill": 0.16367327289602585
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.7113572986208757,
+    "median_rmse": 0.38896883065540516,
+    "mean_mse": 0.7399416568810606,
+    "mean_mae": 0.46383948492224764,
+    "mean_skill": 0.21917775066816728,
+    "median_skill": 0.19977455443898795
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.7340554644753746,
+    "median_rmse": 0.39492545432158893,
+    "mean_mse": 0.7827464406011573,
+    "mean_mae": 0.5290829973719847,
+    "mean_skill": 0.29064100024581546,
+    "median_skill": 0.30309717295957816
+   }
+  },
+  "neural_tcn": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2766168820104503,
+    "median_rmse": 0.22779566619195357,
+    "mean_mse": 0.08162313896568102,
+    "mean_mae": 0.13980313669371427,
+    "mean_skill": 0.027678239556048385,
+    "median_skill": 0.07588166444561906
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.47818663549428814,
+    "median_rmse": 0.32401739919323347,
+    "mean_mse": 0.29543233116851264,
+    "mean_mae": 0.2347333157710254,
+    "mean_skill": 0.16397635712729777,
+    "median_skill": 0.18831096645407863
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5899370422955382,
+    "median_rmse": 0.3459861808257131,
+    "mean_mse": 0.49184087979912183,
+    "mean_mae": 0.2875790654232709,
+    "mean_skill": 0.2451910571621658,
+    "median_skill": 0.23333450981575932
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6248171347878596,
+    "median_rmse": 0.3595177463153889,
+    "mean_mse": 0.5673682608529637,
+    "mean_mae": 0.35373544651133976,
+    "mean_skill": 0.2858851788873404,
+    "median_skill": 0.27395407536556804
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6670143492100329,
+    "median_rmse": 0.3657932638958553,
+    "mean_mse": 0.658078649043098,
+    "mean_mae": 0.38079038106306795,
+    "mean_skill": 0.2573565545726961,
+    "median_skill": 0.23903954820310547
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.708455579297686,
+    "median_rmse": 0.37456997656858293,
+    "mean_mse": 0.7460634370369403,
+    "mean_mae": 0.4785635694658612,
+    "mean_skill": 0.23825094032019337,
+    "median_skill": 0.2285783196032649
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.7646979085697776,
+    "median_rmse": 0.402815815599803,
+    "mean_mse": 0.8804768483995961,
+    "mean_mae": 0.5281965685157476,
+    "mean_skill": 0.26500671799556275,
+    "median_skill": 0.30452392181888877
+   }
+  },
+  "prophet_hybrid": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.31279925248038143,
+    "median_rmse": 0.23390842091584005,
+    "mean_mse": 0.11106455061318764,
+    "mean_mae": 0.20746527025437708,
+    "mean_skill": -0.22420080103561277,
+    "median_skill": 0.02561994270916046
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.7126699825998378,
+    "median_rmse": 0.36501890589707353,
+    "mean_mse": 0.8301338775995452,
+    "mean_mae": 0.5659701895080159,
+    "mean_skill": -0.6203539645588796,
+    "median_skill": 0.10860086953335257
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.9699661674214575,
+    "median_rmse": 0.4234302767144424,
+    "mean_mse": 1.7131099532800615,
+    "mean_mae": 0.8004625204216653,
+    "mean_skill": -0.7509876060150048,
+    "median_skill": 0.2502144316318482
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 1.1456330536590602,
+    "median_rmse": 0.4358673922270832,
+    "mean_mse": 2.5611982872951717,
+    "mean_mae": 0.9684862661440946,
+    "mean_skill": -1.0224975181788336,
+    "median_skill": 0.31460335783907856
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 1.3406313128810199,
+    "median_rmse": 0.4420091738831541,
+    "mean_mse": 3.726905098140316,
+    "mean_mae": 1.1521969181788148,
+    "mean_skill": -1.4175387945343252,
+    "median_skill": 0.23263355231337768
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 1.5862053402511174,
+    "median_rmse": 0.44524042986830076,
+    "mean_mse": 5.507763123310675,
+    "mean_mae": 1.380701838725107,
+    "mean_skill": -2.0276763423790727,
+    "median_skill": 0.19682182936566506
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 1.9511521130381697,
+    "median_rmse": 0.40471158404326907,
+    "mean_mse": 9.005034804997015,
+    "mean_mae": 1.7163953109218983,
+    "mean_skill": -2.6760163592463715,
+    "median_skill": 0.29796229199701696
+   }
+  },
+  "ridge_ar": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2673022092957037,
+    "median_rmse": 0.23499750564962904,
+    "mean_mse": 0.07420410053581812,
+    "mean_mae": 0.11701282288425298,
+    "mean_skill": 0.07622614431032611,
+    "median_skill": 0.07052099132364886
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.4709189529591617,
+    "median_rmse": 0.3326373425036344,
+    "mean_mse": 0.2796131342335843,
+    "mean_mae": 0.2328057699282747,
+    "mean_skill": 0.17157467072896718,
+    "median_skill": 0.17258177791713147
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5812025932801922,
+    "median_rmse": 0.3802980207990073,
+    "mean_mse": 0.4579297129218371,
+    "mean_mae": 0.30201276874612665,
+    "mean_skill": 0.24961515869634246,
+    "median_skill": 0.25291708802878976
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6208816651990882,
+    "median_rmse": 0.38108575246160764,
+    "mean_mse": 0.5450116595465208,
+    "mean_mae": 0.35113134879046143,
+    "mean_skill": 0.2819865811208787,
+    "median_skill": 0.2661600754787188
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6520692119575512,
+    "median_rmse": 0.36945676656783993,
+    "mean_mse": 0.6242311448447307,
+    "mean_mae": 0.40390593393744373,
+    "mean_skill": 0.28884568650775316,
+    "median_skill": 0.2914263538888333
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6811454478110761,
+    "median_rmse": 0.36553174445361547,
+    "mean_mse": 0.6921658809972372,
+    "mean_mae": 0.4610746289614576,
+    "mean_skill": 0.3016495856723234,
+    "median_skill": 0.32468374463865435
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.752882494001082,
+    "median_rmse": 0.38064084390927333,
+    "mean_mse": 0.8823280928613437,
+    "mean_mae": 0.5738344839562971,
+    "mean_skill": 0.3151196635435601,
+    "median_skill": 0.3789880689130203
+   }
+  },
+  "ridge_arx": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.26211556587190843,
+    "median_rmse": 0.23450879344794218,
+    "mean_mse": 0.07077258862520228,
+    "mean_mae": 0.11705485465403818,
+    "mean_skill": 0.10442483285843011,
+    "median_skill": 0.09348518844119424
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.46245708579512823,
+    "median_rmse": 0.3293505855701054,
+    "mean_mse": 0.2667567657697127,
+    "mean_mae": 0.22423967676952952,
+    "mean_skill": 0.19148935778517828,
+    "median_skill": 0.16594369335022885
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.575165988506623,
+    "median_rmse": 0.3798370022770563,
+    "mean_mse": 0.44451504338181325,
+    "mean_mae": 0.29203463688396714,
+    "mean_skill": 0.2580429944839849,
+    "median_skill": 0.24457161726017396
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6128062619263989,
+    "median_rmse": 0.38007237394643845,
+    "mean_mse": 0.5278621436731903,
+    "mean_mae": 0.3386956345571448,
+    "mean_skill": 0.2969821241315298,
+    "median_skill": 0.2767661539653423
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.6446981710550385,
+    "median_rmse": 0.36922147993152393,
+    "mean_mse": 0.6061571757332754,
+    "mean_mae": 0.3924245159667869,
+    "mean_skill": 0.2999929328607193,
+    "median_skill": 0.29522264086981964
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6804510360395541,
+    "median_rmse": 0.3689259357538739,
+    "mean_mse": 0.6883558552190183,
+    "mean_mae": 0.4541719343830785,
+    "mean_skill": 0.30106864550466833,
+    "median_skill": 0.32652717394199426
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.751792456063157,
+    "median_rmse": 0.38355945570231886,
+    "mean_mse": 0.8809878953466891,
+    "mean_mae": 0.56514762480507,
+    "mean_skill": 0.31802752540358753,
+    "median_skill": 0.3694281830865703
+   }
+  },
+  "seasonal_anomaly_ar": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2563520897874316,
+    "median_rmse": 0.2313482339314675,
+    "mean_mse": 0.06732175916865672,
+    "mean_mae": 0.10941231494220989,
+    "mean_skill": 0.137626147657497,
+    "median_skill": 0.09988167112360036
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.4620037378103991,
+    "median_rmse": 0.33048197254573525,
+    "mean_mse": 0.26750734229199685,
+    "mean_mae": 0.23216705536924223,
+    "mean_skill": 0.19841100190403615,
+    "median_skill": 0.1977688751921901
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5819664030869476,
+    "median_rmse": 0.3769931490605308,
+    "mean_mse": 0.46914951665609617,
+    "mean_mae": 0.31367553494654016,
+    "mean_skill": 0.266368694556051,
+    "median_skill": 0.32803758478955025
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.6248378505356039,
+    "median_rmse": 0.38305773346188193,
+    "mean_mse": 0.5617965722737036,
+    "mean_mae": 0.35732687259423074,
+    "mean_skill": 0.29035673644548665,
+    "median_skill": 0.3331358513302296
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6491851376890749,
+    "median_rmse": 0.37325851955899714,
+    "mean_mse": 0.6236233904153257,
+    "mean_mae": 0.4015895982460762,
+    "mean_skill": 0.3054894883184605,
+    "median_skill": 0.354402243009427
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6580829515852561,
+    "median_rmse": 0.3755603776437704,
+    "mean_mse": 0.6337987524801798,
+    "mean_mae": 0.4466108375789259,
+    "mean_skill": 0.33775397880206093,
+    "median_skill": 0.379988442382202
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.7188573533374626,
+    "median_rmse": 0.402783491018652,
+    "mean_mse": 0.7748545732806794,
+    "mean_mae": 0.5286498953729376,
+    "mean_skill": 0.3455037898493152,
+    "median_skill": 0.3046355364578719
+   }
+  },
+  "persistence": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.27786615737424086,
+    "median_rmse": 0.24374934619500374,
+    "mean_mse": 0.08003122759562843,
+    "mean_mae": 0.10775664845173039,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5097349011153421,
+    "median_rmse": 0.38661549501230086,
+    "mean_mse": 0.31725798902550095,
+    "mean_mae": 0.21437550091074686,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.6522704853585718,
+    "median_rmse": 0.4890050789236393,
+    "mean_mse": 0.541875801010929,
+    "mean_mae": 0.2924294171220402,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.7081724282511758,
+    "median_rmse": 0.5264818379422599,
+    "mean_mse": 0.6537802825136614,
+    "mean_mae": 0.3429622950819673,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.7421641844590735,
+    "median_rmse": 0.504579823035174,
+    "mean_mse": 0.7448964833151185,
+    "mean_mae": 0.39533588342440823,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.7784372561772718,
+    "median_rmse": 0.4968080739028723,
+    "mean_mse": 0.8313675382877963,
+    "mean_mae": 0.4541497267759564,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.8574081820762866,
+    "median_rmse": 0.48302033581283416,
+    "mean_mse": 1.0417135156921677,
+    "mean_mae": 0.5748609289617487,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   }
+  }
+ },
+ "cells_total": 21,
+ "cells_beating_persistence": 21,
+ "cells_weather_helps": 5,
+ "cells_with_weather_candidate": 21,
+ "note_ko": "test_* 는 학습·선택에 쓰지 않은 시험 연도 오차. skill_vs_persistence = 1 − MSE/MSE_persistence (양수면 직전값 유지보다 낫다). 모델은 지점×예측일수마다 검증 연도별 폴드에서 persistence 대비 MSE 비율 평균이 최소인 후보로 골랐다.",
+ "trained_now": [
+  "대청댐",
+  "대청댐방수로",
+  "대청조정지댐"
+ ],
+ "failures": {},
+ "allowed_forecasters": null
+}

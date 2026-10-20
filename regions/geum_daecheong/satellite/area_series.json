@@ -1,0 +1,264 @@
+{
+ "schema": "watercast.satellite.area-series/1",
+ "region_id": "geum_daecheong",
+ "generated_at": "2026-09-15T06:14:01+00:00",
+ "generated_by": "scripts/build_common_frame_area.py",
+ "source_scenes": "satellite/scenes.json",
+ "water_threshold": 127,
+ "sensors": {
+  "PlanetScope": {
+   "frame": {
+    "bounds_epsg32652": [
+     353703.0,
+     4031928.0,
+     368274.0,
+     4041126.0
+    ],
+    "width": 640,
+    "height": 404,
+    "pixel_area_m2": 518.345,
+    "coverage_km2": 134.02
+   },
+   "common_valid_footprint_km2": 51.47,
+   "n_scenes": 10,
+   "correlations": {
+    "raw_area_vs_footprint_km2": 0.909,
+    "common_frame_area_vs_footprint_km2": 0.6852,
+    "common_valid_area_vs_footprint_km2": 0.1619,
+    "common_frame_area_vs_frame_valid_fraction": 0.9353,
+    "note_ko": "원면적이 촬영범위와 함께 움직이면(상관 높음) 그 계열은 수문 신호가 아니라 촬영 기하를 보고 있는 것이다."
+   },
+   "rows": [
+    {
+     "date": "2019-03-23",
+     "scene_id": "20190323_PlanetScope",
+     "area_km2_common_frame": 16.337,
+     "area_km2_scene_footprint": 29.5725,
+     "scene_footprint_km2": 378.1,
+     "scene_footprint_bounds_epsg32652": [
+      351963.0,
+      4027155.0,
+      379023.0,
+      4041126.0
+     ],
+     "valid_area_km2": 212.29,
+     "frame_valid_fraction": 0.81,
+     "area_km2_common_valid_footprint": 7.206,
+     "gt_area_km2": null,
+     "gauge_levels": {
+      "대청댐": 74.36,
+      "대청조정지댐": 28.61,
+      "대청댐방수로": 28.89
+     }
+    },
+    {
+     "date": "2019-03-29",
+     "scene_id": "20190329_PlanetScope",
+     "area_km2_common_frame": 12.771,
+     "area_km2_scene_footprint": 14.0003,
+     "scene_footprint_km2": 374.1,
+     "scene_footprint_bounds_epsg32652": [
+      341385.0,
+      4031928.0,
+      368274.0,
+      4045839.0
+     ],
+     "valid_area_km2": 210.52,
+     "frame_valid_fraction": 0.7748,
+     "area_km2_common_valid_footprint": 6.097,
+     "gt_area_km2": null,
+     "gauge_levels": {
+      "대청댐": 74.29,
+      "대청조정지댐": 28.63,
+      "대청댐방수로": 29.01
+     }
+    },
+    {
+     "date": "2019-04-03",
+     "scene_id": "20190403_PlanetScope",
+     "area_km2_common_frame": 9.858,
+     "area_km2_scene_footprint": 14.3603,
+     "scene_footprint_km2": 378.7,
+     "scene_footprint_bounds_epsg32652": [
+      353703.0,
+      4031316.0,
+      380790.0,
+      4045296.0
+     ],
+     "valid_area_km2": 213.45,
+     "frame_valid_fraction": 0.5922,
+     "area_km2_common_valid_footprint": 7.289,
+     "gt_area_km2": null,
+     "gauge_levels": {
+      "대청댐": 74.2,
+      "대청조정지댐": 28.59,
+      "대청댐방수로": 28.89
+     }
+    },
+    {
+     "date": "2019-04-04",
+     "scene_id": "20190404_PlanetScope",
+     "area_km2_common_frame": 15.846,
+     "area_km2_scene_footprint": 27.0394,
+     "scene_footprint_km2": 391.4,
+     "scene_footprint_bounds_epsg32652": [
+      345630.0,
+      4028688.0,
+      373239.0,
+      4042866.0
+     ],
+     "valid_area_km2": 219.03,
+     "frame_valid_fraction": 0.8347,
+     "area_km2_common_valid_footprint": 7.048,
+     "gt_area_km2": null,
+     "gauge_levels": {
+      "대청댐": 74.17,
+      "대청조정지댐": 28.58,
+      "대청댐방수로": 28.92
+     }
+    },
+    {
+     "date": "2019-04-27",
+     "scene_id": "20190427_PlanetScope",
+     "area_km2_common_frame": 16.895,
+     "area_km2_scene_footprint": 24.9882,
+     "scene_footprint_km2": 386.7,
+     "scene_footprint_bounds_epsg32652": [
+      348696.0,
+      4029534.0,
+      376194.0,
+      4043598.0
+     ],
+     "valid_area_km2": 220.04,
+     "frame_valid_fraction": 0.8725,
+     "area_km2_common_valid_footprint": 7.124,
+     "gt_area_km2": null,
+     "gauge_levels": {
+      "대청댐": 74.29,
+      "대청조정지댐": 28.73,
+      "대청댐방수로": 29.02
+     }
+    },
+    {
+     "date": "2022-05-14",
+     "scene_id": "20220514_PlanetScope",
+     "area_km2_common_frame": 18.378,
+     "area_km2_scene_footprint": 57.6458,
+     "scene_footprint_km2": 1164.6,
+     "scene_footprint_bounds_epsg32652": [
+      349155.0,
+      4014432.0,
+      389265.0,
+      4043466.0
+     ],
+     "valid_area_km2": 780.17,
+     "frame_valid_fraction": 0.989,
+     "area_km2_common_valid_footprint": 7.354,
+     "gt_area_km2": null,
+     "gauge_levels": {
+      "대청댐": 71.15,
+      "대청조정지댐": 28.208,
+      "대청댐방수로": 28.38
+     }
+    },
+    {
+     "date": "2022-05-16",
+     "scene_id": "20220516_PlanetScope",
+     "area_km2_common_frame": 18.746,
+     "area_km2_scene_footprint": 53.0823,
+     "scene_footprint_km2": 1050.2,
+     "scene_footprint_bounds_epsg32652": [
+      339915.0,
+      4019016.0,
+      377904.0,
+      4046661.0
+     ],
+     "valid_area_km2": 695.88,
+     "frame_valid_fraction": 1.0,
+     "area_km2_common_valid_footprint": 7.441,
+     "gt_area_km2": null,
+     "gauge_levels": {
+      "대청댐": 71.03,
+      "대청조정지댐": 28.334,
+      "대청댐방수로": 28.55
+     }
+    },
+    {
+     "date": "2022-05-17",
+     "scene_id": "20220517_PlanetScope",
+     "area_km2_common_frame": 18.49,
+     "area_km2_scene_footprint": 51.3265,
+     "scene_footprint_km2": 1044.6,
+     "scene_footprint_bounds_epsg32652": [
+      341265.0,
+      4022544.0,
+      379131.0,
+      4050132.0
+     ],
+     "valid_area_km2": 690.98,
+     "frame_valid_fraction": 1.0,
+     "area_km2_common_valid_footprint": 7.246,
+     "gt_area_km2": null,
+     "gauge_levels": {
+      "대청댐": 70.97,
+      "대청조정지댐": 28.411,
+      "대청댐방수로": 28.63
+     }
+    },
+    {
+     "date": "2022-05-22",
+     "scene_id": "20220522_PlanetScope",
+     "area_km2_common_frame": 16.974,
+     "area_km2_scene_footprint": 36.4022,
+     "scene_footprint_km2": 1043.9,
+     "scene_footprint_bounds_epsg32652": [
+      344871.0,
+      4025097.0,
+      382863.0,
+      4052574.0
+     ],
+     "valid_area_km2": 701.31,
+     "frame_valid_fraction": 1.0,
+     "area_km2_common_valid_footprint": 6.484,
+     "gt_area_km2": null,
+     "gauge_levels": {
+      "대청댐": 70.67,
+      "대청조정지댐": 28.239,
+      "대청댐방수로": 28.4
+     }
+    },
+    {
+     "date": "2022-05-23",
+     "scene_id": "20220523_PlanetScope",
+     "area_km2_common_frame": 17.515,
+     "area_km2_scene_footprint": 49.6329,
+     "scene_footprint_km2": 1186.6,
+     "scene_footprint_bounds_epsg32652": [
+      348282.0,
+      4020366.0,
+      388800.0,
+      4049652.0
+     ],
+     "valid_area_km2": 797.48,
+     "frame_valid_fraction": 1.0,
+     "area_km2_common_valid_footprint": 6.864,
+     "gt_area_km2": null,
+     "gauge_levels": {
+      "대청댐": 70.61,
+      "대청조정지댐": 28.092,
+      "대청댐방수로": 28.26
+     }
+    }
+   ]
+  }
+ },
+ "notes_ko": [
+  "area_km2_common_frame 이 시계열로 비교 가능한 면적이다. 센서별 공통 격자(frame.bounds_epsg32652) 라는 '같은 창'으로 모든 날짜를 세기 때문이다.",
+  "area_km2_scene_footprint 은 scenes.json 의 기존 water_area_km2 — 씬마다 자기 촬영범위 안에서 센 값이라 날짜 간 비교에 쓰면 안 된다. 촬영범위가 넓어지거나 옮겨가면 물이 늘지 않아도 면적이 커진다.",
+  "scene_footprint_km2 는 그 씬 원본의 외곽 상자 넓이(km²), valid_area_km2 는 그 안에서 실제 자료가 있는 넓이(km²)다. 두 값이 날짜마다 다르다는 것이 원계열을 못 믿는 이유 그 자체다.",
+  "frame_valid_fraction 은 공통 격자 안에서 그 씬에 실제 자료가 있는 화소 비율이다. 1 보다 작으면 그 날짜의 공통격자 면적도 '덜 본 만큼' 과소평가된다 — 계열 해석 전에 반드시 확인할 것.",
+  "area_km2_common_valid_footprint 는 그 센서 모든 씬의 유효영역 교집합(진짜로 고정된 창)에서 센 면적이다. frame_valid_fraction 이 날짜마다 다를 때는 이 값이 가장 공정한 비교 대상이다.",
+  "gt_area_km2 는 사람이 그린 GT 라벨을 같은 공통 격자로 옮겨(탐지 유효영역으로 한정해) 센 면적이다. 탐지 면적과 GT 면적을 같은 창에서 비교해야 '탐지가 틀렸나, 창이 달랐나'를 가릴 수 있다.",
+  "gauge_levels 는 같은 날짜 지상 수위계(regions/<id>/gauge/series.json) 실측 수위(m)다. 면적과 수위를 같은 행에 두면 면적 변화가 수문학적으로 말이 되는지 바로 확인할 수 있다."
+ ]
+}

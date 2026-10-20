@@ -1,0 +1,1499 @@
+{
+ "schema": "watercast.gauge.evaluation/1",
+ "region_id": "seomjin_river",
+ "generated_at": "2026-09-08T17:02:38+00:00",
+ "split": {
+  "train_end": "2018-12-31",
+  "val_start": "2019-01-01",
+  "val_end": "2023-12-31",
+  "test_start": "2024-01-01",
+  "test_end": "2024-12-31"
+ },
+ "n_stations": 3,
+ "rows": [
+  {
+   "station_id": "구례교",
+   "station_name": "구례교",
+   "terrain": "mainstem",
+   "horizon": 1,
+   "forecaster_id": "ridge_arx",
+   "forecaster_name": "릿지 자기회귀 + 기상 (AR-X)",
+   "hparams": {
+    "p": 7,
+    "lam": 10.0,
+    "mode": "level"
+   },
+   "val_rmse": 0.2423653269079567,
+   "test_n": 366,
+   "test_mse": 0.033995281092157985,
+   "test_rmse": 0.1843780927663533,
+   "test_mae": 0.09746698343013323,
+   "persistence_test_rmse": 0.2120668674832375,
+   "persistence_test_mse": 0.04497235628415301,
+   "climatology_test_rmse": 0.47274872371244925,
+   "skill_vs_persistence": 0.24408494682016557,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.45651926031599355,
+   "uses_weather": true,
+   "weather_gain_ratio": 0.18282627212011315
+  },
+  {
+   "station_id": "구례교",
+   "station_name": "구례교",
+   "terrain": "mainstem",
+   "horizon": 3,
+   "forecaster_id": "ridge_arx",
+   "forecaster_name": "릿지 자기회귀 + 기상 (AR-X)",
+   "hparams": {
+    "p": 7,
+    "lam": 100.0,
+    "mode": "level"
+   },
+   "val_rmse": 0.4039781240936629,
+   "test_n": 366,
+   "test_mse": 0.09756076292465676,
+   "test_rmse": 0.312347183314748,
+   "test_mae": 0.18263288725180413,
+   "persistence_test_rmse": 0.3483364245947494,
+   "persistence_test_mse": 0.12133826469945354,
+   "climatology_test_rmse": 0.47284332608974333,
+   "skill_vs_persistence": 0.19596045677504947,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.45651926031599355,
+   "uses_weather": true,
+   "weather_gain_ratio": 0.032376232304366814
+  },
+  {
+   "station_id": "구례교",
+   "station_name": "구례교",
+   "terrain": "mainstem",
+   "horizon": 5,
+   "forecaster_id": "neural_tcn",
+   "forecaster_name": "TCN 시간합성곱 (GPU 학습)",
+   "hparams": {
+    "window": 60,
+    "hidden": 32
+   },
+   "val_rmse": 0.4603078564287493,
+   "test_n": 366,
+   "test_mse": 0.15767024051657427,
+   "test_rmse": 0.39707712162321096,
+   "test_mae": 0.24804653030058912,
+   "persistence_test_rmse": 0.41075004654619934,
+   "persistence_test_mse": 0.16871560073770492,
+   "climatology_test_rmse": 0.4729409026872434,
+   "skill_vs_persistence": 0.06546733184622566,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.45651926031599355,
+   "uses_weather": true,
+   "weather_gain_ratio": -0.0010758055239213915
+  },
+  {
+   "station_id": "구례교",
+   "station_name": "구례교",
+   "terrain": "mainstem",
+   "horizon": 7,
+   "forecaster_id": "neural_tcn",
+   "forecaster_name": "TCN 시간합성곱 (GPU 학습)",
+   "hparams": {
+    "window": 60,
+    "hidden": 32
+   },
+   "val_rmse": 0.47729896096834107,
+   "test_n": 366,
+   "test_mse": 0.17626569007885265,
+   "test_rmse": 0.4198400767897851,
+   "test_mae": 0.26820504477036927,
+   "persistence_test_rmse": 0.43296059033921924,
+   "persistence_test_mse": 0.18745487278688522,
+   "climatology_test_rmse": 0.4730391287374849,
+   "skill_vs_persistence": 0.059690007209113105,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.45651926031599355,
+   "uses_weather": true,
+   "weather_gain_ratio": -0.011090823392050031
+  },
+  {
+   "station_id": "구례교",
+   "station_name": "구례교",
+   "terrain": "mainstem",
+   "horizon": 10,
+   "forecaster_id": "ensemble_mean",
+   "forecaster_name": "계열 앙상블 평균",
+   "hparams": {
+    "members": "linear"
+   },
+   "val_rmse": 0.49138294188784193,
+   "test_n": 366,
+   "test_mse": 0.14364784191683666,
+   "test_rmse": 0.3790090261680276,
+   "test_mae": 0.26108486802881575,
+   "persistence_test_rmse": 0.4668833149529128,
+   "persistence_test_mse": 0.21798002978142075,
+   "climatology_test_rmse": 0.4732032367398621,
+   "skill_vs_persistence": 0.3410045770666268,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.45651926031599355,
+   "uses_weather": true,
+   "weather_gain_ratio": -0.018295042119200966
+  },
+  {
+   "station_id": "구례교",
+   "station_name": "구례교",
+   "terrain": "mainstem",
+   "horizon": 14,
+   "forecaster_id": "ensemble_mean",
+   "forecaster_name": "계열 앙상블 평균",
+   "hparams": {
+    "members": "linear"
+   },
+   "val_rmse": 0.5102444473435982,
+   "test_n": 366,
+   "test_mse": 0.16207793864515707,
+   "test_rmse": 0.40258904436802184,
+   "test_mae": 0.2830852060850964,
+   "persistence_test_rmse": 0.5454924322926255,
+   "persistence_test_mse": 0.2975619936885246,
+   "climatology_test_rmse": 0.4735113884303665,
+   "skill_vs_persistence": 0.45531370913311786,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.45651926031599355,
+   "uses_weather": true,
+   "weather_gain_ratio": -0.03810637414304452
+  },
+  {
+   "station_id": "구례교",
+   "station_name": "구례교",
+   "terrain": "mainstem",
+   "horizon": 30,
+   "forecaster_id": "ensemble_mean",
+   "forecaster_name": "계열 앙상블 평균",
+   "hparams": {
+    "members": "linear"
+   },
+   "val_rmse": 0.540616199278927,
+   "test_n": 366,
+   "test_mse": 0.1548124584237452,
+   "test_rmse": 0.3934621435713291,
+   "test_mae": 0.2671189485905984,
+   "persistence_test_rmse": 0.5723509076391945,
+   "persistence_test_mse": 0.3275855614754098,
+   "climatology_test_rmse": 0.47454272971655376,
+   "skill_vs_persistence": 0.5274136694960343,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.45651926031599355,
+   "uses_weather": true,
+   "weather_gain_ratio": -0.026025397849236853
+  },
+  {
+   "station_id": "읍내리",
+   "station_name": "읍내리",
+   "terrain": "mainstem_tidal",
+   "horizon": 1,
+   "forecaster_id": "ridge_arx",
+   "forecaster_name": "릿지 자기회귀 + 기상 (AR-X)",
+   "hparams": {
+    "p": 7,
+    "lam": 1.0,
+    "mode": "delta"
+   },
+   "val_rmse": 0.2124679135331687,
+   "test_n": 366,
+   "test_mse": 0.008421686260037869,
+   "test_rmse": 0.09176974588630978,
+   "test_mae": 0.05979804217055938,
+   "persistence_test_rmse": 0.09924599618907981,
+   "persistence_test_mse": 0.009849767759562846,
+   "climatology_test_rmse": 0.960498755810079,
+   "skill_vs_persistence": 0.14498631179790966,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.5551639768437744,
+   "uses_weather": true,
+   "weather_gain_ratio": 0.021530668895652916
+  },
+  {
+   "station_id": "읍내리",
+   "station_name": "읍내리",
+   "terrain": "mainstem_tidal",
+   "horizon": 3,
+   "forecaster_id": "seasonal_anomaly_ar",
+   "forecaster_name": "계절편차 자기회귀",
+   "hparams": {
+    "p": 30,
+    "lam": 100.0
+   },
+   "val_rmse": 0.3384961368697309,
+   "test_n": 366,
+   "test_mse": 0.019063231442751162,
+   "test_rmse": 0.13806966155803801,
+   "test_mae": 0.08801070846077552,
+   "persistence_test_rmse": 0.16552040296535717,
+   "persistence_test_mse": 0.027397003797814217,
+   "climatology_test_rmse": 0.96112506425683,
+   "skill_vs_persistence": 0.3041855385561518,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.5551639768437744,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.0031822815795966575
+  },
+  {
+   "station_id": "읍내리",
+   "station_name": "읍내리",
+   "terrain": "mainstem_tidal",
+   "horizon": 5,
+   "forecaster_id": "seasonal_anomaly_ar",
+   "forecaster_name": "계절편차 자기회귀",
+   "hparams": {
+    "p": 30,
+    "lam": 100.0
+   },
+   "val_rmse": 0.36122678801483427,
+   "test_n": 366,
+   "test_mse": 0.020663808729467183,
+   "test_rmse": 0.14374911731717585,
+   "test_mae": 0.09309823423605802,
+   "persistence_test_rmse": 0.18091233574315416,
+   "persistence_test_mse": 0.03272927322404373,
+   "climatology_test_rmse": 0.9617448377707685,
+   "skill_vs_persistence": 0.36864443680078296,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.5551639768437744,
+   "uses_weather": false,
+   "weather_gain_ratio": 0.004225310209510225
+  },
+  {
+   "station_id": "읍내리",
+   "station_name": "읍내리",
+   "terrain": "mainstem_tidal",
+   "horizon": 7,
+   "forecaster_id": "seasonal_anomaly_ar",
+   "forecaster_name": "계절편차 자기회귀",
+   "hparams": {
+    "p": 30,
+    "lam": 100.0
+   },
+   "val_rmse": 0.36647901398244803,
+   "test_n": 366,
+   "test_mse": 0.021423849979576932,
+   "test_rmse": 0.14636888323539582,
+   "test_mae": 0.09572680152122025,
+   "persistence_test_rmse": 0.187056889157873,
+   "persistence_test_mse": 0.03499027978142078,
+   "climatology_test_rmse": 0.9623481037665902,
+   "skill_vs_persistence": 0.3877199578451894,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.5551639768437744,
+   "uses_weather": false,
+   "weather_gain_ratio": 0.002144270383710234
+  },
+  {
+   "station_id": "읍내리",
+   "station_name": "읍내리",
+   "terrain": "mainstem_tidal",
+   "horizon": 10,
+   "forecaster_id": "seasonal_anomaly_ar",
+   "forecaster_name": "계절편차 자기회귀",
+   "hparams": {
+    "p": 30,
+    "lam": 100.0
+   },
+   "val_rmse": 0.3720301839933504,
+   "test_n": 366,
+   "test_mse": 0.021348838576594503,
+   "test_rmse": 0.14611241759889712,
+   "test_mae": 0.09624060392666955,
+   "persistence_test_rmse": 0.19194783045787817,
+   "persistence_test_mse": 0.03684396961748634,
+   "climatology_test_rmse": 0.9632291518616084,
+   "skill_vs_persistence": 0.4205608462324256,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.5551639768437744,
+   "uses_weather": false,
+   "weather_gain_ratio": 0.0018513289554038526
+  },
+  {
+   "station_id": "읍내리",
+   "station_name": "읍내리",
+   "terrain": "mainstem_tidal",
+   "horizon": 14,
+   "forecaster_id": "seasonal_anomaly_ar",
+   "forecaster_name": "계절편차 자기회귀",
+   "hparams": {
+    "p": 30,
+    "lam": 100.0
+   },
+   "val_rmse": 0.37655769466849515,
+   "test_n": 366,
+   "test_mse": 0.021354801014270192,
+   "test_rmse": 0.14613281977115952,
+   "test_mae": 0.09773398635004624,
+   "persistence_test_rmse": 0.1927873957118442,
+   "persistence_test_mse": 0.03716697994535521,
+   "climatology_test_rmse": 0.9644436882461287,
+   "skill_vs_persistence": 0.4254362058561898,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.5551639768437744,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.00414557306278962
+  },
+  {
+   "station_id": "읍내리",
+   "station_name": "읍내리",
+   "terrain": "mainstem_tidal",
+   "horizon": 30,
+   "forecaster_id": "seasonal_anomaly_ar",
+   "forecaster_name": "계절편차 자기회귀",
+   "hparams": {
+    "p": 30,
+    "lam": 100.0
+   },
+   "val_rmse": 0.4125000251539775,
+   "test_n": 366,
+   "test_mse": 0.020266761278519525,
+   "test_rmse": 0.1423613756554759,
+   "test_mae": 0.09637386304229158,
+   "persistence_test_rmse": 0.1838800193134976,
+   "persistence_test_mse": 0.03381186150273225,
+   "climatology_test_rmse": 0.9698701107837049,
+   "skill_vs_persistence": 0.4006020261001655,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.5551639768437744,
+   "uses_weather": false,
+   "weather_gain_ratio": 0.005996190906459864
+  },
+  {
+   "station_id": "회문리",
+   "station_name": "회문리",
+   "terrain": "dam_downstream",
+   "horizon": 1,
+   "forecaster_id": "analog_knn",
+   "forecaster_name": "유사사례 k-NN",
+   "hparams": {
+    "p": 7,
+    "k": 20
+   },
+   "val_rmse": 0.12304787865539207,
+   "test_n": 366,
+   "test_mse": 0.008822362549127197,
+   "test_rmse": 0.09392743235672525,
+   "test_mae": 0.030638647540983596,
+   "persistence_test_rmse": 0.09397127802097922,
+   "persistence_test_mse": 0.008830601092896174,
+   "climatology_test_rmse": 0.19549298092329187,
+   "skill_vs_persistence": 0.0009329539045314084,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3139592896604682,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.013213007313166436
+  },
+  {
+   "station_id": "회문리",
+   "station_name": "회문리",
+   "terrain": "dam_downstream",
+   "horizon": 3,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 90
+   },
+   "val_rmse": 0.22223145055441462,
+   "test_n": 366,
+   "test_mse": 0.030450523993938418,
+   "test_rmse": 0.17450078508115205,
+   "test_mae": 0.05916793926662256,
+   "persistence_test_rmse": 0.1953643087023679,
+   "persistence_test_mse": 0.03816721311475411,
+   "climatology_test_rmse": 0.1955070254499749,
+   "skill_vs_persistence": 0.20218109972070997,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3139592896604682,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.02780746448233473
+  },
+  {
+   "station_id": "회문리",
+   "station_name": "회문리",
+   "terrain": "dam_downstream",
+   "horizon": 5,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 90
+   },
+   "val_rmse": 0.2612261389967313,
+   "test_n": 366,
+   "test_mse": 0.038527108435098795,
+   "test_rmse": 0.19628323523698807,
+   "test_mae": 0.07377589916776423,
+   "persistence_test_rmse": 0.23468674622240393,
+   "persistence_test_mse": 0.05507786885245903,
+   "climatology_test_rmse": 0.19551960611442884,
+   "skill_vs_persistence": 0.30049747316287645,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3139592896604682,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.024962773951988204
+  },
+  {
+   "station_id": "회문리",
+   "station_name": "회문리",
+   "terrain": "dam_downstream",
+   "horizon": 7,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 90
+   },
+   "val_rmse": 0.2774404614790657,
+   "test_n": 366,
+   "test_mse": 0.03912087681121736,
+   "test_rmse": 0.1977899815744401,
+   "test_mae": 0.07863250626894823,
+   "persistence_test_rmse": 0.2425642836321726,
+   "persistence_test_mse": 0.05883743169398908,
+   "climatology_test_rmse": 0.19553594422287277,
+   "skill_vs_persistence": 0.33510223534767214,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3139592896604682,
+   "uses_weather": false,
+   "weather_gain_ratio": 0.007976666312400571
+  },
+  {
+   "station_id": "회문리",
+   "station_name": "회문리",
+   "terrain": "dam_downstream",
+   "horizon": 10,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 90
+   },
+   "val_rmse": 0.29007211507649555,
+   "test_n": 366,
+   "test_mse": 0.038971190063653606,
+   "test_rmse": 0.19741122071365044,
+   "test_mae": 0.08396077786493789,
+   "persistence_test_rmse": 0.24571908524259775,
+   "persistence_test_mse": 0.06037786885245902,
+   "climatology_test_rmse": 0.19556090962952688,
+   "skill_vs_persistence": 0.3545451205161837,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3139592896604682,
+   "uses_weather": false,
+   "weather_gain_ratio": 0.009869097216820721
+  },
+  {
+   "station_id": "회문리",
+   "station_name": "회문리",
+   "terrain": "dam_downstream",
+   "horizon": 14,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 90
+   },
+   "val_rmse": 0.3130468211189412,
+   "test_n": 366,
+   "test_mse": 0.03867859765770822,
+   "test_rmse": 0.19666875109612159,
+   "test_mae": 0.08952456745314022,
+   "persistence_test_rmse": 0.25749051656365635,
+   "persistence_test_mse": 0.06630136612021859,
+   "climatology_test_rmse": 0.19561279199146372,
+   "skill_vs_persistence": 0.41662442388327814,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3139592896604682,
+   "uses_weather": false,
+   "weather_gain_ratio": 0.009423075727527985
+  },
+  {
+   "station_id": "회문리",
+   "station_name": "회문리",
+   "terrain": "dam_downstream",
+   "horizon": 30,
+   "forecaster_id": "mean_reversion",
+   "forecaster_name": "평균 회귀 AR(1)",
+   "hparams": {
+    "window": 90
+   },
+   "val_rmse": 0.3273904098734943,
+   "test_n": 366,
+   "test_mse": 0.03830562327080412,
+   "test_rmse": 0.19571822416628484,
+   "test_mae": 0.09414183708492026,
+   "persistence_test_rmse": 0.26387041446212817,
+   "persistence_test_mse": 0.0696275956284153,
+   "climatology_test_rmse": 0.19555611068553055,
+   "skill_vs_persistence": 0.44984997794220205,
+   "regime_shift_flag": false,
+   "test_mean_shift_sigma": 0.3139592896604682,
+   "uses_weather": false,
+   "weather_gain_ratio": -0.012830327049759394
+  }
+ ],
+ "winners_by_terrain": {
+  "mainstem": {
+   "ridge_arx": 2,
+   "neural_tcn": 2,
+   "ensemble_mean": 3
+  },
+  "mainstem_tidal": {
+   "ridge_arx": 1,
+   "seasonal_anomaly_ar": 6
+  },
+  "dam_downstream": {
+   "analog_knn": 1,
+   "mean_reversion": 6
+  }
+ },
+ "model_summary": {
+  "analog_knn": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.13189288505748123,
+    "median_rmse": 0.09595023689698445,
+    "mean_mse": 0.020127618771612527,
+    "mean_mae": 0.0602566621129326,
+    "mean_skill": 0.0414888636557262,
+    "median_skill": 0.05822044240881097
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.21941225941532463,
+    "median_rmse": 0.18764165592277912,
+    "mean_mse": 0.054344745318469036,
+    "mean_mae": 0.11600079143897997,
+    "mean_skill": 0.1491411181660686,
+    "median_skill": 0.11470501493002716
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.243076410985987,
+    "median_rmse": 0.2142635247544093,
+    "mean_mse": 0.06747710852119136,
+    "mean_mae": 0.13517798269581058,
+    "mean_skill": 0.2328560635951242,
+    "median_skill": 0.20228016685646077
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.25472019952714103,
+    "median_rmse": 0.22121143911966407,
+    "mean_mse": 0.07494274932734589,
+    "mean_mae": 0.14935323436551307,
+    "mean_skill": 0.23072515809671457,
+    "median_skill": 0.1851000744522504
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.27040379433362977,
+    "median_rmse": 0.21123362778530103,
+    "mean_mse": 0.08662159789575237,
+    "mean_mae": 0.16677451882210081,
+    "mean_skill": 0.2143076921327921,
+    "median_skill": 0.2411126638738268
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2857322222702874,
+    "median_rmse": 0.22292446377743422,
+    "mean_mse": 0.10066728384372958,
+    "mean_mae": 0.18130700850030357,
+    "mean_skill": 0.27355815697491087,
+    "median_skill": 0.2504631584762774
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.28518187154899993,
+    "median_rmse": 0.22085006221609374,
+    "mean_mse": 0.09722951435081328,
+    "mean_mae": 0.18827942349726776,
+    "mean_skill": 0.25377616841817313,
+    "median_skill": 0.29949110635457155
+   }
+  },
+  "climatology": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5429134868152734,
+    "median_rmse": 0.47274872371244925,
+    "mean_mse": 0.39475557375824466,
+    "mean_mae": 0.4633275969378417,
+    "mean_skill": -33.32009362884523,
+    "median_skill": -3.969527377210202
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5431584719321828,
+    "median_rmse": 0.47284332608974333,
+    "mean_mse": 0.39518839905686803,
+    "mean_mae": 0.46362744061731,
+    "mean_skill": -11.187230671533797,
+    "median_skill": -0.8426241019797465
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5434017821908136,
+    "median_rmse": 0.4729409026872434,
+    "mean_mse": 0.39561804892949587,
+    "mean_mae": 0.46391619931004585,
+    "mean_skill": -9.093513395129499,
+    "median_skill": -0.3257404558714154
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5436410589089826,
+    "median_rmse": 0.4730391287374849,
+    "mean_mse": 0.396038065207667,
+    "mean_mae": 0.4642040783075399,
+    "mean_skill": -8.4370942249191,
+    "median_skill": -0.19370605837019328
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5439977660769991,
+    "median_rmse": 0.4732032367398621,
+    "mean_mse": 0.39665859054408115,
+    "mean_mae": 0.46464787407489155,
+    "mean_skill": -7.947606296754887,
+    "median_skill": -0.027256044902915333
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5445226228893196,
+    "median_rmse": 0.4735113884303665,
+    "mean_mse": 0.397543009053915,
+    "mean_mae": 0.46534475470598147,
+    "mean_skill": -7.785639445399187,
+    "median_skill": 0.2464997555838726
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.5466563170619297,
+    "median_rmse": 0.47454272971655376,
+    "mean_mse": 0.4013603421816286,
+    "mean_mae": 0.4680874481623863,
+    "mean_skill": -8.685575134935448,
+    "median_skill": 0.31257409113941625
+   }
+  },
+  "ensemble_mean": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.12387677853307645,
+    "median_rmse": 0.09192238118308321,
+    "mean_mse": 0.017737743612270127,
+    "mean_mae": 0.05669691320862899,
+    "mean_skill": 0.1540971575469922,
+    "median_skill": 0.1482641416745959
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.20844620862364224,
+    "median_rmse": 0.16987512002174668,
+    "mean_mse": 0.048657361032931105,
+    "mean_mae": 0.11030907159960812,
+    "mean_skill": 0.2257128289301645,
+    "median_skill": 0.22296404431689887
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.23029055048458566,
+    "median_rmse": 0.19147980605844953,
+    "mean_mse": 0.0602048665179295,
+    "mean_mae": 0.13092001539441933,
+    "mean_skill": 0.30509372589933065,
+    "median_skill": 0.29799527057569886
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2361506155698162,
+    "median_rmse": 0.19354398238592385,
+    "mean_mse": 0.06384890892122629,
+    "mean_mae": 0.13960796080470084,
+    "mean_skill": 0.3306972693090593,
+    "median_skill": 0.3246941531684121
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.24302033139070353,
+    "median_rmse": 0.19300363804124,
+    "mean_mse": 0.06852080805270289,
+    "mean_mae": 0.1468652173530719,
+    "mean_skill": 0.35154252927788643,
+    "median_skill": 0.3410045770666268
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.24923229636445346,
+    "median_rmse": 0.1885482224331544,
+    "mean_mse": 0.07404642872004356,
+    "mean_mae": 0.15515689621891074,
+    "mean_skill": 0.4198793971583868,
+    "median_skill": 0.45531370913311786
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.24267634935053514,
+    "median_rmse": 0.18281230087874142,
+    "mean_mse": 0.07042075183019456,
+    "mean_mae": 0.14935365494794173,
+    "mean_skill": 0.45544025937347543,
+    "median_skill": 0.5200130486921408
+   }
+  },
+  "mean_reversion": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.13139884779203545,
+    "median_rmse": 0.09503929954632326,
+    "mean_mse": 0.020164247771702507,
+    "mean_mae": 0.05985560477776039,
+    "mean_skill": 0.058124751408588714,
+    "median_skill": 0.048909900013265006
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.21517633657994595,
+    "median_rmse": 0.17450078508115205,
+    "mean_mse": 0.05274165638836826,
+    "mean_mae": 0.11386910831272369,
+    "mean_skill": 0.1883930958229666,
+    "median_skill": 0.20218109972070997
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.24046786136978915,
+    "median_rmse": 0.19628323523698807,
+    "mean_mse": 0.06723334517643834,
+    "mean_mae": 0.13712951004700544,
+    "mean_skill": 0.25951892426081624,
+    "median_skill": 0.30049747316287645
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.24870778401278035,
+    "median_rmse": 0.1977899815744401,
+    "mean_mse": 0.07279637312747635,
+    "mean_mae": 0.14941595313251435,
+    "mean_skill": 0.2760991906755799,
+    "median_skill": 0.32318952307437887
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.24527960313447505,
+    "median_rmse": 0.19741122071365044,
+    "mean_mse": 0.06945441585912933,
+    "mean_mae": 0.15398544347345972,
+    "mean_skill": 0.3365420578602449,
+    "median_skill": 0.3383984139524525
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.25662707057787504,
+    "median_rmse": 0.19666875109612159,
+    "mean_mse": 0.07843008029875287,
+    "mean_mae": 0.16477106048753265,
+    "mean_skill": 0.38569694080664707,
+    "median_skill": 0.41662442388327814
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.2555640516594965,
+    "median_rmse": 0.19571822416628484,
+    "mean_mse": 0.07722758597392226,
+    "mean_mae": 0.16821994396379925,
+    "mean_skill": 0.3870900839064692,
+    "median_skill": 0.44984997794220205
+   }
+  },
+  "neural_gru": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.13156397614720258,
+    "median_rmse": 0.113953843527286,
+    "mean_mse": 0.019152850088020187,
+    "mean_mae": 0.06537595575954198,
+    "mean_skill": -0.03407130464221623,
+    "median_skill": 0.17692448713671793
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.23049644201381916,
+    "median_rmse": 0.22718937310482631,
+    "mean_mse": 0.058076312991683955,
+    "mean_mae": 0.12181912814853535,
+    "mean_skill": 0.01145832291193564,
+    "median_skill": 0.1652791993882069
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2564394304903119,
+    "median_rmse": 0.2485436474496085,
+    "mean_mse": 0.07272216122614518,
+    "mean_mae": 0.1436887819747427,
+    "mean_skill": 0.11110510192387706,
+    "median_skill": 0.2218172662470742
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.265589994444865,
+    "median_rmse": 0.25436784143211905,
+    "mean_mse": 0.0778426896723992,
+    "mean_mae": 0.1576890539866783,
+    "mean_skill": 0.11719741269609474,
+    "median_skill": 0.20316306828974184
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2735543371380399,
+    "median_rmse": 0.24445219958144648,
+    "mean_mse": 0.08476164907403061,
+    "mean_mae": 0.16803740890765392,
+    "mean_skill": 0.15868279062883184,
+    "median_skill": 0.22762539389163183
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2679498384991853,
+    "median_rmse": 0.19564609470479424,
+    "mean_mse": 0.08609995031418018,
+    "mean_mae": 0.1760508616914969,
+    "mean_skill": 0.329742909808312,
+    "median_skill": 0.3596437891162265
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.27118875079942567,
+    "median_rmse": 0.1962541814269438,
+    "mean_mse": 0.08530210276330852,
+    "mean_mae": 0.1795886635987868,
+    "mean_skill": 0.25898353461087614,
+    "median_skill": 0.44983643080936664
+   }
+  },
+  "neural_lstm": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.12394562516571046,
+    "median_rmse": 0.09297120758388401,
+    "mean_mse": 0.017327301364804953,
+    "mean_mae": 0.061210624419319376,
+    "mean_skill": 0.12765522663411447,
+    "median_skill": 0.13629059794747223
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2149761236888137,
+    "median_rmse": 0.1794480931616494,
+    "mean_mse": 0.05149200416932648,
+    "mean_mae": 0.11707757329062467,
+    "mean_skill": 0.17301119305760734,
+    "median_skill": 0.17588760764893185
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.23701525306114787,
+    "median_rmse": 0.19835511916998966,
+    "mean_mse": 0.0636301829975181,
+    "mean_mae": 0.1390012963764997,
+    "mean_skill": 0.2625851549019799,
+    "median_skill": 0.2560078855270146
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.24816778632802441,
+    "median_rmse": 0.20923990935760425,
+    "mean_mse": 0.07011099005196726,
+    "mean_mae": 0.14909292556587608,
+    "mean_skill": 0.25818715532439807,
+    "median_skill": 0.25589308697763546
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.27230754880035485,
+    "median_rmse": 0.2470451883176411,
+    "mean_mse": 0.08380709050554663,
+    "mean_mae": 0.16419476594966584,
+    "mean_skill": 0.1632597147453211,
+    "median_skill": 0.2467049837306674
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2673973994521912,
+    "median_rmse": 0.19955527761296077,
+    "mean_mse": 0.08529291484284912,
+    "mean_mae": 0.1720317726238124,
+    "mean_skill": 0.33085253962946254,
+    "median_skill": 0.3710735530747765
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2779299775073763,
+    "median_rmse": 0.19932741905267964,
+    "mean_mse": 0.09035256454921557,
+    "mean_mae": 0.17874169110062657,
+    "mean_skill": 0.23945346156294553,
+    "median_skill": 0.4094986426691124
+   }
+  },
+  "neural_mlp": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.13001500317057801,
+    "median_rmse": 0.09905661399079894,
+    "mean_mse": 0.01907048116717792,
+    "mean_mae": 0.06544710897915985,
+    "mean_skill": 0.041772766139546946,
+    "median_skill": 0.0038127786519879248
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.21686170260297255,
+    "median_rmse": 0.1847908401039946,
+    "mean_mse": 0.05193025925251893,
+    "mean_mae": 0.12298869697129079,
+    "mean_skill": 0.15060759888650713,
+    "median_skill": 0.15916943948905837
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2442147969837991,
+    "median_rmse": 0.21024342790244735,
+    "mean_mse": 0.06658900725099694,
+    "mean_mae": 0.1471218231877023,
+    "mean_skill": 0.20584892982639016,
+    "median_skill": 0.1974580735035446
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.25551714443788526,
+    "median_rmse": 0.23027346202893614,
+    "mean_mse": 0.07324194149515388,
+    "mean_mae": 0.15883057366558354,
+    "mean_skill": 0.20200371309605716,
+    "median_skill": 0.24921720514917656
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.26870189700136954,
+    "median_rmse": 0.2525260437610773,
+    "mean_mse": 0.08044525344704488,
+    "mean_mae": 0.16667808306393464,
+    "mean_skill": 0.16807097725817222,
+    "median_skill": 0.24785258062059412
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2667437430140835,
+    "median_rmse": 0.22156166365299854,
+    "mean_mse": 0.08306006485461005,
+    "mean_mae": 0.17405079030679796,
+    "mean_skill": 0.32424404350906977,
+    "median_skill": 0.29786609209609727
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2671186029574079,
+    "median_rmse": 0.20154234836491053,
+    "mean_mse": 0.08291153056088477,
+    "mean_mae": 0.17601969950719057,
+    "mean_skill": 0.3037960159759297,
+    "median_skill": 0.4166204100854224
+   }
+  },
+  "neural_tcn": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.13008889251857372,
+    "median_rmse": 0.10154664948659725,
+    "mean_mse": 0.019082123572840507,
+    "mean_mae": 0.0656564927408283,
+    "mean_skill": 0.04021440514872291,
+    "median_skill": 0.01844141767054097
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.21492574420689511,
+    "median_rmse": 0.16629386872518784,
+    "mean_mse": 0.053107109350697575,
+    "mean_mae": 0.12005215265515663,
+    "mean_skill": 0.19455450553068043,
+    "median_skill": 0.21640351758589393
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.24629423814935147,
+    "median_rmse": 0.1867224720050812,
+    "mean_mse": 0.07219543214381986,
+    "mean_mae": 0.14462229664808898,
+    "mean_skill": 0.23253649760192988,
+    "median_skill": 0.2651601458253987
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.259678884096332,
+    "median_rmse": 0.19188644175586755,
+    "mean_mse": 0.08035959248726535,
+    "mean_mae": 0.15941466474958849,
+    "mean_skill": 0.21129264507231937,
+    "median_skill": 0.19998693842742432
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2634909491094881,
+    "median_rmse": 0.19286976821594198,
+    "mean_mse": 0.08510931901563834,
+    "mean_mae": 0.1654113138333906,
+    "mean_skill": 0.27303192640215823,
+    "median_skill": 0.3211342423790948
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.26649743708192464,
+    "median_rmse": 0.19153235355129325,
+    "mean_mse": 0.08760931477278439,
+    "mean_mae": 0.17010348100903797,
+    "mean_skill": 0.36077503916341075,
+    "median_skill": 0.3262787194526906
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.26108192422942017,
+    "median_rmse": 0.20126872380862926,
+    "mean_mse": 0.07675653250034808,
+    "mean_mae": 0.17853038322166595,
+    "mean_skill": 0.2715127027316725,
+    "median_skill": 0.4817231409102254
+   }
+  },
+  "prophet_hybrid": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.12650312116167947,
+    "median_rmse": 0.09364825030699746,
+    "mean_mse": 0.018845062706167603,
+    "mean_mae": 0.06604338312077078,
+    "mean_skill": 0.1342875634630031,
+    "median_skill": 0.10962420641364634
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.20948118817178485,
+    "median_rmse": 0.16374802751576006,
+    "mean_mse": 0.049660653645352694,
+    "mean_mae": 0.13097462987962008,
+    "mean_skill": 0.2236223320040138,
+    "median_skill": 0.19948632884188722
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.233027155291287,
+    "median_rmse": 0.18357373285278747,
+    "mean_mse": 0.06197085644947883,
+    "mean_mae": 0.15757591402441415,
+    "mean_skill": 0.28669551881233174,
+    "median_skill": 0.24844796436110317
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.24098191039633007,
+    "median_rmse": 0.184620139768628,
+    "mean_mse": 0.06667017676694141,
+    "mean_mae": 0.16927525077473904,
+    "mean_skill": 0.29673208638371,
+    "median_skill": 0.2629552823099852
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2503916539113833,
+    "median_rmse": 0.18344928195258045,
+    "mean_mse": 0.07272815097642597,
+    "mean_mae": 0.1811176747398933,
+    "mean_skill": 0.29979354461185775,
+    "median_skill": 0.29516030532616944
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.26020957436153896,
+    "median_rmse": 0.18722784522093755,
+    "mean_mse": 0.0795593881806,
+    "mean_mae": 0.19386382007502465,
+    "mean_skill": 0.33188492087972776,
+    "median_skill": 0.423742751748557
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2794109292789592,
+    "median_rmse": 0.22967728139732405,
+    "mean_mse": 0.09002557961471654,
+    "mean_mae": 0.21537058139851664,
+    "mean_skill": 0.14006419538529977,
+    "median_skill": 0.4327411017104523
+   }
+  },
+  "ridge_ar": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.1266845235684481,
+    "median_rmse": 0.09311291951117591,
+    "mean_mse": 0.0188753281007771,
+    "mean_mae": 0.05923159768668624,
+    "mean_skill": 0.13088432244344705,
+    "median_skill": 0.11977459859627004
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2074339311370642,
+    "median_rmse": 0.16623085155697706,
+    "mean_mse": 0.04890110031380065,
+    "mean_mae": 0.11320423849763389,
+    "mean_skill": 0.24368183483503858,
+    "median_skill": 0.2719636036192662
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.22965449315335462,
+    "median_rmse": 0.18810172703329647,
+    "mean_mse": 0.06046722952579131,
+    "mean_mae": 0.13357324444594612,
+    "mean_skill": 0.3151990223467745,
+    "median_skill": 0.3219408844633912
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.23681594084093383,
+    "median_rmse": 0.19015549580416666,
+    "mean_mse": 0.06473752230333306,
+    "mean_mae": 0.1433304483848695,
+    "mean_skill": 0.33127561424300145,
+    "median_skill": 0.32567114147889364
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2446242295342342,
+    "median_rmse": 0.18989151171769458,
+    "mean_mse": 0.07014311539088133,
+    "mean_mae": 0.15103142359519786,
+    "mean_skill": 0.3488018395912394,
+    "median_skill": 0.33038018365856003
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2525108538736856,
+    "median_rmse": 0.18562389155471942,
+    "mean_mse": 0.07616197033513845,
+    "mean_mae": 0.16048042210629185,
+    "mean_skill": 0.4022112157138922,
+    "median_skill": 0.4366596473307408
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.25476146745386924,
+    "median_rmse": 0.18271386923254654,
+    "mean_mse": 0.07589581043547954,
+    "mean_mae": 0.16257436821008142,
+    "mean_skill": 0.3605964956934284,
+    "median_skill": 0.5041877965801194
+   }
+  },
+  "ridge_arx": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 2,
+    "mean_rmse": 0.12074728780616521,
+    "median_rmse": 0.09176974588630978,
+    "mean_mse": 0.016609716150858548,
+    "mean_mae": 0.06180919221671726,
+    "mean_skill": 0.1832322633162766,
+    "median_skill": 0.16062553133075452
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.2083235065420965,
+    "median_rmse": 0.1665431517067549,
+    "mean_mse": 0.04887893487974815,
+    "mean_mae": 0.11083712060580403,
+    "mean_skill": 0.2301170078007909,
+    "median_skill": 0.2211038662603313
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.23001319734486173,
+    "median_rmse": 0.18823720124042387,
+    "mean_mse": 0.06017712065434199,
+    "mean_mae": 0.13170642743196423,
+    "mean_skill": 0.3068904195488447,
+    "median_skill": 0.285389358948144
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.23800391688832276,
+    "median_rmse": 0.19041606933515953,
+    "mean_mse": 0.06511039563281971,
+    "mean_mae": 0.14204655039513797,
+    "mean_skill": 0.32091679812198837,
+    "median_skill": 0.2962214521965194
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.24423182197427828,
+    "median_rmse": 0.18793094218207912,
+    "mean_mse": 0.06979041521000916,
+    "mean_mae": 0.14975268798738703,
+    "mean_skill": 0.3485722042419548,
+    "median_skill": 0.31763155494395334
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2513199032280377,
+    "median_rmse": 0.18358587269198337,
+    "mean_mse": 0.07559203788624919,
+    "mean_mae": 0.15869820946764637,
+    "mean_skill": 0.40860385461281834,
+    "median_skill": 0.43921870155433407
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.25537840685028207,
+    "median_rmse": 0.18279483393399842,
+    "mean_mse": 0.07602290173947666,
+    "mean_mae": 0.16111390423191616,
+    "mean_skill": 0.3524425654469812,
+    "median_skill": 0.5057571925667198
+   }
+  },
+  "seasonal_anomaly_ar": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.1264992255233303,
+    "median_rmse": 0.09271560652308218,
+    "mean_mse": 0.01882352582217775,
+    "mean_mae": 0.05788808351969427,
+    "mean_skill": 0.13359574418200182,
+    "median_skill": 0.12727041867588995
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.20725830130040768,
+    "median_rmse": 0.1689404607276612,
+    "mean_mse": 0.04889365948636467,
+    "mean_mae": 0.1086512095530061,
+    "mean_skill": 0.24662195889452954,
+    "median_skill": 0.2522147429244307
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.22873042007635866,
+    "median_rmse": 0.1896960033414589,
+    "mean_mse": 0.06035940713167972,
+    "mean_mae": 0.12633183426231565,
+    "mean_skill": 0.32593070296918286,
+    "median_skill": 0.34666002092206594
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.23513823184178986,
+    "median_rmse": 0.19226875887685435,
+    "mean_mse": 0.06430551084334439,
+    "mean_mae": 0.13506238957649475,
+    "mean_skill": 0.3472610682559816,
+    "median_skill": 0.37170480465036004
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.2413483217508948,
+    "median_rmse": 0.19180699132357087,
+    "mean_mse": 0.0690772352495047,
+    "mean_mae": 0.14222661267350742,
+    "mean_skill": 0.37575255517065553,
+    "median_skill": 0.39067206875914684
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.24760978971108014,
+    "median_rmse": 0.1888810957276759,
+    "mean_mse": 0.07444810452019775,
+    "mean_mae": 0.15098010964194525,
+    "mean_skill": 0.4428087989812169,
+    "median_skill": 0.44107968171121514
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 1,
+    "mean_rmse": 0.24159937565538145,
+    "median_rmse": 0.18557311584028782,
+    "mean_mse": 0.0707349625866532,
+    "mean_mae": 0.14798381453170112,
+    "mean_skill": 0.47507182329904857,
+    "median_skill": 0.5054061394499906
+   }
+  },
+  "persistence": {
+   "1": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.1350947138977655,
+    "median_rmse": 0.09924599618907981,
+    "mean_mse": 0.021217575045537344,
+    "mean_mae": 0.05736939890710383,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   },
+   "3": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2364070454208248,
+    "median_rmse": 0.1953643087023679,
+    "mean_mse": 0.062300827204007286,
+    "mean_mae": 0.1144361566484517,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   },
+   "5": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.27544970950391917,
+    "median_rmse": 0.23468674622240393,
+    "mean_mse": 0.08550758093806922,
+    "mean_mae": 0.14129298724954464,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   },
+   "7": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.2875272543764216,
+    "median_rmse": 0.2425642836321726,
+    "mean_mse": 0.09376086142076502,
+    "mean_mae": 0.15472768670309656,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   },
+   "10": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.30151674355112956,
+    "median_rmse": 0.24571908524259775,
+    "mean_mse": 0.10506728941712203,
+    "mean_mae": 0.16947868852459017,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   },
+   "14": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.33192344818937536,
+    "median_rmse": 0.25749051656365635,
+    "mean_mse": 0.1336767799180328,
+    "mean_mae": 0.1922829690346084,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   },
+   "30": {
+    "n_stations": 3,
+    "selected_count": 0,
+    "mean_rmse": 0.34003378047160676,
+    "median_rmse": 0.26387041446212817,
+    "mean_mse": 0.1436750062021858,
+    "mean_mae": 0.20075218579234974,
+    "mean_skill": 0.0,
+    "median_skill": 0.0
+   }
+  }
+ },
+ "cells_total": 21,
+ "cells_beating_persistence": 21,
+ "cells_weather_helps": 7,
+ "cells_with_weather_candidate": 21,
+ "note_ko": "test_* 는 학습·선택에 쓰지 않은 시험 연도 오차. skill_vs_persistence = 1 − MSE/MSE_persistence (양수면 직전값 유지보다 낫다). 모델은 지점×예측일수마다 검증 연도별 폴드에서 persistence 대비 MSE 비율 평균이 최소인 후보로 골랐다.",
+ "trained_now": [
+  "구례교",
+  "읍내리",
+  "회문리"
+ ],
+ "failures": {},
+ "allowed_forecasters": null
+}

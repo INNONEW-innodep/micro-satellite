@@ -1,0 +1,1600 @@
+{
+ "schema": "watercast.gauge.experiment.future_rain/1",
+ "region_id": "geum_daecheong",
+ "region_name": "금강 대청댐 (대전·청주)",
+ "generated_at": "2026-09-09T14:25:57+00:00",
+ "split": {
+  "train_end": "2020-12-31",
+  "val_start": "2021-01-01",
+  "val_end": "2023-12-31",
+  "test_start": "2024-01-01",
+  "test_end": "2024-12-31"
+ },
+ "horizon_max": 30,
+ "report_horizons": [
+  1,
+  3,
+  5,
+  7,
+  10,
+  14,
+  30
+ ],
+ "forecasters": [
+  "ridge_arx",
+  "ridge_arx_future"
+ ],
+ "variants": {
+  "future_3d": {
+   "future_days": 3
+  },
+  "future_all": {
+   "future_days": "all"
+  }
+ },
+ "n_stations": 3,
+ "stations": {
+  "대청댐": {
+   "horizons": {
+    "1": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 30,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.3528855124796608,
+       "mse": 0.12452818491803284,
+       "mae": 0.10693060109289611,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.3262223089949941,
+       "mse": 0.1064209948860254,
+       "mae": 0.12629059890813896,
+       "skill_vs_persistence": 0.1454063595637084
+      },
+      "future_3d": {
+       "rmse": 0.3149910918159293,
+       "mse": 0.0992193879233912,
+       "mae": 0.11496790341353691,
+       "skill_vs_persistence": 0.2032375000992782,
+       "delta_rmse_cm": 1.1231217179064779,
+       "skill_gain_pp": 5.783114053556981
+      },
+      "future_all": {
+       "rmse": 0.3149910918159293,
+       "mse": 0.0992193879233912,
+       "mae": 0.11496790341353691,
+       "skill_vs_persistence": 0.2032375000992782,
+       "delta_rmse_cm": 1.1231217179064779,
+       "skill_gain_pp": 5.783114053556981
+      }
+     }
+    },
+    "3": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.8447423840011044,
+       "mse": 0.7135896953278692,
+       "mae": 0.2932150273224046,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.7860070461001432,
+       "mse": 0.6178070765190725,
+       "mae": 0.3156810435264054,
+       "skill_vs_persistence": 0.1342264601575951
+      },
+      "future_3d": {
+       "rmse": 0.7643393326636839,
+       "mse": 0.5842146154567657,
+       "mae": 0.30989869021781286,
+       "skill_vs_persistence": 0.18130177708306205,
+       "delta_rmse_cm": 2.1667713436459235,
+       "skill_gain_pp": 4.707531692546696
+      },
+      "future_all": {
+       "rmse": 0.7643393326636839,
+       "mse": 0.5842146154567657,
+       "mae": 0.30989869021781286,
+       "skill_vs_persistence": 0.18130177708306205,
+       "delta_rmse_cm": 2.1667713436459235,
+       "skill_gain_pp": 4.707531692546696
+      }
+     }
+    },
+    "5": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 1.1271420825168086,
+       "mse": 1.2704492741803282,
+       "mae": 0.4418980874316944,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 1.0495712863192992,
+       "mse": 1.1015998850659485,
+       "mae": 0.4695162230153645,
+       "skill_vs_persistence": 0.13290525843569656
+      },
+      "future_3d": {
+       "rmse": 1.0088653251287518,
+       "mse": 1.017809244247142,
+       "mae": 0.4483027880364191,
+       "skill_vs_persistence": 0.19885880929499145,
+       "delta_rmse_cm": 4.070596119054737,
+       "skill_gain_pp": 6.595355085929489
+      },
+      "future_all": {
+       "rmse": 1.0165915634538163,
+       "mse": 1.0334584068854746,
+       "mae": 0.45262134065250403,
+       "skill_vs_persistence": 0.18654099153054016,
+       "delta_rmse_cm": 3.2979722865482897,
+       "skill_gain_pp": 5.36357330948436
+      }
+     }
+    },
+    "7": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 1.2502931809840847,
+       "mse": 1.5632330384153013,
+       "mae": 0.5596983606557381,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 1.1626154126346158,
+       "mse": 1.3516745976955578,
+       "mae": 0.5954654359510598,
+       "skill_vs_persistence": 0.1353339108890681
+      },
+      "future_3d": {
+       "rmse": 1.1274211728065004,
+       "mse": 1.2710785008923848,
+       "mae": 0.5634485729470364,
+       "skill_vs_persistence": 0.18689122500832167,
+       "delta_rmse_cm": 3.5194239828115315,
+       "skill_gain_pp": 5.155731411925357
+      },
+      "future_all": {
+       "rmse": 1.1213583439841486,
+       "mse": 1.2574445356228718,
+       "mae": 0.5699640447823011,
+       "skill_vs_persistence": 0.19561287106778202,
+       "delta_rmse_cm": 4.125706865046719,
+       "skill_gain_pp": 6.0278960178713925
+      }
+     }
+    },
+    "10": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 1.3597533813379947,
+       "mse": 1.84892925806011,
+       "mae": 0.6829784153005468,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 1.2608365693373984,
+       "mse": 1.5897088545785005,
+       "mae": 0.7372488569022968,
+       "skill_vs_persistence": 0.14020028205599522
+      },
+      "future_3d": {
+       "rmse": 1.22732210959615,
+       "mse": 1.5063195607035438,
+       "mae": 0.709898434495373,
+       "skill_vs_persistence": 0.18530167980360213,
+       "delta_rmse_cm": 3.351445974124845,
+       "skill_gain_pp": 4.510139774760691
+      },
+      "future_all": {
+       "rmse": 1.1870424890205282,
+       "mse": 1.4090698707400506,
+       "mae": 0.6824887200156751,
+       "skill_vs_persistence": 0.2378995223330277,
+       "delta_rmse_cm": 7.379408031687018,
+       "skill_gain_pp": 9.769924027703247
+      }
+     }
+    },
+    "14": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 1.4470948329580102,
+       "mse": 2.0940834555737715,
+       "mae": 0.8011480874316942,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 1.35121596295028,
+       "mse": 1.8257845785316522,
+       "mae": 0.8937739268546044,
+       "skill_vs_persistence": 0.12812234217695317
+      },
+      "future_3d": {
+       "rmse": 1.3113912940072587,
+       "mse": 1.7197471259980324,
+       "mae": 0.8602930816634257,
+       "skill_vs_persistence": 0.1787590311070827,
+       "delta_rmse_cm": 3.982466894302128,
+       "skill_gain_pp": 5.063668893012951
+      },
+      "future_all": {
+       "rmse": 1.222855539727131,
+       "mse": 1.4953756710413328,
+       "mae": 0.7971898078921626,
+       "skill_vs_persistence": 0.28590445282344057,
+       "delta_rmse_cm": 12.8360423223149,
+       "skill_gain_pp": 15.77821106464874
+      }
+     }
+    },
+    "30": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 1.6401878613580971,
+       "mse": 2.6902162205464486,
+       "mae": 1.1652316939890714,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 1.545824803401005,
+       "mse": 2.3895743228097555,
+       "mae": 1.1989127274408249,
+       "skill_vs_persistence": 0.11175380456059603
+      },
+      "future_3d": {
+       "rmse": 1.5334313299455198,
+       "mse": 2.3514116436584858,
+       "mae": 1.185633700999472,
+       "skill_vs_persistence": 0.125939533893355,
+       "delta_rmse_cm": 1.2393473455485138,
+       "skill_gain_pp": 1.4185729332758967
+      },
+      "future_all": {
+       "rmse": 1.3255195712388501,
+       "mse": 1.7570021337372248,
+       "mae": 0.9876714106595536,
+       "skill_vs_persistence": 0.34689185191949556,
+       "delta_rmse_cm": 22.03052321621548,
+       "skill_gain_pp": 23.513804735889956
+      }
+     }
+    }
+   },
+   "events": [
+    {
+     "date": "2024-07-10",
+     "rise_m": 3.769999999999996,
+     "level_m": 78.851,
+     "errors": {
+      "D+1": {
+       "persistence": 3.769999999999996,
+       "ridge_arx": 3.6305015846815394,
+       "future_all": 3.5306329983297644,
+       "future_rain_mm": 88.6
+      },
+      "D+3": {
+       "persistence": 7.437200000000004,
+       "ridge_arx": 7.148795804493105,
+       "future_all": 6.925411562176649,
+       "future_rain_mm": 241.4
+      }
+     }
+    },
+    {
+     "date": "2024-07-08",
+     "rise_m": 2.3278000000000105,
+     "level_m": 73.7416,
+     "errors": {
+      "D+1": {
+       "persistence": 2.3278000000000105,
+       "ridge_arx": 2.1042113193854703,
+       "future_all": 2.018754440289058,
+       "future_rain_mm": 137.5
+      },
+      "D+3": {
+       "persistence": 2.4846000000000004,
+       "ridge_arx": 2.361443925539689,
+       "future_all": 2.123422542910774,
+       "future_rain_mm": 173.8
+      }
+     }
+    },
+    {
+     "date": "2024-09-21",
+     "rise_m": 1.9808000000000021,
+     "level_m": 72.5617,
+     "errors": {
+      "D+1": {
+       "persistence": 1.9808000000000021,
+       "ridge_arx": 1.689000101004396,
+       "future_all": 1.5670670829690465,
+       "future_rain_mm": 131.2
+      },
+      "D+3": {
+       "persistence": 2.126500000000007,
+       "ridge_arx": 1.9002998693927111,
+       "future_all": 1.6109253005112691,
+       "future_rain_mm": 176.79999999999998
+      }
+     }
+    },
+    {
+     "date": "2024-07-09",
+     "rise_m": 1.3393999999999977,
+     "level_m": 75.081,
+     "errors": {
+      "D+1": {
+       "persistence": 1.3393999999999977,
+       "ridge_arx": 0.9824841842609828,
+       "future_all": 0.9697466115662223,
+       "future_rain_mm": 15.3
+      },
+      "D+3": {
+       "persistence": 3.7819999999999965,
+       "ridge_arx": 3.8336487127792225,
+       "future_all": 3.5714995885147403,
+       "future_rain_mm": 189.0
+      }
+     }
+    },
+    {
+     "date": "2024-09-22",
+     "rise_m": 1.1962999999999937,
+     "level_m": 73.758,
+     "errors": {
+      "D+1": {
+       "persistence": 1.1962999999999937,
+       "ridge_arx": 0.7825990328588972,
+       "future_all": 0.8333941126373219,
+       "future_rain_mm": 0.0
+      },
+      "D+3": {
+       "persistence": 3.2567999999999984,
+       "ridge_arx": 3.140712580807758,
+       "future_all": 2.834604185018648,
+       "future_rain_mm": 176.79999999999998
+      }
+     }
+    }
+   ],
+   "station": {
+    "id": "대청댐",
+    "name": "대청댐",
+    "terrain": "reservoir"
+   }
+  },
+  "대청조정지댐": {
+   "horizons": {
+    "1": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.24374934619500374,
+       "mse": 0.05941374377049178,
+       "mae": 0.11063989071038245,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.23450879344794218,
+       "mse": 0.05499437420440961,
+       "mae": 0.11303443771146839,
+       "skill_vs_persistence": 0.07438295057038768
+      },
+      "future_3d": {
+       "rmse": 0.23431125950656856,
+       "mse": 0.05490176633155451,
+       "mae": 0.11395524339948164,
+       "skill_vs_persistence": 0.07594164502352352,
+       "delta_rmse_cm": 0.01975339413736177,
+       "skill_gain_pp": 0.15586944531358338
+      },
+      "future_all": {
+       "rmse": 0.23431125950656856,
+       "mse": 0.05490176633155451,
+       "mae": 0.11395524339948164,
+       "skill_vs_persistence": 0.07594164502352352,
+       "delta_rmse_cm": 0.01975339413736177,
+       "skill_gain_pp": 0.15586944531358338
+      }
+     }
+    },
+    "3": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 30,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.2978468243326212,
+       "mse": 0.08871273076502734,
+       "mae": 0.16634316939890706,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.27201362571513626,
+       "mse": 0.07399141257469423,
+       "mae": 0.17521366087386944,
+       "skill_vs_persistence": 0.16594369335022885
+      },
+      "future_3d": {
+       "rmse": 0.2682737295427651,
+       "mse": 0.07197079396278469,
+       "mae": 0.16868492477971306,
+       "skill_vs_persistence": 0.18872079190738555,
+       "delta_rmse_cm": 0.37398961723711377,
+       "skill_gain_pp": 2.2777098557156705
+      },
+      "future_all": {
+       "rmse": 0.2682737295427651,
+       "mse": 0.07197079396278469,
+       "mae": 0.16868492477971306,
+       "skill_vs_persistence": 0.18872079190738555,
+       "delta_rmse_cm": 0.37398961723711377,
+       "skill_gain_pp": 2.2777098557156705
+      }
+     }
+    },
+    "5": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 30,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.3406642946352673,
+       "mse": 0.11605216163934423,
+       "mae": 0.19802404371584692,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.2960896769235137,
+       "mse": 0.0876690967806707,
+       "mae": 0.19307350708912274,
+       "skill_vs_persistence": 0.24457161726017396
+      },
+      "future_3d": {
+       "rmse": 0.2888639948913549,
+       "mse": 0.0834424075445927,
+       "mae": 0.1865741149900473,
+       "skill_vs_persistence": 0.28099221620785486,
+       "delta_rmse_cm": 0.7225682032158787,
+       "skill_gain_pp": 3.6420598947680904
+      },
+      "future_all": {
+       "rmse": 0.2886377652860803,
+       "mse": 0.08331175954934239,
+       "mae": 0.18577049631625145,
+       "skill_vs_persistence": 0.2821179858049462,
+       "delta_rmse_cm": 0.7451911637433362,
+       "skill_gain_pp": 3.7546368544772224
+      }
+     }
+    },
+    "7": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 30,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.3477422658271827,
+       "mse": 0.12092468344262298,
+       "mae": 0.21067486338797814,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.2957309991981424,
+       "mse": 0.0874568238867317,
+       "mae": 0.1965815591148529,
+       "skill_vs_persistence": 0.2767661539653423
+      },
+      "future_3d": {
+       "rmse": 0.2918251892560758,
+       "mse": 0.08516194108434445,
+       "mae": 0.19258509562549414,
+       "skill_vs_persistence": 0.29574394027872264,
+       "delta_rmse_cm": 0.3905809942066574,
+       "skill_gain_pp": 1.8977786313380318
+      },
+      "future_all": {
+       "rmse": 0.28862538702581736,
+       "mse": 0.08330461403580287,
+       "mae": 0.19121031827850324,
+       "skill_vs_persistence": 0.3111033110512156,
+       "delta_rmse_cm": 0.7105612172325027,
+       "skill_gain_pp": 3.433715708587326
+      }
+     }
+    },
+    "10": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 30,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.3621593490040515,
+       "mse": 0.13115939407103838,
+       "mae": 0.22634617486338804,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.304036463896193,
+       "mse": 0.09243817137850106,
+       "mae": 0.20476914636158455,
+       "skill_vs_persistence": 0.29522264086981964
+      },
+      "future_3d": {
+       "rmse": 0.29876795668410056,
+       "mse": 0.08926229194119259,
+       "mae": 0.20128050284266405,
+       "skill_vs_persistence": 0.31943653313275855,
+       "delta_rmse_cm": 0.5268507212092433,
+       "skill_gain_pp": 2.4213892262938908
+      },
+      "future_all": {
+       "rmse": 0.29918723599660474,
+       "mse": 0.08951300218328805,
+       "mae": 0.20185364705816636,
+       "skill_vs_persistence": 0.31752504029710504,
+       "delta_rmse_cm": 0.4849227899588249,
+       "skill_gain_pp": 2.23023994272854
+      }
+     }
+    },
+    "14": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 30,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.39140886167093314,
+       "mse": 0.15320089699453568,
+       "mae": 0.2564322404371586,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.32121120941450876,
+       "mse": 0.10317664105353139,
+       "mae": 0.2234014299736839,
+       "skill_vs_persistence": 0.32652717394199426
+      },
+      "future_3d": {
+       "rmse": 0.317640988590044,
+       "mse": 0.1008957976324605,
+       "mae": 0.21937142664112333,
+       "skill_vs_persistence": 0.34141509865925124,
+       "delta_rmse_cm": 0.35702208244647315,
+       "skill_gain_pp": 1.4887924717256973
+      },
+      "future_all": {
+       "rmse": 0.3172179493528546,
+       "mse": 0.10062722739163023,
+       "mae": 0.2191655666162992,
+       "skill_vs_persistence": 0.34316815785210864,
+       "delta_rmse_cm": 0.399326006165418,
+       "skill_gain_pp": 1.664098391011437
+      }
+     }
+    },
+    "30": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 30,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.4490163490579286,
+       "mse": 0.20161568172131156,
+       "mae": 0.27329644808743175,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.32599310908614715,
+       "mse": 0.10627150717165262,
+       "mae": 0.2297902818181038,
+       "skill_vs_persistence": 0.4729005885635963
+      },
+      "future_3d": {
+       "rmse": 0.3249544054165352,
+       "mse": 0.10559536559961392,
+       "mae": 0.22665332153222612,
+       "skill_vs_persistence": 0.4762542045435939,
+       "delta_rmse_cm": 0.10387036696119512,
+       "skill_gain_pp": 0.3353615979997615
+      },
+      "future_all": {
+       "rmse": 0.3228420373058461,
+       "mse": 0.10422698105178932,
+       "mae": 0.22367576168302997,
+       "skill_vs_persistence": 0.48304129836557186,
+       "delta_rmse_cm": 0.31510717803010513,
+       "skill_gain_pp": 1.0140709801975567
+      }
+     }
+    }
+   },
+   "events": [
+    {
+     "date": "2024-07-10",
+     "rise_m": 2.1709999999999994,
+     "level_m": 28.494,
+     "errors": {
+      "D+1": {
+       "persistence": 2.1709999999999994,
+       "ridge_arx": 1.9996994322505834,
+       "future_all": 1.9675048229027503,
+       "future_rain_mm": 88.6
+      },
+      "D+3": {
+       "persistence": 0.18649999999999878,
+       "ridge_arx": 0.10416009450967323,
+       "future_all": 0.12731945544214085,
+       "future_rain_mm": 241.4
+      }
+     }
+    },
+    {
+     "date": "2024-07-21",
+     "rise_m": 0.8900000000000006,
+     "level_m": 28.04,
+     "errors": {
+      "D+1": {
+       "persistence": 0.8900000000000006,
+       "ridge_arx": 0.6307554441569607,
+       "future_all": 0.648151299432218,
+       "future_rain_mm": 1.5
+      },
+      "D+3": {
+       "persistence": 0.8499999999999979,
+       "ridge_arx": 0.28667192011429776,
+       "future_all": 0.12417785861781638,
+       "future_rain_mm": 18.099999999999998
+      }
+     }
+    },
+    {
+     "date": "2024-07-22",
+     "rise_m": 0.870000000000001,
+     "level_m": 28.91,
+     "errors": {
+      "D+1": {
+       "persistence": 0.870000000000001,
+       "ridge_arx": 0.7314990567853208,
+       "future_all": 0.751504584587412,
+       "future_rain_mm": 0.0
+      },
+      "D+3": {
+       "persistence": 1.7660000000000018,
+       "ridge_arx": 1.0746128280306877,
+       "future_all": 1.070851796652505,
+       "future_rain_mm": 16.7
+      }
+     }
+    },
+    {
+     "date": "2024-02-09",
+     "rise_m": 0.5500000000000007,
+     "level_m": 28.75,
+     "errors": {
+      "D+1": {
+       "persistence": 0.5500000000000007,
+       "ridge_arx": 0.5384209166368947,
+       "future_all": 0.5425898726694598,
+       "future_rain_mm": 0.0
+      },
+      "D+3": {
+       "persistence": 0.4800000000000004,
+       "ridge_arx": 0.5088234069950452,
+       "future_all": 0.5050791738048268,
+       "future_rain_mm": 0.0
+      }
+     }
+    },
+    {
+     "date": "2024-02-26",
+     "rise_m": 0.5199999999999996,
+     "level_m": 28.53,
+     "errors": {
+      "D+1": {
+       "persistence": 0.5199999999999996,
+       "ridge_arx": 0.5170559547278089,
+       "future_all": 0.5245269864048581,
+       "future_rain_mm": 0.0
+      },
+      "D+3": {
+       "persistence": 0.120000000000001,
+       "ridge_arx": 0.2169816647913052,
+       "future_all": 0.2506379160959824,
+       "future_rain_mm": 5.0
+      }
+     }
+    }
+   ],
+   "station": {
+    "id": "대청조정지댐",
+    "name": "대청조정지댐",
+    "terrain": "reservoir"
+   }
+  },
+  "대청댐방수로": {
+   "horizons": {
+    "1": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.236963613448058,
+       "mse": 0.05615175409836066,
+       "mae": 0.10569945355191263,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.225615595172789,
+       "mse": 0.05090239678517181,
+       "mae": 0.11183952734250723,
+       "skill_vs_persistence": 0.09348518844119424
+      },
+      "future_3d": {
+       "rmse": 0.2248349741196419,
+       "mse": 0.050550765587380045,
+       "mae": 0.1125248105675928,
+       "skill_vs_persistence": 0.09974734718294642,
+       "delta_rmse_cm": 0.0780621053147107,
+       "skill_gain_pp": 0.6262158741752177
+      },
+      "future_all": {
+       "rmse": 0.2248349741196419,
+       "mse": 0.050550765587380045,
+       "mae": 0.1125248105675928,
+       "skill_vs_persistence": 0.09974734718294642,
+       "delta_rmse_cm": 0.0780621053147107,
+       "skill_gain_pp": 0.6262158741752177
+      }
+     }
+    },
+    "3": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.38661549501230086,
+       "mse": 0.14947154098360643,
+       "mae": 0.1835683060109289,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.3293505855701054,
+       "mse": 0.10847180821537132,
+       "mae": 0.18182432590831374,
+       "skill_vs_persistence": 0.2742979198477109
+      },
+      "future_3d": {
+       "rmse": 0.3292720286381022,
+       "mse": 0.10842006884345116,
+       "mae": 0.18311068253721804,
+       "skill_vs_persistence": 0.27464406849634115,
+       "delta_rmse_cm": 0.007855693200320424,
+       "skill_gain_pp": 0.03461486486302512
+      },
+      "future_all": {
+       "rmse": 0.3292720286381022,
+       "mse": 0.10842006884345116,
+       "mae": 0.18311068253721804,
+       "skill_vs_persistence": 0.27464406849634115,
+       "delta_rmse_cm": 0.007855693200320424,
+       "skill_gain_pp": 0.03461486486302512
+      }
+     }
+    },
+    "5": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.4890050789236393,
+       "mse": 0.2391259672131147,
+       "mae": 0.23736612021857925,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.3798370022770563,
+       "mse": 0.14427614829882046,
+       "mae": 0.2135141805474142,
+       "skill_vs_persistence": 0.39665210775608417
+      },
+      "future_3d": {
+       "rmse": 0.379387853017174,
+       "mse": 0.1439351430169808,
+       "mae": 0.21370430004308694,
+       "skill_vs_persistence": 0.39807815648602307,
+       "delta_rmse_cm": 0.04491492598823199,
+       "skill_gain_pp": 0.14260487299389002
+      },
+      "future_all": {
+       "rmse": 0.3792655019636034,
+       "mse": 0.14384232097970406,
+       "mae": 0.21421751578876272,
+       "skill_vs_persistence": 0.39846632862123077,
+       "delta_rmse_cm": 0.05715003134528773,
+       "skill_gain_pp": 0.18142208651465985
+      }
+     }
+    },
+    "7": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.5264818379422599,
+       "mse": 0.27718312568305997,
+       "mae": 0.2585136612021858,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.38007237394643845,
+       "mse": 0.14445500943728135,
+       "mae": 0.22403990860552164,
+       "skill_vs_persistence": 0.478846307540179
+      },
+      "future_3d": {
+       "rmse": 0.3921434588781658,
+       "mse": 0.15377649234093174,
+       "mae": 0.2233100859963497,
+       "skill_vs_persistence": 0.4452169771807657,
+       "delta_rmse_cm": -1.2071084931727372,
+       "skill_gain_pp": -3.362933035941329
+      },
+      "future_all": {
+       "rmse": 0.39185472637746016,
+       "mse": 0.15355012658435419,
+       "mae": 0.22340930211662735,
+       "skill_vs_persistence": 0.44603364217802965,
+       "delta_rmse_cm": -1.1782352431021714,
+       "skill_gain_pp": -3.281266536214933
+      }
+     }
+    },
+    "10": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.504579823035174,
+       "mse": 0.25460079781420747,
+       "mae": 0.2766830601092896,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.36922147993152393,
+       "mse": 0.13632450124282475,
+       "mae": 0.2352555446364792,
+       "skill_vs_persistence": 0.46455587565634315
+      },
+      "future_3d": {
+       "rmse": 0.3802421038678983,
+       "mse": 0.14458405755388556,
+       "mae": 0.23650281405381132,
+       "skill_vs_persistence": 0.4321146720860065,
+       "delta_rmse_cm": -1.1020623936374374,
+       "skill_gain_pp": -3.244120357033664
+      },
+      "future_all": {
+       "rmse": 0.37994378354230535,
+       "mse": 0.1443572786524422,
+       "mae": 0.2371763060052224,
+       "skill_vs_persistence": 0.43300539553774076,
+       "delta_rmse_cm": -1.0722303610781414,
+       "skill_gain_pp": -3.1550480118602398
+      }
+     }
+    },
+    "14": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.4968080739028723,
+       "mse": 0.2468182622950818,
+       "mae": 0.30486885245901624,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.3689259357538739,
+       "mse": 0.1361063460718715,
+       "mae": 0.24534044632094712,
+       "skill_vs_persistence": 0.4485564203950576
+      },
+      "future_3d": {
+       "rmse": 0.37430736565421646,
+       "mse": 0.1401060039829993,
+       "mae": 0.24946075930340086,
+       "skill_vs_persistence": 0.43235155016407756,
+       "delta_rmse_cm": -0.5381429900342571,
+       "skill_gain_pp": -1.620487023098005
+      },
+      "future_all": {
+       "rmse": 0.37370973025465176,
+       "mse": 0.13965896248700457,
+       "mae": 0.2498956634641371,
+       "skill_vs_persistence": 0.4341627674210091,
+       "delta_rmse_cm": -0.47837945007778715,
+       "skill_gain_pp": -1.4393652974048488
+      }
+     }
+    },
+    "30": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.48302033581283416,
+       "mse": 0.23330864480874305,
+       "mae": 0.286054644808743,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.38355945570231886,
+       "mse": 0.14711785605865912,
+       "mae": 0.2667398651562813,
+       "skill_vs_persistence": 0.3694281830865703
+      },
+      "future_3d": {
+       "rmse": 0.382816224259779,
+       "mse": 0.1465482615565134,
+       "mae": 0.2635520486148398,
+       "skill_vs_persistence": 0.3718695606986714,
+       "delta_rmse_cm": 0.0743231442539849,
+       "skill_gain_pp": 0.24413776121010589
+      },
+      "future_all": {
+       "rmse": 0.37994615786132224,
+       "mse": 0.1443590828735808,
+       "mae": 0.26033467567500573,
+       "skill_vs_persistence": 0.3812527478700135,
+       "delta_rmse_cm": 0.3613297840996621,
+       "skill_gain_pp": 1.182456478344318
+      }
+     }
+    }
+   },
+   "events": [
+    {
+     "date": "2024-07-22",
+     "rise_m": 1.4299999999999997,
+     "level_m": 28.64,
+     "errors": {
+      "D+1": {
+       "persistence": 1.4299999999999997,
+       "ridge_arx": 1.2211291995963407,
+       "future_all": 1.2366226383085461,
+       "future_rain_mm": 0.0
+      },
+      "D+3": {
+       "persistence": 1.25,
+       "ridge_arx": 0.3109197791497422,
+       "future_all": 0.30752117482141017,
+       "future_rain_mm": 16.7
+      }
+     }
+    },
+    {
+     "date": "2024-07-10",
+     "rise_m": 1.370000000000001,
+     "level_m": 30.34,
+     "errors": {
+      "D+1": {
+       "persistence": 1.370000000000001,
+       "ridge_arx": 1.4297236968801421,
+       "future_all": 1.3778067106201348,
+       "future_rain_mm": 88.6
+      },
+      "D+3": {
+       "persistence": 1.9699999999999989,
+       "ridge_arx": 1.8502620405561387,
+       "future_all": 1.8202574879897142,
+       "future_rain_mm": 241.4
+      }
+     }
+    },
+    {
+     "date": "2024-02-09",
+     "rise_m": 0.5899999999999999,
+     "level_m": 28.78,
+     "errors": {
+      "D+1": {
+       "persistence": 0.5899999999999999,
+       "ridge_arx": 0.5561745151520547,
+       "future_all": 0.5598202397533605,
+       "future_rain_mm": 0.0
+      },
+      "D+3": {
+       "persistence": 0.5,
+       "ridge_arx": 0.45978291242904135,
+       "future_all": 0.4700180971097936,
+       "future_rain_mm": 0.0
+      }
+     }
+    },
+    {
+     "date": "2024-07-08",
+     "rise_m": 0.5599999999999987,
+     "level_m": 28.93,
+     "errors": {
+      "D+1": {
+       "persistence": 0.5599999999999987,
+       "ridge_arx": 0.5095208387246082,
+       "future_all": 0.451081436257855,
+       "future_rain_mm": 137.5
+      },
+      "D+3": {
+       "persistence": 0.6000000000000014,
+       "ridge_arx": 0.45131770898034773,
+       "future_all": 0.4247245136324125,
+       "future_rain_mm": 173.8
+      }
+     }
+    },
+    {
+     "date": "2024-02-26",
+     "rise_m": 0.4800000000000004,
+     "level_m": 28.48,
+     "errors": {
+      "D+1": {
+       "persistence": 0.4800000000000004,
+       "ridge_arx": 0.44064963753579534,
+       "future_all": 0.4457791831119984,
+       "future_rain_mm": 0.0
+      },
+      "D+3": {
+       "persistence": 0.05999999999999872,
+       "ridge_arx": 0.09370174206405579,
+       "future_all": 0.08256660682089745,
+       "future_rain_mm": 5.0
+      }
+     }
+    }
+   ],
+   "station": {
+    "id": "대청댐방수로",
+    "name": "대청댐방수로",
+    "terrain": "mainstem"
+   }
+  }
+ },
+ "summary": {
+  "by_horizon": {
+   "1": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.10442483285843011,
+     "future_3d": 0.1263088307685827,
+     "future_all": 0.1263088307685827
+    },
+    "mean_rmse_m": {
+     "persistence": 0.27786615737424086,
+     "ridge_arx": 0.2621155658719084,
+     "future_3d": 0.25804577514738,
+     "future_all": 0.25804577514738
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": 0.40697907245285014,
+     "future_all": 0.40697907245285014
+    }
+   },
+   "3": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.19148935778517828,
+     "future_3d": 0.21488887916226293,
+     "future_all": 0.21488887916226293
+    },
+    "mean_rmse_m": {
+     "persistence": 0.5097349011153421,
+     "ridge_arx": 0.46245708579512823,
+     "future_3d": 0.4539616969481837,
+     "future_all": 0.4539616969481837
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": 0.8495388846944526,
+     "future_all": 0.8495388846944526
+    }
+   },
+   "5": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.2580429944839849,
+     "future_3d": 0.2926430606629565,
+     "future_all": 0.289041768652239
+    },
+    "mean_rmse_m": {
+     "persistence": 0.6522704853585718,
+     "ridge_arx": 0.575165988506623,
+     "future_3d": 0.5590390576790936,
+     "future_all": 0.5614982769011667
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": 1.6126930827529493,
+     "future_all": 1.3667711605456379
+    }
+   },
+   "7": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.2969821241315298,
+     "future_3d": 0.30928404748927,
+     "future_all": 0.31758327476567577
+    },
+    "mean_rmse_m": {
+     "persistence": 0.7081724282511758,
+     "ridge_arx": 0.6128062619263989,
+     "future_3d": 0.6037966069802473,
+     "future_all": 0.600612819129142
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": 0.9009654946151505,
+     "future_all": 1.2193442797256833
+    }
+   },
+   "10": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.2999929328607193,
+     "future_3d": 0.31228429500745575,
+     "future_all": 0.3294766527226245
+    },
+    "mean_rmse_m": {
+     "persistence": 0.7421641844590735,
+     "ridge_arx": 0.6446981710550385,
+     "future_3d": 0.6354440567160496,
+     "future_all": 0.6220578361864795
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": 0.9254114338988835,
+     "future_all": 2.2640334868559004
+    }
+   },
+   "14": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.30106864550466833,
+     "future_3d": 0.31750855997680383,
+     "future_all": 0.35441179269885276
+    },
+    "mean_rmse_m": {
+     "persistence": 0.778437256177272,
+     "ridge_arx": 0.6804510360395541,
+     "future_3d": 0.6677798827505064,
+     "future_all": 0.6379277397782125
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": 1.2671153289047814,
+     "future_all": 4.252329626134177
+    }
+   },
+   "30": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.31802752540358753,
+     "future_3d": 0.3246877663785401,
+     "future_all": 0.4037286327183603
+    },
+    "mean_rmse_m": {
+     "persistence": 0.8574081820762866,
+     "ridge_arx": 0.751792456063157,
+     "future_3d": 0.7470673198739446,
+     "future_all": 0.6761025888020061
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": 0.4725136189212313,
+     "future_all": 7.5689867261150825
+    }
+   }
+  },
+  "cells_future_beats_arx": {
+   "future_3d": 13,
+   "future_all": 15
+  },
+  "cells_total": 21
+ },
+ "notes_ko": [
+  "완전 예보 가정(perfect prognosis): 시험 연도의 **실측** 미래 강수를 오차 없는 예보로 간주해 넣었다. 따라서 이 표의 이득은 상한이다.",
+  "실시간 전망에서는 원점 이후 강수가 관측에 없으므로 기상청 단기(3일)·중기 예보가 입력이 되어야 하며, 그 연결은 아직 배선되지 않았다. 예보 오차만큼 이득이 줄어든다.",
+  "future_3d = 원점 이후 3일치 강수만 안다(그 뒤는 0). future_all = 목표일까지 전부 안다. D+1·D+3 에서는 두 변형의 입력이 같아 결과도 같다.",
+  "ridge_arx 는 배포 학습과 같은 격자(mode·p·lam 12개) 중 검증 최상을, ridge_arx_future 는 p=7·delta 고정에 lam∈{10,100} 중 검증 최상을 썼다. 격자가 더 큰 쪽은 AR-X 라 미래 강수 쪽에 유리하게 고른 비교가 아니다.",
+  "공식 성능 수치(evaluation.json·화면의 선택 모델·개선율)에는 이 실험이 들어가지 않는다. 배포 후보 풀은 uses_future_exog 예측기를 제외한다.",
+  "skill = 1 − MSE/MSE_persistence. delta_rmse_cm = RMSE(AR-X) − RMSE(+예보) (양수면 예보가 오차를 줄임).",
+  "강수는 지역 대표 ASOS 1지점 값이다. 상류 유역의 비로 오르는 하류 지점(낙동강 하구 구포대교 2024-07-10~11 급상승 때 부산 강수 32 mm·0 mm)에서는 지역 강수 예보의 이득이 거의 없고, 유역 평균 강수(또는 상류 지점 수위)가 있어야 한다."
+ ],
+ "elapsed_s": 3.2
+}

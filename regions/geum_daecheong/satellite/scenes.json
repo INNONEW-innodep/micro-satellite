@@ -1,0 +1,620 @@
+{
+ "schema": "watercast.satellite.scenes/1",
+ "region_id": "geum_daecheong",
+ "generated_at": "2026-09-08T09:14:27+00:00",
+ "quicklook_max_px": 1000,
+ "mask_frame_max_px": 640,
+ "note_ko": "퀵룩은 원본을 긴 변 1000px로 내린 것. overlay 청록 = 탐지 마스크(WBMS), gt 노랑 = GT 라벨. masks/<센서>/ 는 센서별 공통 범위로 잘라 같은 크기로 맞춘 이진 마스크로, 수체 면적 시계열 예측의 입력 프레임이다.",
+ "scenes": [
+  {
+   "scene_id": "20190323_PlanetScope",
+   "date": "2019-03-23",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/dcd_pre/2019/20190323/Pre_DCD_PlanetScope_20190323T015302.tif",
+   "images": {
+    "input": "quicklooks/20190323_PlanetScope_input.png",
+    "overlay": "quicklooks/20190323_PlanetScope_overlay.png",
+    "mask": "quicklooks/20190323_PlanetScope_mask.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 29.5725,
+   "valid_area_km2": 212.29,
+   "source_mask": "data/wbms_runs/wb/2019/20190323/WB_DCD_PlanetScope_20190323T015302.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20190323_PlanetScope.png",
+    "height": 404,
+    "width": 640,
+    "pixel_size_m": 22.767,
+    "pixel_area_m2": 518.345,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     353703.0,
+     4031928.0,
+     368274.0,
+     4041126.0
+    ]
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     351963.0,
+     4027155.0,
+     379023.0,
+     4041126.0
+    ],
+    "width": 1000,
+    "height": 516,
+    "footprint_lonlat": [
+     [
+      127.346958,
+      36.504033
+     ],
+     [
+      127.649037,
+      36.507837
+     ],
+     [
+      127.651218,
+      36.38192
+     ],
+     [
+      127.349627,
+      36.378133
+     ]
+    ]
+   },
+   "area_common_frame_km2": 16.337
+  },
+  {
+   "scene_id": "20190329_PlanetScope",
+   "date": "2019-03-29",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/dcd_pre/2019/20190329/Pre_DCD_PlanetScope_20190329T015215.tif",
+   "images": {
+    "input": "quicklooks/20190329_PlanetScope_input.png",
+    "overlay": "quicklooks/20190329_PlanetScope_overlay.png",
+    "mask": "quicklooks/20190329_PlanetScope_mask.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 14.0003,
+   "valid_area_km2": 210.52,
+   "source_mask": "data/wbms_runs/wb/2019/20190329/WB_DCD_PlanetScope_20190329T015215.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20190329_PlanetScope.png",
+    "height": 404,
+    "width": 640,
+    "pixel_size_m": 22.767,
+    "pixel_area_m2": 518.345,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     353703.0,
+     4031928.0,
+     368274.0,
+     4041126.0
+    ]
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     341385.0,
+     4031928.0,
+     368274.0,
+     4045839.0
+    ],
+    "width": 1000,
+    "height": 517,
+    "footprint_lonlat": [
+     [
+      127.22792,
+      36.544806
+     ],
+     [
+      127.528231,
+      36.548892
+     ],
+     [
+      127.530601,
+      36.423523
+     ],
+     [
+      127.230773,
+      36.419455
+     ]
+    ]
+   },
+   "area_common_frame_km2": 12.771
+  },
+  {
+   "scene_id": "20190403_PlanetScope",
+   "date": "2019-04-03",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/dcd_pre/2019/20190403/Pre_DCD_PlanetScope_20190403T015307.tif",
+   "images": {
+    "input": "quicklooks/20190403_PlanetScope_input.png",
+    "overlay": "quicklooks/20190403_PlanetScope_overlay.png",
+    "mask": "quicklooks/20190403_PlanetScope_mask.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 14.3603,
+   "valid_area_km2": 213.45,
+   "source_mask": "data/wbms_runs/wb/2019/20190403/WB_DCD_PlanetScope_20190403T015307.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20190403_PlanetScope.png",
+    "height": 404,
+    "width": 640,
+    "pixel_size_m": 22.767,
+    "pixel_area_m2": 518.345,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     353703.0,
+     4031928.0,
+     368274.0,
+     4041126.0
+    ]
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     353703.0,
+     4031316.0,
+     380790.0,
+     4045296.0
+    ],
+    "width": 1000,
+    "height": 516,
+    "footprint_lonlat": [
+     [
+      127.36559,
+      36.541878
+     ],
+     [
+      127.66812,
+      36.545642
+     ],
+     [
+      127.670275,
+      36.419643
+     ],
+     [
+      127.368234,
+      36.415897
+     ]
+    ]
+   },
+   "area_common_frame_km2": 9.858
+  },
+  {
+   "scene_id": "20190404_PlanetScope",
+   "date": "2019-04-04",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/dcd_pre/2019/20190404/Pre_DCD_PlanetScope_20190404T014508.tif",
+   "images": {
+    "input": "quicklooks/20190404_PlanetScope_input.png",
+    "overlay": "quicklooks/20190404_PlanetScope_overlay.png",
+    "mask": "quicklooks/20190404_PlanetScope_mask.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 27.0394,
+   "valid_area_km2": 219.03,
+   "source_mask": "data/wbms_runs/wb/2019/20190404/WB_DCD_PlanetScope_20190404T014508.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20190404_PlanetScope.png",
+    "height": 404,
+    "width": 640,
+    "pixel_size_m": 22.767,
+    "pixel_area_m2": 518.345,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     353703.0,
+     4031928.0,
+     368274.0,
+     4041126.0
+    ]
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     345630.0,
+     4028688.0,
+     373239.0,
+     4042866.0
+    ],
+    "width": 1000,
+    "height": 514,
+    "footprint_lonlat": [
+     [
+      127.275922,
+      36.518711
+     ],
+     [
+      127.584178,
+      36.52277
+     ],
+     [
+      127.586499,
+      36.394991
+     ],
+     [
+      127.278748,
+      36.390951
+     ]
+    ]
+   },
+   "area_common_frame_km2": 15.846
+  },
+  {
+   "scene_id": "20190427_PlanetScope",
+   "date": "2019-04-27",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/dcd_pre/2019/20190427/Pre_DCD_PlanetScope_20190427T014941.tif",
+   "images": {
+    "input": "quicklooks/20190427_PlanetScope_input.png",
+    "overlay": "quicklooks/20190427_PlanetScope_overlay.png",
+    "mask": "quicklooks/20190427_PlanetScope_mask.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 24.9882,
+   "valid_area_km2": 220.04,
+   "source_mask": "data/wbms_runs/wb/2019/20190427/WB_DCD_PlanetScope_20190427T014941.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20190427_PlanetScope.png",
+    "height": 404,
+    "width": 640,
+    "pixel_size_m": 22.767,
+    "pixel_area_m2": 518.345,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     353703.0,
+     4031928.0,
+     368274.0,
+     4041126.0
+    ]
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     348696.0,
+     4029534.0,
+     376194.0,
+     4043598.0
+    ],
+    "width": 1000,
+    "height": 511,
+    "footprint_lonlat": [
+     [
+      127.310007,
+      36.525798
+     ],
+     [
+      127.617057,
+      36.529754
+     ],
+     [
+      127.619306,
+      36.403001
+     ],
+     [
+      127.312756,
+      36.399062
+     ]
+    ]
+   },
+   "area_common_frame_km2": 16.895
+  },
+  {
+   "scene_id": "20220514_PlanetScope",
+   "date": "2022-05-14",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/dcd_pre/2022/20220514/Pre_DCD_PlanetScope_20220514T011918.tif",
+   "images": {
+    "input": "quicklooks/20220514_PlanetScope_input.png",
+    "overlay": "quicklooks/20220514_PlanetScope_overlay.png",
+    "mask": "quicklooks/20220514_PlanetScope_mask.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 57.6458,
+   "valid_area_km2": 780.17,
+   "source_mask": "data/wbms_runs/wb/2022/20220514/WB_DCD_PlanetScope_20220514T011918.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20220514_PlanetScope.png",
+    "height": 404,
+    "width": 640,
+    "pixel_size_m": 22.767,
+    "pixel_area_m2": 518.345,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     353703.0,
+     4031928.0,
+     368274.0,
+     4041126.0
+    ]
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     349155.0,
+     4014432.0,
+     389265.0,
+     4043466.0
+    ],
+    "width": 1000,
+    "height": 724,
+    "footprint_lonlat": [
+     [
+      127.315158,
+      36.524681
+     ],
+     [
+      127.763049,
+      36.530168
+     ],
+     [
+      127.76719,
+      36.268477
+     ],
+     [
+      127.320796,
+      36.263042
+     ]
+    ]
+   },
+   "area_common_frame_km2": 18.378
+  },
+  {
+   "scene_id": "20220516_PlanetScope",
+   "date": "2022-05-16",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/dcd_pre/2022/20220516/Pre_DCD_PlanetScope_20220516T014353.tif",
+   "images": {
+    "input": "quicklooks/20220516_PlanetScope_input.png",
+    "overlay": "quicklooks/20220516_PlanetScope_overlay.png",
+    "mask": "quicklooks/20220516_PlanetScope_mask.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 53.0823,
+   "valid_area_km2": 695.88,
+   "source_mask": "data/wbms_runs/wb/2022/20220516/WB_DCD_PlanetScope_20220516T014353.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20220516_PlanetScope.png",
+    "height": 404,
+    "width": 640,
+    "pixel_size_m": 22.767,
+    "pixel_area_m2": 518.345,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     353703.0,
+     4031928.0,
+     368274.0,
+     4041126.0
+    ]
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     339915.0,
+     4019016.0,
+     377904.0,
+     4046661.0
+    ],
+    "width": 1000,
+    "height": 728,
+    "footprint_lonlat": [
+     [
+      127.211334,
+      36.551968
+     ],
+     [
+      127.635668,
+      36.557579
+     ],
+     [
+      127.640022,
+      36.308422
+     ],
+     [
+      127.217041,
+      36.302861
+     ]
+    ]
+   },
+   "area_common_frame_km2": 18.746
+  },
+  {
+   "scene_id": "20220517_PlanetScope",
+   "date": "2022-05-17",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/dcd_pre/2022/20220517/Pre_DCD_PlanetScope_20220517T014435.tif",
+   "images": {
+    "input": "quicklooks/20220517_PlanetScope_input.png",
+    "overlay": "quicklooks/20220517_PlanetScope_overlay.png",
+    "mask": "quicklooks/20220517_PlanetScope_mask.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 51.3265,
+   "valid_area_km2": 690.98,
+   "source_mask": "data/wbms_runs/wb/2022/20220517/WB_DCD_PlanetScope_20220517T014435.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20220517_PlanetScope.png",
+    "height": 404,
+    "width": 640,
+    "pixel_size_m": 22.767,
+    "pixel_area_m2": 518.345,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     353703.0,
+     4031928.0,
+     368274.0,
+     4041126.0
+    ]
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     341265.0,
+     4022544.0,
+     379131.0,
+     4050132.0
+    ],
+    "width": 1000,
+    "height": 729,
+    "footprint_lonlat": [
+     [
+      127.225696,
+      36.583469
+     ],
+     [
+      127.64883,
+      36.589018
+     ],
+     [
+      127.653138,
+      36.340375
+     ],
+     [
+      127.231352,
+      36.334876
+     ]
+    ]
+   },
+   "area_common_frame_km2": 18.49
+  },
+  {
+   "scene_id": "20220522_PlanetScope",
+   "date": "2022-05-22",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/dcd_pre/2022/20220522/Pre_DCD_PlanetScope_20220522T014025.tif",
+   "images": {
+    "input": "quicklooks/20220522_PlanetScope_input.png",
+    "overlay": "quicklooks/20220522_PlanetScope_overlay.png",
+    "mask": "quicklooks/20220522_PlanetScope_mask.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 36.4022,
+   "valid_area_km2": 701.31,
+   "source_mask": "data/wbms_runs/wb/2022/20220522/WB_DCD_PlanetScope_20220522T014025.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20220522_PlanetScope.png",
+    "height": 404,
+    "width": 640,
+    "pixel_size_m": 22.767,
+    "pixel_area_m2": 518.345,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     353703.0,
+     4031928.0,
+     368274.0,
+     4041126.0
+    ]
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     344871.0,
+     4025097.0,
+     382863.0,
+     4052574.0
+    ],
+    "width": 1000,
+    "height": 723,
+    "footprint_lonlat": [
+     [
+      127.265493,
+      36.606067
+     ],
+     [
+      127.690167,
+      36.611493
+     ],
+     [
+      127.694331,
+      36.363847
+     ],
+     [
+      127.271005,
+      36.358469
+     ]
+    ]
+   },
+   "area_common_frame_km2": 16.974
+  },
+  {
+   "scene_id": "20220523_PlanetScope",
+   "date": "2022-05-23",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/dcd_pre/2022/20220523/Pre_DCD_PlanetScope_20220523T020224.tif",
+   "images": {
+    "input": "quicklooks/20220523_PlanetScope_input.png",
+    "overlay": "quicklooks/20220523_PlanetScope_overlay.png",
+    "mask": "quicklooks/20220523_PlanetScope_mask.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 49.6329,
+   "valid_area_km2": 797.48,
+   "source_mask": "data/wbms_runs/wb/2022/20220523/WB_DCD_PlanetScope_20220523T020224.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20220523_PlanetScope.png",
+    "height": 404,
+    "width": 640,
+    "pixel_size_m": 22.767,
+    "pixel_area_m2": 518.345,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     353703.0,
+     4031928.0,
+     368274.0,
+     4041126.0
+    ]
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     348282.0,
+     4020366.0,
+     388800.0,
+     4049652.0
+    ],
+    "width": 1000,
+    "height": 723,
+    "footprint_lonlat": [
+     [
+      127.304193,
+      36.580286
+     ],
+     [
+      127.756963,
+      36.585868
+     ],
+     [
+      127.761169,
+      36.321909
+     ],
+     [
+      127.309929,
+      36.31638
+     ]
+    ]
+   },
+   "area_common_frame_km2": 17.515
+  }
+ ]
+}

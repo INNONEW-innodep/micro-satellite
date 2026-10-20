@@ -1,0 +1,307 @@
+{
+ "schema": "watercast.satellite.levels/1",
+ "region_id": "geum_daecheong",
+ "records": [
+  {
+   "date": "2019-03-23",
+   "loc_id": "daecheong",
+   "satellite": "PlanetScope",
+   "water_level_m": 72.5362,
+   "water_area_km2": 0.008847,
+   "corrected_water_level_m": 74.234,
+   "correction_note": "수위대 상수 보정(wbms:0.13 calc_wlwa offset_table, WAMIS 대청댐 대조, 9씬 RMSE 0.359 m)",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_daecheong_20190323_20220523.json"
+  },
+  {
+   "date": "2019-03-29",
+   "loc_id": "daecheong",
+   "satellite": "PlanetScope",
+   "water_level_m": 70.6009,
+   "water_area_km2": 0.006021,
+   "corrected_water_level_m": null,
+   "correction_note": "품질 게이트 skipped_quality",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_daecheong_20190323_20220523.json"
+  },
+  {
+   "date": "2019-04-03",
+   "loc_id": "daecheong",
+   "satellite": "PlanetScope",
+   "water_level_m": 72.4815,
+   "water_area_km2": 0.008883,
+   "corrected_water_level_m": 74.179,
+   "correction_note": "수위대 상수 보정(wbms:0.13 calc_wlwa offset_table, WAMIS 대청댐 대조, 9씬 RMSE 0.359 m)",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_daecheong_20190323_20220523.json"
+  },
+  {
+   "date": "2019-04-04",
+   "loc_id": "daecheong",
+   "satellite": "PlanetScope",
+   "water_level_m": 71.8236,
+   "water_area_km2": 0.008127,
+   "corrected_water_level_m": 73.521,
+   "correction_note": "수위대 상수 보정(wbms:0.13 calc_wlwa offset_table, WAMIS 대청댐 대조, 9씬 RMSE 0.359 m)",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_daecheong_20190323_20220523.json"
+  },
+  {
+   "date": "2019-04-27",
+   "loc_id": "daecheong",
+   "satellite": "PlanetScope",
+   "water_level_m": 73.3875,
+   "water_area_km2": 0.009576,
+   "corrected_water_level_m": 75.085,
+   "correction_note": "수위대 상수 보정(wbms:0.13 calc_wlwa offset_table, WAMIS 대청댐 대조, 9씬 RMSE 0.359 m)",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_daecheong_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-14",
+   "loc_id": "daecheong",
+   "satellite": "PlanetScope",
+   "water_level_m": 71.5012,
+   "water_area_km2": 0.007875,
+   "corrected_water_level_m": 71.238,
+   "correction_note": "수위대 상수 보정(wbms:0.13 calc_wlwa offset_table, WAMIS 대청댐 대조, 9씬 RMSE 0.359 m)",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_daecheong_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-16",
+   "loc_id": "daecheong",
+   "satellite": "PlanetScope",
+   "water_level_m": 71.4476,
+   "water_area_km2": 0.007848,
+   "corrected_water_level_m": 71.184,
+   "correction_note": "수위대 상수 보정(wbms:0.13 calc_wlwa offset_table, WAMIS 대청댐 대조, 9씬 RMSE 0.359 m)",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_daecheong_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-17",
+   "loc_id": "daecheong",
+   "satellite": "PlanetScope",
+   "water_level_m": 71.0783,
+   "water_area_km2": 0.007002,
+   "corrected_water_level_m": 70.815,
+   "correction_note": "수위대 상수 보정(wbms:0.13 calc_wlwa offset_table, WAMIS 대청댐 대조, 9씬 RMSE 0.359 m)",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_daecheong_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-22",
+   "loc_id": "daecheong",
+   "satellite": "PlanetScope",
+   "water_level_m": 70.7627,
+   "water_area_km2": 0.006057,
+   "corrected_water_level_m": 70.499,
+   "correction_note": "수위대 상수 보정(wbms:0.13 calc_wlwa offset_table, WAMIS 대청댐 대조, 9씬 RMSE 0.359 m)",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_daecheong_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-23",
+   "loc_id": "daecheong",
+   "satellite": "PlanetScope",
+   "water_level_m": 70.9576,
+   "water_area_km2": 0.006804,
+   "corrected_water_level_m": 70.694,
+   "correction_note": "수위대 상수 보정(wbms:0.13 calc_wlwa offset_table, WAMIS 대청댐 대조, 9씬 RMSE 0.359 m)",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_daecheong_20190323_20220523.json"
+  },
+  {
+   "date": "2019-03-23",
+   "loc_id": "jojeongji",
+   "satellite": "PlanetScope",
+   "water_level_m": 29.863,
+   "water_area_km2": 0.015255,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_jojeongji_20190323_20220523.json"
+  },
+  {
+   "date": "2019-03-29",
+   "loc_id": "jojeongji",
+   "satellite": "PlanetScope",
+   "water_level_m": 29.126,
+   "water_area_km2": 6.3e-05,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_jojeongji_20190323_20220523.json"
+  },
+  {
+   "date": "2019-04-03",
+   "loc_id": "jojeongji",
+   "satellite": "PlanetScope",
+   "water_level_m": 29.5211,
+   "water_area_km2": 0.013122,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_jojeongji_20190323_20220523.json"
+  },
+  {
+   "date": "2019-04-04",
+   "loc_id": "jojeongji",
+   "satellite": "PlanetScope",
+   "water_level_m": 29.6206,
+   "water_area_km2": 0.013635,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_jojeongji_20190323_20220523.json"
+  },
+  {
+   "date": "2019-04-27",
+   "loc_id": "jojeongji",
+   "satellite": "PlanetScope",
+   "water_level_m": 30.0546,
+   "water_area_km2": 0.016245,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_jojeongji_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-14",
+   "loc_id": "jojeongji",
+   "satellite": "PlanetScope",
+   "water_level_m": 29.8099,
+   "water_area_km2": 0.014922,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_jojeongji_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-16",
+   "loc_id": "jojeongji",
+   "satellite": "PlanetScope",
+   "water_level_m": 29.6652,
+   "water_area_km2": 0.013977,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_jojeongji_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-17",
+   "loc_id": "jojeongji",
+   "satellite": "PlanetScope",
+   "water_level_m": 29.6978,
+   "water_area_km2": 0.01404,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_jojeongji_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-22",
+   "loc_id": "jojeongji",
+   "satellite": "PlanetScope",
+   "water_level_m": 29.7425,
+   "water_area_km2": 0.014418,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_jojeongji_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-23",
+   "loc_id": "jojeongji",
+   "satellite": "PlanetScope",
+   "water_level_m": 29.7761,
+   "water_area_km2": 0.014688,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_jojeongji_20190323_20220523.json"
+  },
+  {
+   "date": "2019-03-23",
+   "loc_id": "bangsuro",
+   "satellite": "PlanetScope",
+   "water_level_m": 30.7508,
+   "water_area_km2": 0.01197,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_bangsuro_20190323_20220523.json"
+  },
+  {
+   "date": "2019-03-29",
+   "loc_id": "bangsuro",
+   "satellite": "PlanetScope",
+   "water_level_m": 29.5099,
+   "water_area_km2": 0.004536,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_bangsuro_20190323_20220523.json"
+  },
+  {
+   "date": "2019-04-03",
+   "loc_id": "bangsuro",
+   "satellite": "PlanetScope",
+   "water_level_m": 30.5423,
+   "water_area_km2": 0.011682,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_bangsuro_20190323_20220523.json"
+  },
+  {
+   "date": "2019-04-04",
+   "loc_id": "bangsuro",
+   "satellite": "PlanetScope",
+   "water_level_m": 30.4925,
+   "water_area_km2": 0.011637,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_bangsuro_20190323_20220523.json"
+  },
+  {
+   "date": "2019-04-27",
+   "loc_id": "bangsuro",
+   "satellite": "PlanetScope",
+   "water_level_m": 30.8654,
+   "water_area_km2": 0.012105,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_bangsuro_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-14",
+   "loc_id": "bangsuro",
+   "satellite": "PlanetScope",
+   "water_level_m": 31.0287,
+   "water_area_km2": 0.012303,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_bangsuro_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-16",
+   "loc_id": "bangsuro",
+   "satellite": "PlanetScope",
+   "water_level_m": 30.9019,
+   "water_area_km2": 0.012186,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_bangsuro_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-17",
+   "loc_id": "bangsuro",
+   "satellite": "PlanetScope",
+   "water_level_m": 30.7428,
+   "water_area_km2": 0.011979,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_bangsuro_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-22",
+   "loc_id": "bangsuro",
+   "satellite": "PlanetScope",
+   "water_level_m": 30.8421,
+   "water_area_km2": 0.011997,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_bangsuro_20190323_20220523.json"
+  },
+  {
+   "date": "2022-05-23",
+   "loc_id": "bangsuro",
+   "satellite": "PlanetScope",
+   "water_level_m": 30.8487,
+   "water_area_km2": 0.012096,
+   "corrected_water_level_m": null,
+   "correction_note": "실측 게이지 없어 보정 미등재",
+   "source": "07_test_evidence/WLWA_DCD_PlanetScope_bangsuro_20190323_20220523.json"
+  }
+ ],
+ "note_ko": "WBMS ③ calc_wlwa 산출(수체 경계 화소 × DEM). corrected_water_level_m 은 지점별 수위대 상수 보정치(대청댐만, 인수 증적 표 그대로)."
+}

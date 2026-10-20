@@ -1,0 +1,29 @@
+{
+  "note_ko": "scripts/fetch_wamis_levels.py --spec 입력. WAMIS 관측소 코드와 지형 분류.",
+  "region_id": "yeongsan_river",
+  "basin": 5,
+  "stations": [
+    {
+      "id": "담양댐",
+      "name": "담양댐",
+      "code": "5001610",
+      "terrain": "reservoir",
+      "terrain_note": "담양댐 저수지 수위·인위 조절"
+    },
+    {
+      "id": "극락교",
+      "name": "극락교",
+      "code": "5001680",
+      "terrain": "mainstem",
+      "terrain_note": "영산강 본류 상류·광주 도심 구간"
+    },
+    {
+      "id": "나주대교",
+      "name": "나주대교",
+      "code": "5004650",
+      "terrain": "mainstem",
+      "terrain_note": "영산강 본류 중류·나주(승촌보 하류)"
+    }
+  ],
+  "data_notes_ko": "극락교는 2017년, 나주대교는 2018년에 수위 기준면이 바뀐다(각 약 +1 m, +2 m). 학습 구간(~2018) 안이며 검증·시험은 바뀐 뒤 구간."
+}

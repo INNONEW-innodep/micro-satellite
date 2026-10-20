@@ -1,0 +1,2337 @@
+{
+ "schema": "watercast.satellite.experiment.area-models/1",
+ "region_id": "nakdong_busan",
+ "region_name": "낙동강 하구 (부산·김해)",
+ "generated_at": "2026-09-15T06:31:43+00:00",
+ "script": "scripts/eval_area_models_experiment.py",
+ "frame_note_ko": "면적은 센서별 **공통 격자**(같은 EPSG:32652 상자·같은 H×W) 마스크에서 다시 잰 값이다. scenes.json 의 water_area_km2 는 장면마다 자기 footprint 로 잰 값이라 날짜 간 비교가 되지 않는다.",
+ "series": {
+  "ICEYE": {
+   "source": "satellite/area_series.json",
+   "max_abs_diff_vs_recompute_km2": 0.0005,
+   "frame": {
+    "width": 469,
+    "height": 640,
+    "pixel_area_m2": 11249.993,
+    "bounds_epsg32652": [
+     479038.7,
+     3847364.7,
+     528783.6,
+     3915252.0
+    ],
+    "frame_area_km2": 3376.8,
+    "water_threshold": 127
+   },
+   "n": 4,
+   "period": [
+    "2020-03-02",
+    "2020-04-16"
+   ],
+   "points": [
+    {
+     "date": "2020-03-02",
+     "area_km2": 40.207,
+     "area_km2_recomputed": 40.2075,
+     "scene_own_footprint_area_km2": 40.1453,
+     "scene_valid_area_km2": 887.01,
+     "levels_m": {
+      "구포대교": 2.3863,
+      "양산교": 0.6325,
+      "호포대교": 1.7779,
+      "정천교": 1.6375
+     }
+    },
+    {
+     "date": "2020-03-30",
+     "area_km2": 36.607,
+     "area_km2_recomputed": 36.6075,
+     "scene_own_footprint_area_km2": 36.4588,
+     "scene_valid_area_km2": 885.78,
+     "levels_m": {
+      "구포대교": 2.4033,
+      "양산교": 0.6304,
+      "호포대교": 1.7883,
+      "정천교": 1.5429
+     }
+    },
+    {
+     "date": "2020-04-15",
+     "area_km2": 36.742,
+     "area_km2_recomputed": 36.7425,
+     "scene_own_footprint_area_km2": 36.6266,
+     "scene_valid_area_km2": 844.93,
+     "levels_m": {
+      "구포대교": 2.3846,
+      "양산교": 0.6117,
+      "호포대교": 1.7779,
+      "정천교": 1.5933
+     }
+    },
+    {
+     "date": "2020-04-16",
+     "area_km2": 39.127,
+     "area_km2_recomputed": 39.1275,
+     "scene_own_footprint_area_km2": 39.2184,
+     "scene_valid_area_km2": 895.58,
+     "levels_m": {
+      "구포대교": 2.4163,
+      "양산교": 0.5971,
+      "호포대교": 1.7929,
+      "정천교": 1.5608
+     }
+    }
+   ],
+   "area_range_km2": 3.6,
+   "area_mean_km2": 38.1707,
+   "gauge_stations_in_frame": [
+    "구포대교",
+    "양산교",
+    "정천교",
+    "호포대교"
+   ],
+   "mask_consistency": {
+    "mean_pairwise_iou": 0.8356,
+    "min_pairwise_iou": 0.7952,
+    "mean_pairwise_iou_by_batch_year": {
+     "2020": 0.8356
+    },
+    "always_water_km2": 32.186,
+    "ever_water_km2": 44.46,
+    "churn_km2": 12.274,
+    "note_ko": "always_water = 모든 날짜에 물인 화소, ever_water = 한 번이라도 물인 화소. 그 차(churn)가 계열의 면적 변동폭보다 크면, 날짜별 면적 차이는 수위 변화가 아니라 탐지 흔들림일 수 있다."
+   },
+   "repeat_pairs": [
+    {
+     "from": "2020-04-15",
+     "to": "2020-04-16",
+     "gap_days": 1,
+     "delta_area_km2": 2.385,
+     "delta_level_m": {
+      "구포대교": 0.0317,
+      "양산교": -0.0146,
+      "호포대교": 0.015,
+      "정천교": -0.0325
+     }
+    }
+   ],
+   "observation_noise_floor_km2": 2.385,
+   "rating_curves": {
+    "구포대교": {
+     "n_pairs": 4,
+     "slope_km2_per_m": 6.6767,
+     "intercept_km2": 22.1624,
+     "pearson_r": 0.0563,
+     "level_range_m": 0.0317,
+     "area_range_km2": 3.6,
+     "loo": {
+      "n": 4,
+      "rmse_km2": 3.1205,
+      "mae_km2": 3.0616,
+      "max_abs_km2": 3.764
+     },
+     "gate": {
+      "passes": {
+       "min_pairs": false,
+       "min_pearson_r": false,
+       "require_positive_slope": true,
+       "min_level_range_m": false,
+       "min_loo_skill_vs_mean": false,
+       "max_implied_range_frac_of_frame": true,
+       "max_implied_range_over_observed": false
+      },
+      "defensible": false,
+      "failed_criteria_ko": [
+       "짝지은 (면적, 수위) 관측 ≥ 6개",
+       "피어슨 상관 r ≥ +0.60",
+       "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+       "검량곡선의 LOO 오차가 '면적 평균'보다 작다",
+       "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+      ],
+      "implied_area_range_km2": 18.02,
+      "implied_over_frame_pct": 0.5,
+      "gauge_level_range_10y_m": 2.699
+     }
+    },
+    "양산교": {
+     "n_pairs": 4,
+     "slope_km2_per_m": -1.0106,
+     "intercept_km2": 38.7952,
+     "pearson_r": -0.0095,
+     "level_range_m": 0.0354,
+     "area_range_km2": 3.6,
+     "loo": {
+      "n": 4,
+      "rmse_km2": 3.3422,
+      "mae_km2": 3.2265,
+      "max_abs_km2": 4.1246
+     },
+     "gate": {
+      "passes": {
+       "min_pairs": false,
+       "min_pearson_r": false,
+       "require_positive_slope": false,
+       "min_level_range_m": false,
+       "min_loo_skill_vs_mean": false,
+       "max_implied_range_frac_of_frame": true,
+       "max_implied_range_over_observed": true
+      },
+      "defensible": false,
+      "failed_criteria_ko": [
+       "짝지은 (면적, 수위) 관측 ≥ 6개",
+       "피어슨 상관 r ≥ +0.60",
+       "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)",
+       "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+       "검량곡선의 LOO 오차가 '면적 평균'보다 작다"
+      ],
+      "implied_area_range_km2": 2.04,
+      "implied_over_frame_pct": 0.1,
+      "gauge_level_range_10y_m": 2.019
+     }
+    },
+    "호포대교": {
+     "n_pairs": 4,
+     "slope_km2_per_m": -11.1669,
+     "intercept_km2": 58.0952,
+     "pearson_r": -0.0474,
+     "level_range_m": 0.015,
+     "area_range_km2": 3.6,
+     "loo": {
+      "n": 4,
+      "rmse_km2": 3.1459,
+      "mae_km2": 3.0972,
+      "max_abs_km2": 3.8133
+     },
+     "gate": {
+      "passes": {
+       "min_pairs": false,
+       "min_pearson_r": false,
+       "require_positive_slope": false,
+       "min_level_range_m": false,
+       "min_loo_skill_vs_mean": false,
+       "max_implied_range_frac_of_frame": true,
+       "max_implied_range_over_observed": false
+      },
+      "defensible": false,
+      "failed_criteria_ko": [
+       "짝지은 (면적, 수위) 관측 ≥ 6개",
+       "피어슨 상관 r ≥ +0.60",
+       "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)",
+       "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+       "검량곡선의 LOO 오차가 '면적 평균'보다 작다",
+       "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+      ],
+      "implied_area_range_km2": 43.33,
+      "implied_over_frame_pct": 1.3,
+      "gauge_level_range_10y_m": 3.88
+     }
+    },
+    "정천교": {
+     "n_pairs": 4,
+     "slope_km2_per_m": 26.6126,
+     "intercept_km2": -3.9737,
+     "pearson_r": 0.6196,
+     "level_range_m": 0.0946,
+     "area_range_km2": 3.6,
+     "loo": {
+      "n": 4,
+      "rmse_km2": 2.3715,
+      "mae_km2": 2.2535,
+      "max_abs_km2": 3.1845
+     },
+     "gate": {
+      "passes": {
+       "min_pairs": false,
+       "min_pearson_r": true,
+       "require_positive_slope": true,
+       "min_level_range_m": false,
+       "min_loo_skill_vs_mean": false,
+       "max_implied_range_frac_of_frame": true,
+       "max_implied_range_over_observed": false
+      },
+      "defensible": false,
+      "failed_criteria_ko": [
+       "짝지은 (면적, 수위) 관측 ≥ 6개",
+       "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+       "검량곡선의 LOO 오차가 '면적 평균'보다 작다",
+       "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+      ],
+      "implied_area_range_km2": 80.77,
+      "implied_over_frame_pct": 2.4,
+      "gauge_level_range_10y_m": 3.035
+     }
+    }
+   },
+   "candidates": {
+    "persistence": {
+     "family": "persistence",
+     "name_ko": "직전 관측 유지 (기준선)",
+     "level_station": null,
+     "n": 4,
+     "rmse_km2": 2.8119,
+     "mae_km2": 2.43,
+     "mse": 7.906613,
+     "skill_vs_persistence": 0.0,
+     "skill_vs_series_mean": -0.8633,
+     "sign_test_vs_persistence": null,
+     "per_point": [
+      {
+       "date": "2020-03-02",
+       "truth_km2": 40.207,
+       "pred_km2": 36.607,
+       "err_km2": -3.6
+      },
+      {
+       "date": "2020-03-30",
+       "truth_km2": 36.607,
+       "pred_km2": 40.207,
+       "err_km2": 3.6
+      },
+      {
+       "date": "2020-04-15",
+       "truth_km2": 36.742,
+       "pred_km2": 36.607,
+       "err_km2": -0.135
+      },
+      {
+       "date": "2020-04-16",
+       "truth_km2": 39.127,
+       "pred_km2": 36.742,
+       "err_km2": -2.385
+      }
+     ]
+    },
+    "series_mean": {
+     "family": "series_mean",
+     "name_ko": "계열 평균",
+     "level_station": null,
+     "n": 4,
+     "rmse_km2": 2.0599,
+     "mae_km2": 1.995,
+     "mse": 4.243275,
+     "skill_vs_persistence": 0.4633,
+     "skill_vs_series_mean": 0.0,
+     "sign_test_vs_persistence": {
+      "wins": 3,
+      "losses": 1,
+      "ties": 0,
+      "p_two_sided": 0.625,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-03-02",
+       "truth_km2": 40.207,
+       "pred_km2": 37.492,
+       "err_km2": -2.715
+      },
+      {
+       "date": "2020-03-30",
+       "truth_km2": 36.607,
+       "pred_km2": 38.692,
+       "err_km2": 2.085
+      },
+      {
+       "date": "2020-04-15",
+       "truth_km2": 36.742,
+       "pred_km2": 38.647,
+       "err_km2": 1.905
+      },
+      {
+       "date": "2020-04-16",
+       "truth_km2": 39.127,
+       "pred_km2": 37.852,
+       "err_km2": -1.275
+      }
+     ]
+    },
+    "linear_trend": {
+     "family": "linear_trend",
+     "name_ko": "시간 선형추세",
+     "level_station": null,
+     "n": 4,
+     "rmse_km2": 3.6298,
+     "mae_km2": 3.1359,
+     "mse": 13.175278,
+     "skill_vs_persistence": -0.6664,
+     "skill_vs_series_mean": -2.105,
+     "sign_test_vs_persistence": {
+      "wins": 1,
+      "losses": 3,
+      "ties": 0,
+      "p_two_sided": 0.625,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-03-02",
+       "truth_km2": 40.207,
+       "pred_km2": 34.1074,
+       "err_km2": -6.0996
+      },
+      {
+       "date": "2020-03-30",
+       "truth_km2": 36.607,
+       "pred_km2": 38.7756,
+       "err_km2": 2.1686
+      },
+      {
+       "date": "2020-04-15",
+       "truth_km2": 36.742,
+       "pred_km2": 37.9705,
+       "err_km2": 1.2285
+      },
+      {
+       "date": "2020-04-16",
+       "truth_km2": 39.127,
+       "pred_km2": 36.0801,
+       "err_km2": -3.0469
+      }
+     ]
+    },
+    "doy_climatology": {
+     "family": "doy_climatology",
+     "name_ko": "연중 시기 평년값 (day-of-year)",
+     "level_station": null,
+     "n": 4,
+     "rmse_km2": 2.1534,
+     "mae_km2": 2.0913,
+     "mse": 4.637343,
+     "skill_vs_persistence": 0.4135,
+     "skill_vs_series_mean": -0.0929,
+     "sign_test_vs_persistence": {
+      "wins": 3,
+      "losses": 1,
+      "ties": 0,
+      "p_two_sided": 0.625,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-03-02",
+       "truth_km2": 40.207,
+       "pred_km2": 37.2653,
+       "err_km2": -2.9417
+      },
+      {
+       "date": "2020-03-30",
+       "truth_km2": 36.607,
+       "pred_km2": 38.5479,
+       "err_km2": 1.9409
+      },
+      {
+       "date": "2020-04-15",
+       "truth_km2": 36.742,
+       "pred_km2": 38.3038,
+       "err_km2": 1.5618
+      },
+      {
+       "date": "2020-04-16",
+       "truth_km2": 39.127,
+       "pred_km2": 37.2062,
+       "err_km2": -1.9208
+      }
+     ]
+    },
+    "ar1_mean_reversion": {
+     "family": "ar1_mean_reversion",
+     "name_ko": "AR(1) 평균회귀",
+     "level_station": null,
+     "n": 4,
+     "rmse_km2": 2.0599,
+     "mae_km2": 1.995,
+     "mse": 4.243275,
+     "skill_vs_persistence": 0.4633,
+     "skill_vs_series_mean": 0.0,
+     "sign_test_vs_persistence": {
+      "wins": 3,
+      "losses": 1,
+      "ties": 0,
+      "p_two_sided": 0.625,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-03-02",
+       "truth_km2": 40.207,
+       "pred_km2": 37.492,
+       "err_km2": -2.715
+      },
+      {
+       "date": "2020-03-30",
+       "truth_km2": 36.607,
+       "pred_km2": 38.692,
+       "err_km2": 2.085
+      },
+      {
+       "date": "2020-04-15",
+       "truth_km2": 36.742,
+       "pred_km2": 38.647,
+       "err_km2": 1.905
+      },
+      {
+       "date": "2020-04-16",
+       "truth_km2": 39.127,
+       "pred_km2": 37.852,
+       "err_km2": -1.275
+      }
+     ]
+    },
+    "level_linear:구포대교": {
+     "family": "level_linear",
+     "name_ko": "같은 날 수위 선형회귀",
+     "level_station": "구포대교",
+     "n": 4,
+     "rmse_km2": 3.1205,
+     "mae_km2": 3.0616,
+     "mse": 9.737659,
+     "skill_vs_persistence": -0.2316,
+     "skill_vs_series_mean": -1.2948,
+     "sign_test_vs_persistence": {
+      "wins": 1,
+      "losses": 3,
+      "ties": 0,
+      "p_two_sided": 0.625,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-03-02",
+       "truth_km2": 40.207,
+       "pred_km2": 36.443,
+       "err_km2": -3.764
+      },
+      {
+       "date": "2020-03-30",
+       "truth_km2": 36.607,
+       "pred_km2": 38.8867,
+       "err_km2": 2.2797
+      },
+      {
+       "date": "2020-04-15",
+       "truth_km2": 36.742,
+       "pred_km2": 39.425,
+       "err_km2": 2.683
+      },
+      {
+       "date": "2020-04-16",
+       "truth_km2": 39.127,
+       "pred_km2": 35.6074,
+       "err_km2": -3.5196
+      }
+     ]
+    },
+    "level_isotonic:구포대교": {
+     "family": "level_isotonic",
+     "name_ko": "같은 날 수위 단조회귀 (PAVA)",
+     "level_station": "구포대교",
+     "n": 4,
+     "rmse_km2": 2.5066,
+     "mae_km2": 2.2444,
+     "mse": 6.283195,
+     "skill_vs_persistence": 0.2053,
+     "skill_vs_series_mean": -0.4807,
+     "sign_test_vs_persistence": {
+      "wins": 3,
+      "losses": 1,
+      "ties": 0,
+      "p_two_sided": 0.625,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-03-02",
+       "truth_km2": 40.207,
+       "pred_km2": 36.6745,
+       "err_km2": -3.5325
+      },
+      {
+       "date": "2020-03-30",
+       "truth_km2": 36.607,
+       "pred_km2": 39.667,
+       "err_km2": 3.06
+      },
+      {
+       "date": "2020-04-15",
+       "truth_km2": 36.742,
+       "pred_km2": 38.407,
+       "err_km2": 1.665
+      },
+      {
+       "date": "2020-04-16",
+       "truth_km2": 39.127,
+       "pred_km2": 38.407,
+       "err_km2": -0.72
+      }
+     ]
+    },
+    "level_linear:양산교": {
+     "family": "level_linear",
+     "name_ko": "같은 날 수위 선형회귀",
+     "level_station": "양산교",
+     "n": 4,
+     "rmse_km2": 3.3422,
+     "mae_km2": 3.2265,
+     "mse": 11.170332,
+     "skill_vs_persistence": -0.4128,
+     "skill_vs_series_mean": -1.6325,
+     "sign_test_vs_persistence": {
+      "wins": 1,
+      "losses": 3,
+      "ties": 0,
+      "p_two_sided": 0.625,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-03-02",
+       "truth_km2": 40.207,
+       "pred_km2": 36.0824,
+       "err_km2": -4.1246
+      },
+      {
+       "date": "2020-03-30",
+       "truth_km2": 36.607,
+       "pred_km2": 39.3532,
+       "err_km2": 2.7462
+      },
+      {
+       "date": "2020-04-15",
+       "truth_km2": 36.742,
+       "pred_km2": 38.7807,
+       "err_km2": 2.0387
+      },
+      {
+       "date": "2020-04-16",
+       "truth_km2": 39.127,
+       "pred_km2": 35.1306,
+       "err_km2": -3.9964
+      }
+     ]
+    },
+    "level_isotonic:양산교": {
+     "family": "level_isotonic",
+     "name_ko": "같은 날 수위 단조회귀 (PAVA)",
+     "level_station": "양산교",
+     "n": 4,
+     "rmse_km2": 2.5501,
+     "mae_km2": 2.4158,
+     "mse": 6.503079,
+     "skill_vs_persistence": 0.1775,
+     "skill_vs_series_mean": -0.5326,
+     "sign_test_vs_persistence": {
+      "wins": 2,
+      "losses": 2,
+      "ties": 0,
+      "p_two_sided": 1.0,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-03-02",
+       "truth_km2": 40.207,
+       "pred_km2": 37.492,
+       "err_km2": -2.715
+      },
+      {
+       "date": "2020-03-30",
+       "truth_km2": 36.607,
+       "pred_km2": 39.9776,
+       "err_km2": 3.3706
+      },
+      {
+       "date": "2020-04-15",
+       "truth_km2": 36.742,
+       "pred_km2": 37.867,
+       "err_km2": 1.125
+      },
+      {
+       "date": "2020-04-16",
+       "truth_km2": 39.127,
+       "pred_km2": 36.6745,
+       "err_km2": -2.4525
+      }
+     ]
+    },
+    "level_linear:호포대교": {
+     "family": "level_linear",
+     "name_ko": "같은 날 수위 선형회귀",
+     "level_station": "호포대교",
+     "n": 4,
+     "rmse_km2": 3.1459,
+     "mae_km2": 3.0972,
+     "mse": 9.896439,
+     "skill_vs_persistence": -0.2517,
+     "skill_vs_series_mean": -1.3323,
+     "sign_test_vs_persistence": {
+      "wins": 1,
+      "losses": 3,
+      "ties": 0,
+      "p_two_sided": 0.625,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-03-02",
+       "truth_km2": 40.207,
+       "pred_km2": 36.3937,
+       "err_km2": -3.8133
+      },
+      {
+       "date": "2020-03-30",
+       "truth_km2": 36.607,
+       "pred_km2": 38.9269,
+       "err_km2": 2.3199
+      },
+      {
+       "date": "2020-04-15",
+       "truth_km2": 36.742,
+       "pred_km2": 39.6518,
+       "err_km2": 2.9098
+      },
+      {
+       "date": "2020-04-16",
+       "truth_km2": 39.127,
+       "pred_km2": 35.781,
+       "err_km2": -3.346
+      }
+     ]
+    },
+    "level_isotonic:호포대교": {
+     "family": "level_isotonic",
+     "name_ko": "같은 날 수위 단조회귀 (PAVA)",
+     "level_station": "호포대교",
+     "n": 4,
+     "rmse_km2": 2.3589,
+     "mae_km2": 2.1981,
+     "mse": 5.564586,
+     "skill_vs_persistence": 0.2962,
+     "skill_vs_series_mean": -0.3114,
+     "sign_test_vs_persistence": {
+      "wins": 3,
+      "losses": 1,
+      "ties": 0,
+      "p_two_sided": 0.625,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-03-02",
+       "truth_km2": 40.207,
+       "pred_km2": 36.6745,
+       "err_km2": -3.5325
+      },
+      {
+       "date": "2020-03-30",
+       "truth_km2": 36.607,
+       "pred_km2": 38.9269,
+       "err_km2": 2.3199
+      },
+      {
+       "date": "2020-04-15",
+       "truth_km2": 36.742,
+       "pred_km2": 38.407,
+       "err_km2": 1.665
+      },
+      {
+       "date": "2020-04-16",
+       "truth_km2": 39.127,
+       "pred_km2": 37.852,
+       "err_km2": -1.275
+      }
+     ]
+    },
+    "level_linear:정천교": {
+     "family": "level_linear",
+     "name_ko": "같은 날 수위 선형회귀",
+     "level_station": "정천교",
+     "n": 4,
+     "rmse_km2": 2.3715,
+     "mae_km2": 2.2535,
+     "mse": 5.624071,
+     "skill_vs_persistence": 0.2887,
+     "skill_vs_series_mean": -0.3254,
+     "sign_test_vs_persistence": {
+      "wins": 2,
+      "losses": 2,
+      "ties": 0,
+      "p_two_sided": 1.0,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-03-02",
+       "truth_km2": 40.207,
+       "pred_km2": 37.0225,
+       "err_km2": -3.1845
+      },
+      {
+       "date": "2020-03-30",
+       "truth_km2": 36.607,
+       "pred_km2": 37.7243,
+       "err_km2": 1.1173
+      },
+      {
+       "date": "2020-04-15",
+       "truth_km2": 36.742,
+       "pred_km2": 39.0459,
+       "err_km2": 2.3039
+      },
+      {
+       "date": "2020-04-16",
+       "truth_km2": 39.127,
+       "pred_km2": 36.7189,
+       "err_km2": -2.4081
+      }
+     ]
+    },
+    "level_isotonic:정천교": {
+     "family": "level_isotonic",
+     "name_ko": "같은 날 수위 단조회귀 (PAVA)",
+     "level_station": "정천교",
+     "n": 4,
+     "rmse_km2": 2.2977,
+     "mae_km2": 2.2287,
+     "mse": 5.279523,
+     "skill_vs_persistence": 0.3323,
+     "skill_vs_series_mean": -0.2442,
+     "sign_test_vs_persistence": {
+      "wins": 2,
+      "losses": 2,
+      "ties": 0,
+      "p_two_sided": 1.0,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-03-02",
+       "truth_km2": 40.207,
+       "pred_km2": 37.9345,
+       "err_km2": -2.2725
+      },
+      {
+       "date": "2020-03-30",
+       "truth_km2": 36.607,
+       "pred_km2": 37.9345,
+       "err_km2": 1.3275
+      },
+      {
+       "date": "2020-04-15",
+       "truth_km2": 36.742,
+       "pred_km2": 39.5846,
+       "err_km2": 2.8426
+      },
+      {
+       "date": "2020-04-16",
+       "truth_km2": 39.127,
+       "pred_km2": 36.6549,
+       "err_km2": -2.4721
+      }
+     ]
+    }
+   },
+   "ranking_by_loo_rmse": [
+    "series_mean",
+    "ar1_mean_reversion",
+    "doy_climatology",
+    "level_isotonic:정천교",
+    "level_isotonic:호포대교",
+    "level_linear:정천교",
+    "level_isotonic:구포대교",
+    "level_isotonic:양산교",
+    "persistence",
+    "level_linear:구포대교",
+    "level_linear:호포대교",
+    "level_linear:양산교",
+    "linear_trend"
+   ],
+   "best_by_loo": "series_mean",
+   "any_candidate_significant_vs_persistence": false,
+   "verdict_ko": [
+    "관측 4개 — LOO 시험점이 4개뿐이라 후보 간 차이가 통계적으로 구분되지 않는다(부호검정 최소 p = 0.125 > 0.05).",
+    "탐지 흔들림(ever−always = 12.27 km²)이 계열의 면적 변동폭(3.60 km²)보다 크다 — 날짜별 차이를 수위 변화로 읽으면 안 된다.",
+    "1일 간격 재방문(2020-04-15→2020-04-16)에서 면적이 2.38 km² 달라졌다 — 계열 전체 변동폭 3.60 km² 의 66 %. 이만큼이 관측 잡음 하한이다."
+   ]
+  },
+  "PlanetScope": {
+   "source": "satellite/area_series.json",
+   "max_abs_diff_vs_recompute_km2": 0.0004,
+   "frame": {
+    "width": 640,
+    "height": 602,
+    "pixel_area_m2": 1965.952,
+    "bounds_epsg32652": [
+     480933.0,
+     3888207.0,
+     509310.0,
+     3914898.0
+    ],
+    "frame_area_km2": 757.44,
+    "water_threshold": 127
+   },
+   "n": 4,
+   "period": [
+    "2020-02-18",
+    "2020-04-14"
+   ],
+   "points": [
+    {
+     "date": "2020-02-18",
+     "area_km2": 30.152,
+     "area_km2_recomputed": 30.1518,
+     "scene_own_footprint_area_km2": 38.2913,
+     "scene_valid_area_km2": 845.16,
+     "levels_m": {
+      "구포대교": 2.3938,
+      "양산교": 0.6171,
+      "호포대교": 1.7883,
+      "정천교": 1.64
+     }
+    },
+    {
+     "date": "2020-03-12",
+     "area_km2": 28.87,
+     "area_km2_recomputed": 28.87,
+     "scene_own_footprint_area_km2": 33.2651,
+     "scene_valid_area_km2": 775.66,
+     "levels_m": {
+      "구포대교": 2.38,
+      "양산교": 0.6617,
+      "호포대교": 1.7717,
+      "정천교": 1.5771
+     }
+    },
+    {
+     "date": "2020-03-25",
+     "area_km2": 30.148,
+     "area_km2_recomputed": 30.1479,
+     "scene_own_footprint_area_km2": 65.3047,
+     "scene_valid_area_km2": 775.55,
+     "levels_m": {
+      "구포대교": 2.3904,
+      "양산교": 0.6208,
+      "호포대교": 1.7821,
+      "정천교": 1.505
+     }
+    },
+    {
+     "date": "2020-04-14",
+     "area_km2": 30.974,
+     "area_km2_recomputed": 30.9736,
+     "scene_own_footprint_area_km2": 40.0362,
+     "scene_valid_area_km2": 812.62,
+     "levels_m": {
+      "구포대교": 2.3904,
+      "양산교": 0.6188,
+      "호포대교": 1.7833,
+      "정천교": 1.59
+     }
+    }
+   ],
+   "area_range_km2": 2.104,
+   "area_mean_km2": 30.036,
+   "gauge_stations_in_frame": [
+    "구포대교",
+    "양산교",
+    "정천교",
+    "호포대교"
+   ],
+   "mask_consistency": {
+    "mean_pairwise_iou": 0.7997,
+    "min_pairwise_iou": 0.7138,
+    "mean_pairwise_iou_by_batch_year": {
+     "2020": 0.7997
+    },
+    "always_water_km2": 24.256,
+    "ever_water_km2": 36.626,
+    "churn_km2": 12.37,
+    "note_ko": "always_water = 모든 날짜에 물인 화소, ever_water = 한 번이라도 물인 화소. 그 차(churn)가 계열의 면적 변동폭보다 크면, 날짜별 면적 차이는 수위 변화가 아니라 탐지 흔들림일 수 있다."
+   },
+   "repeat_pairs": [],
+   "observation_noise_floor_km2": null,
+   "rating_curves": {
+    "구포대교": {
+     "n_pairs": 4,
+     "slope_km2_per_m": 116.5051,
+     "intercept_km2": -248.2538,
+     "pearson_r": 0.8024,
+     "level_range_m": 0.0138,
+     "area_range_km2": 2.104,
+     "loo": {
+      "n": 4,
+      "rmse_km2": 1.6304,
+      "mae_km2": 1.2622,
+      "max_abs_km2": 2.9421
+     },
+     "gate": {
+      "passes": {
+       "min_pairs": false,
+       "min_pearson_r": true,
+       "require_positive_slope": true,
+       "min_level_range_m": false,
+       "min_loo_skill_vs_mean": false,
+       "max_implied_range_frac_of_frame": true,
+       "max_implied_range_over_observed": false
+      },
+      "defensible": false,
+      "failed_criteria_ko": [
+       "짝지은 (면적, 수위) 관측 ≥ 6개",
+       "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+       "검량곡선의 LOO 오차가 '면적 평균'보다 작다",
+       "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+      ],
+      "implied_area_range_km2": 314.47,
+      "implied_over_frame_pct": 41.5,
+      "gauge_level_range_10y_m": 2.699
+     }
+    },
+    "양산교": {
+     "n_pairs": 4,
+     "slope_km2_per_m": -36.2086,
+     "intercept_km2": 52.8329,
+     "pearson_r": -0.8939,
+     "level_range_m": 0.0446,
+     "area_range_km2": 2.104,
+     "loo": {
+      "n": 4,
+      "rmse_km2": 0.7128,
+      "mae_km2": 0.6606,
+      "max_abs_km2": 0.9944
+     },
+     "gate": {
+      "passes": {
+       "min_pairs": false,
+       "min_pearson_r": false,
+       "require_positive_slope": false,
+       "min_level_range_m": false,
+       "min_loo_skill_vs_mean": true,
+       "max_implied_range_frac_of_frame": true,
+       "max_implied_range_over_observed": false
+      },
+      "defensible": false,
+      "failed_criteria_ko": [
+       "짝지은 (면적, 수위) 관측 ≥ 6개",
+       "피어슨 상관 r ≥ +0.60",
+       "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)",
+       "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+       "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+      ],
+      "implied_area_range_km2": 73.1,
+      "implied_over_frame_pct": 9.7,
+      "gauge_level_range_10y_m": 2.019
+     }
+    },
+    "호포대교": {
+     "n_pairs": 4,
+     "slope_km2_per_m": 95.831,
+     "intercept_km2": -140.6725,
+     "pearson_r": 0.7688,
+     "level_range_m": 0.0166,
+     "area_range_km2": 2.104,
+     "loo": {
+      "n": 4,
+      "rmse_km2": 1.3699,
+      "mae_km2": 1.1433,
+      "max_abs_km2": 2.1683
+     },
+     "gate": {
+      "passes": {
+       "min_pairs": false,
+       "min_pearson_r": true,
+       "require_positive_slope": true,
+       "min_level_range_m": false,
+       "min_loo_skill_vs_mean": false,
+       "max_implied_range_frac_of_frame": true,
+       "max_implied_range_over_observed": false
+      },
+      "defensible": false,
+      "failed_criteria_ko": [
+       "짝지은 (면적, 수위) 관측 ≥ 6개",
+       "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+       "검량곡선의 LOO 오차가 '면적 평균'보다 작다",
+       "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+      ],
+      "implied_area_range_km2": 371.87,
+      "implied_over_frame_pct": 49.1,
+      "gauge_level_range_10y_m": 3.88
+     }
+    },
+    "정천교": {
+     "n_pairs": 4,
+     "slope_km2_per_m": 1.215,
+     "intercept_km2": 28.1187,
+     "pearson_r": 0.0779,
+     "level_range_m": 0.135,
+     "area_range_km2": 2.104,
+     "loo": {
+      "n": 4,
+      "rmse_km2": 1.1493,
+      "mae_km2": 1.0151,
+      "max_abs_km2": 1.5534
+     },
+     "gate": {
+      "passes": {
+       "min_pairs": false,
+       "min_pearson_r": false,
+       "require_positive_slope": true,
+       "min_level_range_m": false,
+       "min_loo_skill_vs_mean": false,
+       "max_implied_range_frac_of_frame": true,
+       "max_implied_range_over_observed": true
+      },
+      "defensible": false,
+      "failed_criteria_ko": [
+       "짝지은 (면적, 수위) 관측 ≥ 6개",
+       "피어슨 상관 r ≥ +0.60",
+       "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+       "검량곡선의 LOO 오차가 '면적 평균'보다 작다"
+      ],
+      "implied_area_range_km2": 3.69,
+      "implied_over_frame_pct": 0.5,
+      "gauge_level_range_10y_m": 3.035
+     }
+    }
+   },
+   "candidates": {
+    "persistence": {
+     "family": "persistence",
+     "name_ko": "직전 관측 유지 (기준선)",
+     "level_station": null,
+     "n": 4,
+     "rmse_km2": 1.1835,
+     "mae_km2": 1.167,
+     "mse": 1.400652,
+     "skill_vs_persistence": 0.0,
+     "skill_vs_series_mean": -0.3911,
+     "sign_test_vs_persistence": null,
+     "per_point": [
+      {
+       "date": "2020-02-18",
+       "truth_km2": 30.152,
+       "pred_km2": 28.87,
+       "err_km2": -1.282
+      },
+      {
+       "date": "2020-03-12",
+       "truth_km2": 28.87,
+       "pred_km2": 30.152,
+       "err_km2": 1.282
+      },
+      {
+       "date": "2020-03-25",
+       "truth_km2": 30.148,
+       "pred_km2": 28.87,
+       "err_km2": -1.278
+      },
+      {
+       "date": "2020-04-14",
+       "truth_km2": 30.974,
+       "pred_km2": 30.148,
+       "err_km2": -0.826
+      }
+     ]
+    },
+    "series_mean": {
+     "family": "series_mean",
+     "name_ko": "계열 평균",
+     "level_station": null,
+     "n": 4,
+     "rmse_km2": 1.0034,
+     "mae_km2": 0.7773,
+     "mse": 1.006844,
+     "skill_vs_persistence": 0.2812,
+     "skill_vs_series_mean": 0.0,
+     "sign_test_vs_persistence": {
+      "wins": 2,
+      "losses": 2,
+      "ties": 0,
+      "p_two_sided": 1.0,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-02-18",
+       "truth_km2": 30.152,
+       "pred_km2": 29.9973,
+       "err_km2": -0.1547
+      },
+      {
+       "date": "2020-03-12",
+       "truth_km2": 28.87,
+       "pred_km2": 30.4247,
+       "err_km2": 1.5547
+      },
+      {
+       "date": "2020-03-25",
+       "truth_km2": 30.148,
+       "pred_km2": 29.9987,
+       "err_km2": -0.1493
+      },
+      {
+       "date": "2020-04-14",
+       "truth_km2": 30.974,
+       "pred_km2": 29.7233,
+       "err_km2": -1.2507
+      }
+     ]
+    },
+    "linear_trend": {
+     "family": "linear_trend",
+     "name_ko": "시간 선형추세",
+     "level_station": null,
+     "n": 4,
+     "rmse_km2": 1.6366,
+     "mae_km2": 1.3737,
+     "mse": 2.678492,
+     "skill_vs_persistence": -0.9123,
+     "skill_vs_series_mean": -1.6603,
+     "sign_test_vs_persistence": {
+      "wins": 1,
+      "losses": 3,
+      "ties": 0,
+      "p_two_sided": 0.625,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-02-18",
+       "truth_km2": 30.152,
+       "pred_km2": 27.626,
+       "err_km2": -2.526
+      },
+      {
+       "date": "2020-03-12",
+       "truth_km2": 28.87,
+       "pred_km2": 30.3256,
+       "err_km2": 1.4556
+      },
+      {
+       "date": "2020-03-25",
+       "truth_km2": 30.148,
+       "pred_km2": 30.1735,
+       "err_km2": 0.0255
+      },
+      {
+       "date": "2020-04-14",
+       "truth_km2": 30.974,
+       "pred_km2": 29.4862,
+       "err_km2": -1.4878
+      }
+     ]
+    },
+    "doy_climatology": {
+     "family": "doy_climatology",
+     "name_ko": "연중 시기 평년값 (day-of-year)",
+     "level_station": null,
+     "n": 4,
+     "rmse_km2": 1.0293,
+     "mae_km2": 0.8935,
+     "mse": 1.059437,
+     "skill_vs_persistence": 0.2436,
+     "skill_vs_series_mean": -0.0522,
+     "sign_test_vs_persistence": {
+      "wins": 2,
+      "losses": 2,
+      "ties": 0,
+      "p_two_sided": 1.0,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-02-18",
+       "truth_km2": 30.152,
+       "pred_km2": 29.5739,
+       "err_km2": -0.5781
+      },
+      {
+       "date": "2020-03-12",
+       "truth_km2": 28.87,
+       "pred_km2": 30.3542,
+       "err_km2": 1.4842
+      },
+      {
+       "date": "2020-03-25",
+       "truth_km2": 30.148,
+       "pred_km2": 29.9205,
+       "err_km2": -0.2275
+      },
+      {
+       "date": "2020-04-14",
+       "truth_km2": 30.974,
+       "pred_km2": 29.6899,
+       "err_km2": -1.2841
+      }
+     ]
+    },
+    "ar1_mean_reversion": {
+     "family": "ar1_mean_reversion",
+     "name_ko": "AR(1) 평균회귀",
+     "level_station": null,
+     "n": 4,
+     "rmse_km2": 1.0034,
+     "mae_km2": 0.7773,
+     "mse": 1.006844,
+     "skill_vs_persistence": 0.2812,
+     "skill_vs_series_mean": 0.0,
+     "sign_test_vs_persistence": {
+      "wins": 2,
+      "losses": 2,
+      "ties": 0,
+      "p_two_sided": 1.0,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-02-18",
+       "truth_km2": 30.152,
+       "pred_km2": 29.9973,
+       "err_km2": -0.1547
+      },
+      {
+       "date": "2020-03-12",
+       "truth_km2": 28.87,
+       "pred_km2": 30.4247,
+       "err_km2": 1.5547
+      },
+      {
+       "date": "2020-03-25",
+       "truth_km2": 30.148,
+       "pred_km2": 29.9987,
+       "err_km2": -0.1493
+      },
+      {
+       "date": "2020-04-14",
+       "truth_km2": 30.974,
+       "pred_km2": 29.7233,
+       "err_km2": -1.2507
+      }
+     ]
+    },
+    "level_linear:구포대교": {
+     "family": "level_linear",
+     "name_ko": "같은 날 수위 선형회귀",
+     "level_station": "구포대교",
+     "n": 4,
+     "rmse_km2": 1.6304,
+     "mae_km2": 1.2622,
+     "mse": 2.658077,
+     "skill_vs_persistence": -0.8977,
+     "skill_vs_series_mean": -1.64,
+     "sign_test_vs_persistence": {
+      "wins": 2,
+      "losses": 2,
+      "ties": 0,
+      "p_two_sided": 1.0,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-02-18",
+       "truth_km2": 30.152,
+       "pred_km2": 31.1138,
+       "err_km2": 0.9618
+      },
+      {
+       "date": "2020-03-12",
+       "truth_km2": 28.87,
+       "pred_km2": 31.8121,
+       "err_km2": 2.9421
+      },
+      {
+       "date": "2020-03-25",
+       "truth_km2": 30.148,
+       "pred_km2": 30.2754,
+       "err_km2": 0.1274
+      },
+      {
+       "date": "2020-04-14",
+       "truth_km2": 30.974,
+       "pred_km2": 29.9565,
+       "err_km2": -1.0175
+      }
+     ]
+    },
+    "level_isotonic:구포대교": {
+     "family": "level_isotonic",
+     "name_ko": "같은 날 수위 단조회귀 (PAVA)",
+     "level_station": "구포대교",
+     "n": 4,
+     "rmse_km2": 0.8893,
+     "mae_km2": 0.8353,
+     "mse": 0.790867,
+     "skill_vs_persistence": 0.4354,
+     "skill_vs_series_mean": 0.2145,
+     "sign_test_vs_persistence": {
+      "wins": 3,
+      "losses": 0,
+      "ties": 1,
+      "p_two_sided": 0.25,
+      "min_attainable_p": 0.25,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-02-18",
+       "truth_km2": 30.152,
+       "pred_km2": 30.974,
+       "err_km2": 0.822
+      },
+      {
+       "date": "2020-03-12",
+       "truth_km2": 28.87,
+       "pred_km2": 30.148,
+       "err_km2": 1.278
+      },
+      {
+       "date": "2020-03-25",
+       "truth_km2": 30.148,
+       "pred_km2": 30.563,
+       "err_km2": 0.415
+      },
+      {
+       "date": "2020-04-14",
+       "truth_km2": 30.974,
+       "pred_km2": 30.148,
+       "err_km2": -0.826
+      }
+     ]
+    },
+    "level_linear:양산교": {
+     "family": "level_linear",
+     "name_ko": "같은 날 수위 선형회귀",
+     "level_station": "양산교",
+     "n": 4,
+     "rmse_km2": 0.7128,
+     "mae_km2": 0.6606,
+     "mse": 0.508071,
+     "skill_vs_persistence": 0.6373,
+     "skill_vs_series_mean": 0.4954,
+     "sign_test_vs_persistence": {
+      "wins": 4,
+      "losses": 0,
+      "ties": 0,
+      "p_two_sided": 0.125,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-02-18",
+       "truth_km2": 30.152,
+       "pred_km2": 30.6806,
+       "err_km2": 0.5286
+      },
+      {
+       "date": "2020-03-12",
+       "truth_km2": 28.87,
+       "pred_km2": 29.8644,
+       "err_km2": 0.9944
+      },
+      {
+       "date": "2020-03-25",
+       "truth_km2": 30.148,
+       "pred_km2": 30.4458,
+       "err_km2": 0.2978
+      },
+      {
+       "date": "2020-04-14",
+       "truth_km2": 30.974,
+       "pred_km2": 30.1522,
+       "err_km2": -0.8218
+      }
+     ]
+    },
+    "level_isotonic:양산교": {
+     "family": "level_isotonic",
+     "name_ko": "같은 날 수위 단조회귀 (PAVA)",
+     "level_station": "양산교",
+     "n": 4,
+     "rmse_km2": 1.0571,
+     "mae_km2": 0.8114,
+     "mse": 1.117468,
+     "skill_vs_persistence": 0.2022,
+     "skill_vs_series_mean": -0.1099,
+     "sign_test_vs_persistence": {
+      "wins": 2,
+      "losses": 2,
+      "ties": 0,
+      "p_two_sided": 1.0,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-02-18",
+       "truth_km2": 30.152,
+       "pred_km2": 29.9973,
+       "err_km2": -0.1547
+      },
+      {
+       "date": "2020-03-12",
+       "truth_km2": 28.87,
+       "pred_km2": 30.561,
+       "err_km2": 1.691
+      },
+      {
+       "date": "2020-03-25",
+       "truth_km2": 30.148,
+       "pred_km2": 29.9987,
+       "err_km2": -0.1493
+      },
+      {
+       "date": "2020-04-14",
+       "truth_km2": 30.974,
+       "pred_km2": 29.7233,
+       "err_km2": -1.2507
+      }
+     ]
+    },
+    "level_linear:호포대교": {
+     "family": "level_linear",
+     "name_ko": "같은 날 수위 선형회귀",
+     "level_station": "호포대교",
+     "n": 4,
+     "rmse_km2": 1.3699,
+     "mae_km2": 1.1433,
+     "mse": 1.876652,
+     "skill_vs_persistence": -0.3398,
+     "skill_vs_series_mean": -0.8639,
+     "sign_test_vs_persistence": {
+      "wins": 1,
+      "losses": 3,
+      "ties": 0,
+      "p_two_sided": 0.625,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-02-18",
+       "truth_km2": 30.152,
+       "pred_km2": 31.4657,
+       "err_km2": 1.3137
+      },
+      {
+       "date": "2020-03-12",
+       "truth_km2": 28.87,
+       "pred_km2": 31.0383,
+       "err_km2": 2.1683
+      },
+      {
+       "date": "2020-03-25",
+       "truth_km2": 30.148,
+       "pred_km2": 30.0942,
+       "err_km2": -0.0538
+      },
+      {
+       "date": "2020-04-14",
+       "truth_km2": 30.974,
+       "pred_km2": 29.9364,
+       "err_km2": -1.0376
+      }
+     ]
+    },
+    "level_isotonic:호포대교": {
+     "family": "level_isotonic",
+     "name_ko": "같은 날 수위 단조회귀 (PAVA)",
+     "level_station": "호포대교",
+     "n": 4,
+     "rmse_km2": 0.8729,
+     "mae_km2": 0.7913,
+     "mse": 0.761875,
+     "skill_vs_persistence": 0.4561,
+     "skill_vs_series_mean": 0.2433,
+     "sign_test_vs_persistence": {
+      "wins": 4,
+      "losses": 0,
+      "ties": 0,
+      "p_two_sided": 0.125,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-02-18",
+       "truth_km2": 30.152,
+       "pred_km2": 30.974,
+       "err_km2": 0.822
+      },
+      {
+       "date": "2020-03-12",
+       "truth_km2": 28.87,
+       "pred_km2": 30.148,
+       "err_km2": 1.278
+      },
+      {
+       "date": "2020-03-25",
+       "truth_km2": 30.148,
+       "pred_km2": 30.3879,
+       "err_km2": 0.2399
+      },
+      {
+       "date": "2020-04-14",
+       "truth_km2": 30.974,
+       "pred_km2": 30.1488,
+       "err_km2": -0.8252
+      }
+     ]
+    },
+    "level_linear:정천교": {
+     "family": "level_linear",
+     "name_ko": "같은 날 수위 선형회귀",
+     "level_station": "정천교",
+     "n": 4,
+     "rmse_km2": 1.1493,
+     "mae_km2": 1.0151,
+     "mse": 1.320929,
+     "skill_vs_persistence": 0.0569,
+     "skill_vs_series_mean": -0.3119,
+     "sign_test_vs_persistence": {
+      "wins": 2,
+      "losses": 2,
+      "ties": 0,
+      "p_two_sided": 1.0,
+      "min_attainable_p": 0.125,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-02-18",
+       "truth_km2": 30.152,
+       "pred_km2": 30.0315,
+       "err_km2": -0.1205
+      },
+      {
+       "date": "2020-03-12",
+       "truth_km2": 28.87,
+       "pred_km2": 30.4234,
+       "err_km2": 1.5534
+      },
+      {
+       "date": "2020-03-25",
+       "truth_km2": 30.148,
+       "pred_km2": 29.0184,
+       "err_km2": -1.1296
+      },
+      {
+       "date": "2020-04-14",
+       "truth_km2": 30.974,
+       "pred_km2": 29.7169,
+       "err_km2": -1.2571
+      }
+     ]
+    },
+    "level_isotonic:정천교": {
+     "family": "level_isotonic",
+     "name_ko": "같은 날 수위 단조회귀 (PAVA)",
+     "level_station": "정천교",
+     "n": 4,
+     "rmse_km2": 1.2984,
+     "mae_km2": 1.2658,
+     "mse": 1.685789,
+     "skill_vs_persistence": -0.2036,
+     "skill_vs_series_mean": -0.6743,
+     "sign_test_vs_persistence": {
+      "wins": 1,
+      "losses": 2,
+      "ties": 1,
+      "p_two_sided": 1.0,
+      "min_attainable_p": 0.25,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2020-02-18",
+       "truth_km2": 30.152,
+       "pred_km2": 30.974,
+       "err_km2": 0.822
+      },
+      {
+       "date": "2020-03-12",
+       "truth_km2": 28.87,
+       "pred_km2": 30.5,
+       "err_km2": 1.63
+      },
+      {
+       "date": "2020-03-25",
+       "truth_km2": 30.148,
+       "pred_km2": 28.87,
+       "err_km2": -1.278
+      },
+      {
+       "date": "2020-04-14",
+       "truth_km2": 30.974,
+       "pred_km2": 29.6409,
+       "err_km2": -1.3331
+      }
+     ]
+    }
+   },
+   "ranking_by_loo_rmse": [
+    "level_linear:양산교",
+    "level_isotonic:호포대교",
+    "level_isotonic:구포대교",
+    "series_mean",
+    "ar1_mean_reversion",
+    "doy_climatology",
+    "level_isotonic:양산교",
+    "level_linear:정천교",
+    "persistence",
+    "level_isotonic:정천교",
+    "level_linear:호포대교",
+    "level_linear:구포대교",
+    "linear_trend"
+   ],
+   "best_by_loo": "level_linear:양산교",
+   "any_candidate_significant_vs_persistence": false,
+   "verdict_ko": [
+    "관측 4개 — LOO 시험점이 4개뿐이라 후보 간 차이가 통계적으로 구분되지 않는다(부호검정 최소 p = 0.125 > 0.05).",
+    "탐지 흔들림(ever−always = 12.37 km²)이 계열의 면적 변동폭(2.10 km²)보다 크다 — 날짜별 차이를 수위 변화로 읽으면 안 된다."
+   ]
+  }
+ },
+ "bridge": {
+  "gate_criteria_ko": {
+   "min_pairs": "짝지은 (면적, 수위) 관측 ≥ 6개",
+   "min_pearson_r": "피어슨 상관 r ≥ +0.60",
+   "require_positive_slope": "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)",
+   "min_level_range_m": "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+   "min_loo_skill_vs_mean": "검량곡선의 LOO 오차가 '면적 평균'보다 작다",
+   "max_implied_range_frac_of_frame": "10개년 수위폭을 넣었을 때 파생 면적폭 ≤ 공통격자 면적의 50 %",
+   "max_implied_range_over_observed": "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+  },
+  "gate_thresholds": {
+   "min_pairs": 6,
+   "min_pearson_r": 0.6,
+   "require_positive_slope": true,
+   "min_level_range_m": 0.3,
+   "min_loo_skill_vs_mean": 0.0,
+   "max_implied_range_frac_of_frame": 0.5,
+   "max_implied_range_over_observed": 3.0
+  },
+  "evaluated": [
+   {
+    "sensor": "ICEYE",
+    "level_station": "구포대교",
+    "n_pairs": 4,
+    "pearson_r": 0.0563,
+    "slope_km2_per_m": 6.6767,
+    "level_range_m": 0.0317,
+    "loo_rmse_km2": 3.1205,
+    "passes": {
+     "min_pairs": false,
+     "min_pearson_r": false,
+     "require_positive_slope": true,
+     "min_level_range_m": false,
+     "min_loo_skill_vs_mean": false,
+     "max_implied_range_frac_of_frame": true,
+     "max_implied_range_over_observed": false
+    },
+    "defensible": false,
+    "failed_criteria_ko": [
+     "짝지은 (면적, 수위) 관측 ≥ 6개",
+     "피어슨 상관 r ≥ +0.60",
+     "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+     "검량곡선의 LOO 오차가 '면적 평균'보다 작다",
+     "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+    ],
+    "implied_area_range_km2": 18.02,
+    "implied_over_frame_pct": 0.5,
+    "gauge_level_range_10y_m": 2.699
+   },
+   {
+    "sensor": "ICEYE",
+    "level_station": "양산교",
+    "n_pairs": 4,
+    "pearson_r": -0.0095,
+    "slope_km2_per_m": -1.0106,
+    "level_range_m": 0.0354,
+    "loo_rmse_km2": 3.3422,
+    "passes": {
+     "min_pairs": false,
+     "min_pearson_r": false,
+     "require_positive_slope": false,
+     "min_level_range_m": false,
+     "min_loo_skill_vs_mean": false,
+     "max_implied_range_frac_of_frame": true,
+     "max_implied_range_over_observed": true
+    },
+    "defensible": false,
+    "failed_criteria_ko": [
+     "짝지은 (면적, 수위) 관측 ≥ 6개",
+     "피어슨 상관 r ≥ +0.60",
+     "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)",
+     "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+     "검량곡선의 LOO 오차가 '면적 평균'보다 작다"
+    ],
+    "implied_area_range_km2": 2.04,
+    "implied_over_frame_pct": 0.1,
+    "gauge_level_range_10y_m": 2.019
+   },
+   {
+    "sensor": "ICEYE",
+    "level_station": "호포대교",
+    "n_pairs": 4,
+    "pearson_r": -0.0474,
+    "slope_km2_per_m": -11.1669,
+    "level_range_m": 0.015,
+    "loo_rmse_km2": 3.1459,
+    "passes": {
+     "min_pairs": false,
+     "min_pearson_r": false,
+     "require_positive_slope": false,
+     "min_level_range_m": false,
+     "min_loo_skill_vs_mean": false,
+     "max_implied_range_frac_of_frame": true,
+     "max_implied_range_over_observed": false
+    },
+    "defensible": false,
+    "failed_criteria_ko": [
+     "짝지은 (면적, 수위) 관측 ≥ 6개",
+     "피어슨 상관 r ≥ +0.60",
+     "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)",
+     "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+     "검량곡선의 LOO 오차가 '면적 평균'보다 작다",
+     "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+    ],
+    "implied_area_range_km2": 43.33,
+    "implied_over_frame_pct": 1.3,
+    "gauge_level_range_10y_m": 3.88
+   },
+   {
+    "sensor": "ICEYE",
+    "level_station": "정천교",
+    "n_pairs": 4,
+    "pearson_r": 0.6196,
+    "slope_km2_per_m": 26.6126,
+    "level_range_m": 0.0946,
+    "loo_rmse_km2": 2.3715,
+    "passes": {
+     "min_pairs": false,
+     "min_pearson_r": true,
+     "require_positive_slope": true,
+     "min_level_range_m": false,
+     "min_loo_skill_vs_mean": false,
+     "max_implied_range_frac_of_frame": true,
+     "max_implied_range_over_observed": false
+    },
+    "defensible": false,
+    "failed_criteria_ko": [
+     "짝지은 (면적, 수위) 관측 ≥ 6개",
+     "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+     "검량곡선의 LOO 오차가 '면적 평균'보다 작다",
+     "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+    ],
+    "implied_area_range_km2": 80.77,
+    "implied_over_frame_pct": 2.4,
+    "gauge_level_range_10y_m": 3.035
+   },
+   {
+    "sensor": "PlanetScope",
+    "level_station": "구포대교",
+    "n_pairs": 4,
+    "pearson_r": 0.8024,
+    "slope_km2_per_m": 116.5051,
+    "level_range_m": 0.0138,
+    "loo_rmse_km2": 1.6304,
+    "passes": {
+     "min_pairs": false,
+     "min_pearson_r": true,
+     "require_positive_slope": true,
+     "min_level_range_m": false,
+     "min_loo_skill_vs_mean": false,
+     "max_implied_range_frac_of_frame": true,
+     "max_implied_range_over_observed": false
+    },
+    "defensible": false,
+    "failed_criteria_ko": [
+     "짝지은 (면적, 수위) 관측 ≥ 6개",
+     "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+     "검량곡선의 LOO 오차가 '면적 평균'보다 작다",
+     "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+    ],
+    "implied_area_range_km2": 314.47,
+    "implied_over_frame_pct": 41.5,
+    "gauge_level_range_10y_m": 2.699
+   },
+   {
+    "sensor": "PlanetScope",
+    "level_station": "양산교",
+    "n_pairs": 4,
+    "pearson_r": -0.8939,
+    "slope_km2_per_m": -36.2086,
+    "level_range_m": 0.0446,
+    "loo_rmse_km2": 0.7128,
+    "passes": {
+     "min_pairs": false,
+     "min_pearson_r": false,
+     "require_positive_slope": false,
+     "min_level_range_m": false,
+     "min_loo_skill_vs_mean": true,
+     "max_implied_range_frac_of_frame": true,
+     "max_implied_range_over_observed": false
+    },
+    "defensible": false,
+    "failed_criteria_ko": [
+     "짝지은 (면적, 수위) 관측 ≥ 6개",
+     "피어슨 상관 r ≥ +0.60",
+     "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)",
+     "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+     "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+    ],
+    "implied_area_range_km2": 73.1,
+    "implied_over_frame_pct": 9.7,
+    "gauge_level_range_10y_m": 2.019
+   },
+   {
+    "sensor": "PlanetScope",
+    "level_station": "호포대교",
+    "n_pairs": 4,
+    "pearson_r": 0.7688,
+    "slope_km2_per_m": 95.831,
+    "level_range_m": 0.0166,
+    "loo_rmse_km2": 1.3699,
+    "passes": {
+     "min_pairs": false,
+     "min_pearson_r": true,
+     "require_positive_slope": true,
+     "min_level_range_m": false,
+     "min_loo_skill_vs_mean": false,
+     "max_implied_range_frac_of_frame": true,
+     "max_implied_range_over_observed": false
+    },
+    "defensible": false,
+    "failed_criteria_ko": [
+     "짝지은 (면적, 수위) 관측 ≥ 6개",
+     "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+     "검량곡선의 LOO 오차가 '면적 평균'보다 작다",
+     "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+    ],
+    "implied_area_range_km2": 371.87,
+    "implied_over_frame_pct": 49.1,
+    "gauge_level_range_10y_m": 3.88
+   },
+   {
+    "sensor": "PlanetScope",
+    "level_station": "정천교",
+    "n_pairs": 4,
+    "pearson_r": 0.0779,
+    "slope_km2_per_m": 1.215,
+    "level_range_m": 0.135,
+    "loo_rmse_km2": 1.1493,
+    "passes": {
+     "min_pairs": false,
+     "min_pearson_r": false,
+     "require_positive_slope": true,
+     "min_level_range_m": false,
+     "min_loo_skill_vs_mean": false,
+     "max_implied_range_frac_of_frame": true,
+     "max_implied_range_over_observed": true
+    },
+    "defensible": false,
+    "failed_criteria_ko": [
+     "짝지은 (면적, 수위) 관측 ≥ 6개",
+     "피어슨 상관 r ≥ +0.60",
+     "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+     "검량곡선의 LOO 오차가 '면적 평균'보다 작다"
+    ],
+    "implied_area_range_km2": 3.69,
+    "implied_over_frame_pct": 0.5,
+    "gauge_level_range_10y_m": 3.035
+   }
+  ],
+  "any_defensible": false,
+  "demonstration": {
+   "published": false,
+   "defensible": false,
+   "demonstration_only": true,
+   "summary": {
+    "skill_max_abs_diff_vs_level": 0.0,
+    "end_to_end_rmse_km2": {
+     "D+1": {
+      "n": 4,
+      "rating_error_rmse_km2": 0.4491,
+      "level_forecast_error_rmse_km2": 0.8871,
+      "total_error_rmse_km2": 0.7756
+     },
+     "D+7": {
+      "n": 4,
+      "rating_error_rmse_km2": 0.4491,
+      "level_forecast_error_rmse_km2": 1.1745,
+      "total_error_rmse_km2": 1.4393
+     }
+    },
+    "rating_loo_rmse_km2": 1.6304,
+    "warnings_ko": [
+     "검량곡선은 바로 이 위성 관측일 4~10점으로 적합했으므로 위 표의 '검량 오차' 는 **내부 표본(in-sample)** 값이라 낙관적이다. 같은 곡선의 LOO RMSE 는 1.6304 km² 이고 이 계열의 전체 면적 변동폭은 2.104 km² 다 — 즉 검량 오차만으로 이미 신호 크기에 맞먹는다.",
+     "파생 면적의 시험 skill 은 같은 분할 **수위** 모델의 skill 과 최대 0.0000 차이다(사실상 동일). 파생 면적 예측은 수위 예측을 아핀 변환으로 다시 쓴 것일 뿐이며, 면적이 예측 가능하다는 증거가 **아니다**.",
+     "10개년 수위를 이 곡선에 넣으면 파생 면적이 최저 -13.7 km² (음수)까지 내려간다 — 곡선이 관측 구간 밖에서 물리적으로 무의미하다는 증거다."
+    ]
+   },
+   "sensor": "PlanetScope",
+   "level_station": "구포대교",
+   "rating_curve": {
+    "n_pairs": 4,
+    "slope_km2_per_m": 116.5051,
+    "intercept_km2": -248.2538,
+    "pearson_r": 0.8024,
+    "level_range_m": 0.0138,
+    "area_range_km2": 2.104,
+    "loo": {
+     "n": 4,
+     "rmse_km2": 1.6304,
+     "mae_km2": 1.2622,
+     "max_abs_km2": 2.9421
+    }
+   },
+   "gate": {
+    "passes": {
+     "min_pairs": false,
+     "min_pearson_r": true,
+     "require_positive_slope": true,
+     "min_level_range_m": false,
+     "min_loo_skill_vs_mean": false,
+     "max_implied_range_frac_of_frame": true,
+     "max_implied_range_over_observed": false
+    },
+    "defensible": false,
+    "failed_criteria_ko": [
+     "짝지은 (면적, 수위) 관측 ≥ 6개",
+     "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+     "검량곡선의 LOO 오차가 '면적 평균'보다 작다",
+     "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+    ],
+    "implied_area_range_km2": 314.47,
+    "implied_over_frame_pct": 41.5,
+    "gauge_level_range_10y_m": 2.699
+   },
+   "derived_series": {
+    "formula_ko": "파생면적(km²) = -248.254 + 116.505 × 수위(m) @ 구포대교",
+    "period": [
+     "2015-01-01",
+     "2024-12-31"
+    ],
+    "n_days": 3653,
+    "n_valid": 3653,
+    "min_km2": -13.741,
+    "max_km2": 300.73
+   },
+   "split": {
+    "train_end": "2018-12-31",
+    "val_start": "2019-01-01",
+    "val_end": "2023-12-31",
+    "test_start": "2024-01-01",
+    "test_end": "2024-12-31"
+   },
+   "forecasters_tried": [
+    "analog_knn",
+    "climatology",
+    "ensemble_mean",
+    "mean_reversion",
+    "neural_gru",
+    "neural_lstm",
+    "neural_mlp",
+    "neural_tcn",
+    "prophet_hybrid",
+    "ridge_ar",
+    "ridge_arx",
+    "seasonal_anomaly_ar"
+   ],
+   "forecasters_unavailable": [
+    "neural_gru",
+    "neural_lstm",
+    "neural_mlp",
+    "neural_tcn",
+    "prophet_hybrid"
+   ],
+   "horizons": {
+    "1": {
+     "forecaster_id": "ensemble_mean",
+     "forecaster_name": "계열 앙상블 평균",
+     "hparams": {
+      "members": "all"
+     },
+     "n_test": 366,
+     "test_rmse_km2": 7.4112,
+     "test_mae_km2": 3.6836,
+     "persistence_test_rmse_km2": 8.9656,
+     "skill_vs_persistence": 0.31669815501336696,
+     "level_equivalent": {
+      "forecaster_id": "ensemble_mean",
+      "test_rmse_m": 0.0636,
+      "skill_vs_persistence": 0.31669815501336296,
+      "test_rmse_m_times_slope_km2": 7.4112
+     }
+    },
+    "3": {
+     "forecaster_id": "mean_reversion",
+     "forecaster_name": "평균 회귀 AR(1)",
+     "hparams": {
+      "window": 90
+     },
+     "n_test": 366,
+     "test_rmse_km2": 9.3918,
+     "test_mae_km2": 4.4695,
+     "persistence_test_rmse_km2": 13.3615,
+     "skill_vs_persistence": 0.5059324529922786,
+     "level_equivalent": {
+      "forecaster_id": "mean_reversion",
+      "test_rmse_m": 0.0806,
+      "skill_vs_persistence": 0.5059324529922631,
+      "test_rmse_m_times_slope_km2": 9.3918
+     }
+    },
+    "5": {
+     "forecaster_id": "mean_reversion",
+     "forecaster_name": "평균 회귀 AR(1)",
+     "hparams": {
+      "window": 90
+     },
+     "n_test": 366,
+     "test_rmse_km2": 9.1149,
+     "test_mae_km2": 4.4274,
+     "persistence_test_rmse_km2": 12.7146,
+     "skill_vs_persistence": 0.48608167179631245,
+     "level_equivalent": {
+      "forecaster_id": "mean_reversion",
+      "test_rmse_m": 0.0782,
+      "skill_vs_persistence": 0.48608167179628825,
+      "test_rmse_m_times_slope_km2": 9.1149
+     }
+    },
+    "7": {
+     "forecaster_id": "mean_reversion",
+     "forecaster_name": "평균 회귀 AR(1)",
+     "hparams": {
+      "window": 90
+     },
+     "n_test": 366,
+     "test_rmse_km2": 9.1037,
+     "test_mae_km2": 4.4022,
+     "persistence_test_rmse_km2": 12.9722,
+     "skill_vs_persistence": 0.5075014592658544,
+     "level_equivalent": {
+      "forecaster_id": "mean_reversion",
+      "test_rmse_m": 0.0781,
+      "skill_vs_persistence": 0.5075014592658325,
+      "test_rmse_m_times_slope_km2": 9.1037
+     }
+    },
+    "10": {
+     "forecaster_id": "mean_reversion",
+     "forecaster_name": "평균 회귀 AR(1)",
+     "hparams": {
+      "window": 90
+     },
+     "n_test": 366,
+     "test_rmse_km2": 9.1386,
+     "test_mae_km2": 4.4446,
+     "persistence_test_rmse_km2": 13.2224,
+     "skill_vs_persistence": 0.5223207090027588,
+     "level_equivalent": {
+      "forecaster_id": "mean_reversion",
+      "test_rmse_m": 0.0784,
+      "skill_vs_persistence": 0.522320709002742,
+      "test_rmse_m_times_slope_km2": 9.1386
+     }
+    },
+    "14": {
+     "forecaster_id": "mean_reversion",
+     "forecaster_name": "평균 회귀 AR(1)",
+     "hparams": {
+      "window": 90
+     },
+     "n_test": 366,
+     "test_rmse_km2": 9.0791,
+     "test_mae_km2": 4.3994,
+     "persistence_test_rmse_km2": 12.7281,
+     "skill_vs_persistence": 0.4911828878696447,
+     "level_equivalent": {
+      "forecaster_id": "mean_reversion",
+      "test_rmse_m": 0.0779,
+      "skill_vs_persistence": 0.49118288786963393,
+      "test_rmse_m_times_slope_km2": 9.0791
+     }
+    },
+    "30": {
+     "forecaster_id": "mean_reversion",
+     "forecaster_name": "평균 회귀 AR(1)",
+     "hparams": {
+      "window": 90
+     },
+     "n_test": 366,
+     "test_rmse_km2": 9.1244,
+     "test_mae_km2": 4.4929,
+     "persistence_test_rmse_km2": 12.5916,
+     "skill_vs_persistence": 0.4748854157234037,
+     "level_equivalent": {
+      "forecaster_id": "mean_reversion",
+      "test_rmse_m": 0.0783,
+      "skill_vs_persistence": 0.47488541572338316,
+      "test_rmse_m_times_slope_km2": 9.1244
+     }
+    }
+   },
+   "end_to_end": {
+    "params_fit_on_ko": "학습 구간만(≤ 2018-12-31) — 위성 관측일이 검증 구간이라 누수를 막기 위해",
+    "decomposition_ko": "총오차 = (검량 오차: 실측 수위를 검량곡선에 넣은 면적 − 위성 실측 면적) + (수위 예보 오차: 예보 수위를 넣은 면적 − 실측 수위를 넣은 면적)",
+    "rows": [
+     {
+      "date": "2020-02-18",
+      "horizon": 1,
+      "origin_date": "2020-02-17",
+      "satellite_area_km2": 30.152,
+      "rating_area_km2": 30.6361,
+      "forecast_area_km2": 30.3374,
+      "level_observed_m": 2.3938,
+      "level_forecast_m": 2.3912,
+      "rating_error_km2": 0.4841,
+      "level_forecast_error_km2": -0.2988,
+      "total_error_km2": 0.1854,
+      "in_split": "val"
+     },
+     {
+      "date": "2020-03-12",
+      "horizon": 1,
+      "origin_date": "2020-03-11",
+      "satellite_area_km2": 28.87,
+      "rating_area_km2": 29.0283,
+      "forecast_area_km2": 29.2005,
+      "level_observed_m": 2.38,
+      "level_forecast_m": 2.3815,
+      "rating_error_km2": 0.1583,
+      "level_forecast_error_km2": 0.1722,
+      "total_error_km2": 0.3305,
+      "in_split": "val"
+     },
+     {
+      "date": "2020-03-25",
+      "horizon": 1,
+      "origin_date": "2020-03-24",
+      "satellite_area_km2": 30.148,
+      "rating_area_km2": 30.24,
+      "forecast_area_km2": 28.6443,
+      "level_observed_m": 2.3904,
+      "level_forecast_m": 2.3767,
+      "rating_error_km2": 0.092,
+      "level_forecast_error_km2": -1.5957,
+      "total_error_km2": -1.5037,
+      "in_split": "val"
+     },
+     {
+      "date": "2020-04-14",
+      "horizon": 1,
+      "origin_date": "2020-04-13",
+      "satellite_area_km2": 30.974,
+      "rating_area_km2": 30.24,
+      "forecast_area_km2": 30.9348,
+      "level_observed_m": 2.3904,
+      "level_forecast_m": 2.3964,
+      "rating_error_km2": -0.734,
+      "level_forecast_error_km2": 0.6948,
+      "total_error_km2": -0.0392,
+      "in_split": "val"
+     },
+     {
+      "date": "2020-02-18",
+      "horizon": 7,
+      "origin_date": "2020-02-11",
+      "satellite_area_km2": 30.152,
+      "rating_area_km2": 30.6361,
+      "forecast_area_km2": 30.9506,
+      "level_observed_m": 2.3938,
+      "level_forecast_m": 2.3965,
+      "rating_error_km2": 0.4841,
+      "level_forecast_error_km2": 0.3145,
+      "total_error_km2": 0.7986,
+      "in_split": "val"
+     },
+     {
+      "date": "2020-03-12",
+      "horizon": 7,
+      "origin_date": "2020-03-05",
+      "satellite_area_km2": 28.87,
+      "rating_area_km2": 29.0283,
+      "forecast_area_km2": 31.2659,
+      "level_observed_m": 2.38,
+      "level_forecast_m": 2.3992,
+      "rating_error_km2": 0.1583,
+      "level_forecast_error_km2": 2.2375,
+      "total_error_km2": 2.3959,
+      "in_split": "val"
+     },
+     {
+      "date": "2020-03-25",
+      "horizon": 7,
+      "origin_date": "2020-03-18",
+      "satellite_area_km2": 30.148,
+      "rating_area_km2": 30.24,
+      "forecast_area_km2": 30.2917,
+      "level_observed_m": 2.3904,
+      "level_forecast_m": 2.3908,
+      "rating_error_km2": 0.092,
+      "level_forecast_error_km2": 0.0517,
+      "total_error_km2": 0.1437,
+      "in_split": "val"
+     },
+     {
+      "date": "2020-04-14",
+      "horizon": 7,
+      "origin_date": "2020-04-07",
+      "satellite_area_km2": 30.974,
+      "rating_area_km2": 30.24,
+      "forecast_area_km2": 29.5999,
+      "level_observed_m": 2.3904,
+      "level_forecast_m": 2.3849,
+      "rating_error_km2": -0.734,
+      "level_forecast_error_km2": -0.6401,
+      "total_error_km2": -1.3741,
+      "in_split": "val"
+     }
+    ]
+   }
+  },
+  "note_ko": "다리가 하나도 문턱을 넘지 못하면 파생 면적 예측 모델을 공개하지 않는다. 아래 demonstration 은 '문턱을 넘었다면 이렇게 나온다' 를 보여 주는 **시연**일 뿐이며 성과 수치로 인용하면 안 된다."
+ },
+ "notes_ko": [
+  "면적 계열은 센서별 공통 격자 마스크에서 다시 잰 값이다. scenes.json 의 장면별 water_area_km2 는 촬영 범위가 날짜마다 달라 계열 비교에 쓸 수 없다 (부산 PlanetScope 2020-03-25 는 03-12 보다 약 8.5 km 남쪽을 찍어 하구·바다를 더 담았고 그래서 raw 65.3 km² 다. 그 장면의 GT 수동라벨은 65.063 km² 로 **탐지는 맞았다** — 틀린 것은 계열이다).",
+  "LOO(leave-one-out) = 관측 하나를 빼고 나머지로만 적합해 그 하나를 맞히기를 관측 수만큼 반복한 것이다. 따라서 시험점 수 = 관측 수이며, 표본이 4~10개인 여기서는 **순위가 우연히 뒤집힐 수 있다**.",
+  "부호검정(sign test) 최소 달성 가능 p 는 n=4 에서 0.125, n=10 에서 0.002 다. 즉 **n=4 계열에서는 어떤 모델도 persistence 보다 유의하게 낫다고 말할 수 없다** — 표의 skill 은 순위 참고용이다.",
+  "같은 날 수위 회귀(level_linear·level_isotonic)의 수위는 **공통 격자 상자 안에 들어오는 수위계 지점**만 썼다. 상자 밖 지점으로 면적을 설명하지 않는다.",
+  "LOO 의 '직전 관측 유지' 는 뺀 날짜보다 앞선 관측 중 가장 가까운 값을 쓴다. 계열의 **첫 관측**은 앞선 관측이 없어 예외로 그 다음 관측을 쓰므로, 그 한 점에서는 기준선이 미래를 본다(기준선에 유리한 쪽 예외다).",
+  "**LOO 는 내삽(interpolation) 평가이지 예보(forecast) 평가가 아니다.** 기준선을 뺀 모든 후보(계열 평균·시간 선형추세·연중 시기 평년값·AR(1)·수위 회귀)는 뺀 날짜보다 **나중** 관측까지 포함한 나머지 전부로 적합한다. 따라서 표의 skill 은 '그날을 앞에서부터 예보했을 때' 의 성적이 아니다. 실제로 목표일 **이전** 관측만 쓰도록 바꿔(전진연쇄) 다시 재면 대청 1위였던 시간 선형추세는 LOO 2.414 km²(skill +23.2 %) 에서 26.6 km²(persistence 2.51 km² 대비 skill 음수)로 무너지고, 대청에서는 어떤 후보도 persistence 를 이기지 못한다. 이 표는 '표본이 모델을 가르지 못한다' 의 근거로만 읽고, 예보 성능의 근거로 인용하면 안 된다.",
+  "이 실험은 공식 성적표(evaluation.json·화면의 선택 모델·개선율)에 들어가지 않는다. 배포 면적 예측 모델을 새로 만들지도 않는다.",
+  "ICEYE: 관측 4개 — LOO 시험점이 4개뿐이라 후보 간 차이가 통계적으로 구분되지 않는다(부호검정 최소 p = 0.125 > 0.05).",
+  "ICEYE: 탐지 흔들림(ever−always = 12.27 km²)이 계열의 면적 변동폭(3.60 km²)보다 크다 — 날짜별 차이를 수위 변화로 읽으면 안 된다.",
+  "ICEYE: 1일 간격 재방문(2020-04-15→2020-04-16)에서 면적이 2.38 km² 달라졌다 — 계열 전체 변동폭 3.60 km² 의 66 %. 이만큼이 관측 잡음 하한이다.",
+  "PlanetScope: 관측 4개 — LOO 시험점이 4개뿐이라 후보 간 차이가 통계적으로 구분되지 않는다(부호검정 최소 p = 0.125 > 0.05).",
+  "PlanetScope: 탐지 흔들림(ever−always = 12.37 km²)이 계열의 면적 변동폭(2.10 km²)보다 크다 — 날짜별 차이를 수위 변화로 읽으면 안 된다.",
+  "수위→면적 다리는 어느 조합도 문턱을 넘지 못했다. 따라서 파생 면적 예측 모델을 **공개하지 않는다**. bridge.demonstration 이 있다면 그것은 파이프라인이 도는지 보이는 시연이며 성과 수치가 아니다.",
+  "검량곡선은 바로 이 위성 관측일 4~10점으로 적합했으므로 위 표의 '검량 오차' 는 **내부 표본(in-sample)** 값이라 낙관적이다. 같은 곡선의 LOO RMSE 는 1.6304 km² 이고 이 계열의 전체 면적 변동폭은 2.104 km² 다 — 즉 검량 오차만으로 이미 신호 크기에 맞먹는다.",
+  "파생 면적의 시험 skill 은 같은 분할 **수위** 모델의 skill 과 최대 0.0000 차이다(사실상 동일). 파생 면적 예측은 수위 예측을 아핀 변환으로 다시 쓴 것일 뿐이며, 면적이 예측 가능하다는 증거가 **아니다**.",
+  "10개년 수위를 이 곡선에 넣으면 파생 면적이 최저 -13.7 km² (음수)까지 내려간다 — 곡선이 관측 구간 밖에서 물리적으로 무의미하다는 증거다.",
+  "이 실험 환경에는 torch·prophet 이 없어 neural_gru, neural_lstm, neural_mlp, neural_tcn, prophet_hybrid 는 후보에서 빠졌다 (시도 12종 중 5종 제외). 배포 학습은 이 계열이 아니라 실제 수위 계열에서 그 모델들까지 포함해 돌린다."
+ ],
+ "verdict_ko": [
+  "ICEYE (n=4): LOO 최소 RMSE 는 계열 평균 2.0599 km² (persistence 2.8119 km², skill 0.4633). persistence 대비 부호검정은 전 후보 유의하지 않음 — 이 표본으로는 모델을 가릴 수 없다.",
+  "PlanetScope (n=4): LOO 최소 RMSE 는 같은 날 수위 선형회귀(양산교) 0.7128 km² (persistence 1.1835 km², skill 0.6373). persistence 대비 부호검정은 전 후보 유의하지 않음 — 이 표본으로는 모델을 가릴 수 없다. 그 1위 후보의 검량 기울기는 -36.2 km²/m 로 **음수**다 — 수위가 오를수록 면적이 준다는 뜻이라 물리적으로 거꾸로이고, 표본이 작아 잡음에 맞춘 결과로 봐야 한다.",
+  "결론: 위성 면적 계열 자체로는 어떤 모델도 **검증되지 않는다**(표본 부족). 검증 가능한 것은 10개년 일별 수위 계열이고, 그 결과를 면적으로 옮기려면 검량곡선이 서야 하는데 여기서는 서지 않는다."
+ ],
+ "elapsed_s": 30.8
+}

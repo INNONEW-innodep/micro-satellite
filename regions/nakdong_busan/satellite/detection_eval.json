@@ -1,0 +1,137 @@
+{
+  "schema": "watercast.satellite.detection-eval/1",
+  "region_id": "nakdong_busan",
+  "series_ko": "로컬 재현 (CPU · wbms:0.13 · GT = 06_aux/Labels_GT, Labels_GT_planet)",
+  "protocol_note_ko": "배포 프로토콜 기준치(인수 VALREPORT: ICEYE pooled 0.9259, 광학 0.9415)와 연구 프로토콜(0.8949/0.9487)은 별개 계열이다. 이 표는 로컬에서 같은 모델·같은 GT로 재현한 값(pooled ICEYE 0.9271, 광학 0.9415).",
+  "sensors": {
+    "ICEYE": {
+      "sensor_type": "SAR",
+      "model": "/model/WBMS_SAR_ICEYE.h5",
+      "device": "cpu",
+      "threshold": 0.5,
+      "gt_testset": "Labels_GT",
+      "n_scenes": 4,
+      "n_evaluated": 4,
+      "pooled": {
+        "water_iou": 0.927066,
+        "accuracy": 0.996728,
+        "recall": 0.965838,
+        "precision": 0.958496,
+        "f1": 0.962153
+      },
+      "per_scene": [
+        {
+          "date": "2020-03-02",
+          "water_iou": 0.924728,
+          "f1": 0.960892,
+          "precision": 0.951103,
+          "recall": 0.970884,
+          "accuracy": 0.996496,
+          "role": "train"
+        },
+        {
+          "date": "2020-03-30",
+          "water_iou": 0.947215,
+          "f1": 0.972892,
+          "precision": 0.960791,
+          "recall": 0.985302,
+          "accuracy": 0.997796,
+          "role": "train"
+        },
+        {
+          "date": "2020-04-15",
+          "water_iou": 0.961853,
+          "f1": 0.980556,
+          "precision": 0.976157,
+          "recall": 0.984994,
+          "accuracy": 0.998322,
+          "role": "train"
+        },
+        {
+          "date": "2020-04-16",
+          "water_iou": 0.881026,
+          "f1": 0.93675,
+          "precision": 0.947435,
+          "recall": 0.926304,
+          "accuracy": 0.994397,
+          "role": "test"
+        }
+      ],
+      "test_scene": {
+        "date": "2020-04-16",
+        "water_iou": 0.878575,
+        "f1": 0.935363,
+        "recall": 0.924626,
+        "precision": 0.946353,
+        "accuracy": 0.995237,
+        "source": "인수 VALREPORT_Busan_ICEYE.json per_scene (배포 이미지 GPU 실행, 2026-08-18 재동결) — 시립대 발표자료 V0_8·V1(10/16) 16쪽과 동일 값",
+        "note_ko": "학습에서 제외한 시험 장면 1건의 값. 성능을 대표할 때는 이 값을 쓴다(인수 문서 '지표 인용 규율'). pooled/per_scene 의 다른 장면은 학습 장면이라 대표 금지."
+      }
+    },
+    "PlanetScope": {
+      "sensor_type": "OPTIC",
+      "model": "/model/WBMS_Optic_PlanetScope.h5",
+      "device": "cpu",
+      "threshold": 0.5,
+      "gt_testset": "Labels_GT_planet",
+      "n_scenes": 4,
+      "n_evaluated": 4,
+      "pooled": {
+        "water_iou": 0.941483,
+        "accuracy": 0.996722,
+        "recall": 0.983464,
+        "precision": 0.956627,
+        "f1": 0.96986
+      },
+      "per_scene": [
+        {
+          "date": "2020-02-18",
+          "water_iou": 0.947618,
+          "f1": 0.973105,
+          "precision": 0.956155,
+          "recall": 0.990666,
+          "accuracy": 0.997605,
+          "role": "train"
+        },
+        {
+          "date": "2020-03-12",
+          "water_iou": 0.931725,
+          "f1": 0.964656,
+          "precision": 0.940967,
+          "recall": 0.989568,
+          "accuracy": 0.997043,
+          "role": "train"
+        },
+        {
+          "date": "2020-03-25",
+          "water_iou": 0.948435,
+          "f1": 0.973535,
+          "precision": 0.971732,
+          "recall": 0.975345,
+          "accuracy": 0.995551,
+          "role": "test"
+        },
+        {
+          "date": "2020-04-14",
+          "water_iou": 0.932263,
+          "f1": 0.964944,
+          "precision": 0.94545,
+          "recall": 0.985259,
+          "accuracy": 0.996616,
+          "role": "train"
+        }
+      ],
+      "test_scene": {
+        "date": "2020-03-25",
+        "water_iou": 0.948433,
+        "f1": 0.973534,
+        "recall": 0.975345,
+        "precision": 0.97173,
+        "accuracy": 0.995551,
+        "source": "인수 VALREPORT_Busan_PlanetScope.json per_scene (배포 이미지 GPU 실행, 2026-08-18 재동결) — 시립대 발표자료 V0_8·V1(10/16) 16쪽과 동일 값",
+        "note_ko": "학습에서 제외한 시험 장면 1건의 값. 성능을 대표할 때는 이 값을 쓴다(인수 문서 '지표 인용 규율'). pooled/per_scene 의 다른 장면은 학습 장면이라 대표 금지."
+      }
+    }
+  },
+  "citation_rule_ko": "대표값 = 각 센서의 test_scene(학습 제외 시험 장면: SAR 2020-04-16 IoU 0.8786·F1 0.9354, 광학 2020-03-25 IoU 0.9484·F1 0.9735, 목표 F1 ≥ 0.91). pooled 와 나머지 per_scene 은 '탑재 후 전 장면 재현(학습 장면 포함)'으로만 쓴다. 로컬 CPU 재현값(0.881/0.948)은 GPU 공식값과 소수 3자리에서 다를 수 있다. 시립대 V1 31쪽 비고: SAR 시험 장면은 모델 선정(EMA 스냅샷 선택)에도 쓴 장면이며 'TTA 시험(SAR 수체탐지) 완료'로 표기 — 인용 때 병기."
+}

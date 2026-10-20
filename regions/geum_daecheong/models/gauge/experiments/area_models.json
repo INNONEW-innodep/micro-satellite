@@ -1,0 +1,1352 @@
+{
+ "schema": "watercast.satellite.experiment.area-models/1",
+ "region_id": "geum_daecheong",
+ "region_name": "금강 대청댐 (대전·청주)",
+ "generated_at": "2026-09-15T06:31:12+00:00",
+ "script": "scripts/eval_area_models_experiment.py",
+ "frame_note_ko": "면적은 센서별 **공통 격자**(같은 EPSG:32652 상자·같은 H×W) 마스크에서 다시 잰 값이다. scenes.json 의 water_area_km2 는 장면마다 자기 footprint 로 잰 값이라 날짜 간 비교가 되지 않는다.",
+ "series": {
+  "PlanetScope": {
+   "source": "satellite/area_series.json",
+   "max_abs_diff_vs_recompute_km2": 0.0005,
+   "frame": {
+    "width": 640,
+    "height": 404,
+    "pixel_area_m2": 518.345,
+    "bounds_epsg32652": [
+     353703.0,
+     4031928.0,
+     368274.0,
+     4041126.0
+    ],
+    "frame_area_km2": 134.02,
+    "water_threshold": 127
+   },
+   "n": 10,
+   "period": [
+    "2019-03-23",
+    "2022-05-23"
+   ],
+   "points": [
+    {
+     "date": "2019-03-23",
+     "area_km2": 16.337,
+     "area_km2_recomputed": 16.3367,
+     "scene_own_footprint_area_km2": 29.5725,
+     "scene_valid_area_km2": 212.29,
+     "levels_m": {
+      "대청댐": 74.36,
+      "대청조정지댐": 28.61,
+      "대청댐방수로": 28.89
+     }
+    },
+    {
+     "date": "2019-03-29",
+     "area_km2": 12.771,
+     "area_km2_recomputed": 12.771,
+     "scene_own_footprint_area_km2": 14.0003,
+     "scene_valid_area_km2": 210.52,
+     "levels_m": {
+      "대청댐": 74.29,
+      "대청조정지댐": 28.63,
+      "대청댐방수로": 29.01
+     }
+    },
+    {
+     "date": "2019-04-03",
+     "area_km2": 9.858,
+     "area_km2_recomputed": 9.8584,
+     "scene_own_footprint_area_km2": 14.3603,
+     "scene_valid_area_km2": 213.45,
+     "levels_m": {
+      "대청댐": 74.2,
+      "대청조정지댐": 28.59,
+      "대청댐방수로": 28.89
+     }
+    },
+    {
+     "date": "2019-04-04",
+     "area_km2": 15.846,
+     "area_km2_recomputed": 15.8458,
+     "scene_own_footprint_area_km2": 27.0394,
+     "scene_valid_area_km2": 219.03,
+     "levels_m": {
+      "대청댐": 74.17,
+      "대청조정지댐": 28.58,
+      "대청댐방수로": 28.92
+     }
+    },
+    {
+     "date": "2019-04-27",
+     "area_km2": 16.895,
+     "area_km2_recomputed": 16.8955,
+     "scene_own_footprint_area_km2": 24.9882,
+     "scene_valid_area_km2": 220.04,
+     "levels_m": {
+      "대청댐": 74.29,
+      "대청조정지댐": 28.73,
+      "대청댐방수로": 29.02
+     }
+    },
+    {
+     "date": "2022-05-14",
+     "area_km2": 18.378,
+     "area_km2_recomputed": 18.3779,
+     "scene_own_footprint_area_km2": 57.6458,
+     "scene_valid_area_km2": 780.17,
+     "levels_m": {
+      "대청댐": 71.15,
+      "대청조정지댐": 28.208,
+      "대청댐방수로": 28.38
+     }
+    },
+    {
+     "date": "2022-05-16",
+     "area_km2": 18.746,
+     "area_km2_recomputed": 18.7465,
+     "scene_own_footprint_area_km2": 53.0823,
+     "scene_valid_area_km2": 695.88,
+     "levels_m": {
+      "대청댐": 71.03,
+      "대청조정지댐": 28.334,
+      "대청댐방수로": 28.55
+     }
+    },
+    {
+     "date": "2022-05-17",
+     "area_km2": 18.49,
+     "area_km2_recomputed": 18.4899,
+     "scene_own_footprint_area_km2": 51.3265,
+     "scene_valid_area_km2": 690.98,
+     "levels_m": {
+      "대청댐": 70.97,
+      "대청조정지댐": 28.411,
+      "대청댐방수로": 28.63
+     }
+    },
+    {
+     "date": "2022-05-22",
+     "area_km2": 16.974,
+     "area_km2_recomputed": 16.9742,
+     "scene_own_footprint_area_km2": 36.4022,
+     "scene_valid_area_km2": 701.31,
+     "levels_m": {
+      "대청댐": 70.67,
+      "대청조정지댐": 28.239,
+      "대청댐방수로": 28.4
+     }
+    },
+    {
+     "date": "2022-05-23",
+     "area_km2": 17.515,
+     "area_km2_recomputed": 17.5154,
+     "scene_own_footprint_area_km2": 49.6329,
+     "scene_valid_area_km2": 797.48,
+     "levels_m": {
+      "대청댐": 70.61,
+      "대청조정지댐": 28.092,
+      "대청댐방수로": 28.26
+     }
+    }
+   ],
+   "area_range_km2": 8.888,
+   "area_mean_km2": 16.181,
+   "gauge_stations_in_frame": [
+    "대청댐",
+    "대청댐방수로",
+    "대청조정지댐"
+   ],
+   "mask_consistency": {
+    "mean_pairwise_iou": 0.7269,
+    "min_pairwise_iou": 0.3803,
+    "mean_pairwise_iou_by_batch_year": {
+     "2019": 0.6069,
+     "2022": 0.9264
+    },
+    "always_water_km2": 5.204,
+    "ever_water_km2": 20.463,
+    "churn_km2": 15.26,
+    "note_ko": "always_water = 모든 날짜에 물인 화소, ever_water = 한 번이라도 물인 화소. 그 차(churn)가 계열의 면적 변동폭보다 크면, 날짜별 면적 차이는 수위 변화가 아니라 탐지 흔들림일 수 있다."
+   },
+   "repeat_pairs": [
+    {
+     "from": "2019-04-03",
+     "to": "2019-04-04",
+     "gap_days": 1,
+     "delta_area_km2": 5.988,
+     "delta_level_m": {
+      "대청댐": -0.03,
+      "대청조정지댐": -0.01,
+      "대청댐방수로": 0.03
+     }
+    },
+    {
+     "from": "2022-05-14",
+     "to": "2022-05-16",
+     "gap_days": 2,
+     "delta_area_km2": 0.368,
+     "delta_level_m": {
+      "대청댐": -0.12,
+      "대청조정지댐": 0.126,
+      "대청댐방수로": 0.17
+     }
+    },
+    {
+     "from": "2022-05-16",
+     "to": "2022-05-17",
+     "gap_days": 1,
+     "delta_area_km2": -0.256,
+     "delta_level_m": {
+      "대청댐": -0.06,
+      "대청조정지댐": 0.077,
+      "대청댐방수로": 0.08
+     }
+    },
+    {
+     "from": "2022-05-22",
+     "to": "2022-05-23",
+     "gap_days": 1,
+     "delta_area_km2": 0.541,
+     "delta_level_m": {
+      "대청댐": -0.06,
+      "대청조정지댐": -0.147,
+      "대청댐방수로": -0.14
+     }
+    }
+   ],
+   "observation_noise_floor_km2": 5.988,
+   "rating_curves": {
+    "대청댐": {
+     "n_pairs": 10,
+     "slope_km2_per_m": -1.0469,
+     "intercept_km2": 92.1611,
+     "pearson_r": -0.6642,
+     "level_range_m": 3.75,
+     "area_range_km2": 8.888,
+     "loo": {
+      "n": 10,
+      "rmse_km2": 2.4896,
+      "mae_km2": 2.0387,
+      "max_abs_km2": 5.7187
+     },
+     "gate": {
+      "passes": {
+       "min_pairs": true,
+       "min_pearson_r": false,
+       "require_positive_slope": false,
+       "min_level_range_m": true,
+       "min_loo_skill_vs_mean": true,
+       "max_implied_range_frac_of_frame": true,
+       "max_implied_range_over_observed": true
+      },
+      "defensible": false,
+      "failed_criteria_ko": [
+       "피어슨 상관 r ≥ +0.60",
+       "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)"
+      ],
+      "implied_area_range_km2": 12.25,
+      "implied_over_frame_pct": 9.1,
+      "gauge_level_range_10y_m": 11.699
+     }
+    },
+    "대청조정지댐": {
+     "n_pairs": 10,
+     "slope_km2_per_m": -6.8853,
+     "intercept_km2": 212.0167,
+     "pearson_r": -0.5272,
+     "level_range_m": 0.638,
+     "area_range_km2": 8.888,
+     "loo": {
+      "n": 10,
+      "rmse_km2": 2.7876,
+      "mae_km2": 2.2692,
+      "max_abs_km2": 6.2583
+     },
+     "gate": {
+      "passes": {
+       "min_pairs": true,
+       "min_pearson_r": false,
+       "require_positive_slope": false,
+       "min_level_range_m": true,
+       "min_loo_skill_vs_mean": true,
+       "max_implied_range_frac_of_frame": true,
+       "max_implied_range_over_observed": false
+      },
+      "defensible": false,
+      "failed_criteria_ko": [
+       "피어슨 상관 r ≥ +0.60",
+       "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)",
+       "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+      ],
+      "implied_area_range_km2": 32.02,
+      "implied_over_frame_pct": 23.9,
+      "gauge_level_range_10y_m": 4.65
+     }
+    },
+    "대청댐방수로": {
+     "n_pairs": 10,
+     "slope_km2_per_m": -5.6652,
+     "intercept_km2": 178.7434,
+     "pearson_r": -0.5737,
+     "level_range_m": 0.76,
+     "area_range_km2": 8.888,
+     "loo": {
+      "n": 10,
+      "rmse_km2": 2.6585,
+      "mae_km2": 2.1875,
+      "max_abs_km2": 6.1531
+     },
+     "gate": {
+      "passes": {
+       "min_pairs": true,
+       "min_pearson_r": false,
+       "require_positive_slope": false,
+       "min_level_range_m": true,
+       "min_loo_skill_vs_mean": true,
+       "max_implied_range_frac_of_frame": true,
+       "max_implied_range_over_observed": false
+      },
+      "defensible": false,
+      "failed_criteria_ko": [
+       "피어슨 상관 r ≥ +0.60",
+       "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)",
+       "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+      ],
+      "implied_area_range_km2": 31.16,
+      "implied_over_frame_pct": 23.2,
+      "gauge_level_range_10y_m": 5.5
+     }
+    }
+   },
+   "candidates": {
+    "persistence": {
+     "family": "persistence",
+     "name_ko": "직전 관측 유지 (기준선)",
+     "level_station": null,
+     "n": 10,
+     "rmse_km2": 2.7544,
+     "mae_km2": 2.1246,
+     "mse": 7.586601,
+     "skill_vs_persistence": 0.0,
+     "skill_vs_series_mean": 0.1393,
+     "sign_test_vs_persistence": null,
+     "per_point": [
+      {
+       "date": "2019-03-23",
+       "truth_km2": 16.337,
+       "pred_km2": 12.771,
+       "err_km2": -3.566
+      },
+      {
+       "date": "2019-03-29",
+       "truth_km2": 12.771,
+       "pred_km2": 16.337,
+       "err_km2": 3.566
+      },
+      {
+       "date": "2019-04-03",
+       "truth_km2": 9.858,
+       "pred_km2": 12.771,
+       "err_km2": 2.913
+      },
+      {
+       "date": "2019-04-04",
+       "truth_km2": 15.846,
+       "pred_km2": 9.858,
+       "err_km2": -5.988
+      },
+      {
+       "date": "2019-04-27",
+       "truth_km2": 16.895,
+       "pred_km2": 15.846,
+       "err_km2": -1.049
+      },
+      {
+       "date": "2022-05-14",
+       "truth_km2": 18.378,
+       "pred_km2": 16.895,
+       "err_km2": -1.483
+      },
+      {
+       "date": "2022-05-16",
+       "truth_km2": 18.746,
+       "pred_km2": 18.378,
+       "err_km2": -0.368
+      },
+      {
+       "date": "2022-05-17",
+       "truth_km2": 18.49,
+       "pred_km2": 18.746,
+       "err_km2": 0.256
+      },
+      {
+       "date": "2022-05-22",
+       "truth_km2": 16.974,
+       "pred_km2": 18.49,
+       "err_km2": 1.516
+      },
+      {
+       "date": "2022-05-23",
+       "truth_km2": 17.515,
+       "pred_km2": 16.974,
+       "err_km2": -0.541
+      }
+     ]
+    },
+    "series_mean": {
+     "family": "series_mean",
+     "name_ko": "계열 평균",
+     "level_station": null,
+     "n": 10,
+     "rmse_km2": 2.969,
+     "mae_km2": 2.2373,
+     "mse": 8.814902,
+     "skill_vs_persistence": -0.1619,
+     "skill_vs_series_mean": 0.0,
+     "sign_test_vs_persistence": {
+      "wins": 4,
+      "losses": 6,
+      "ties": 0,
+      "p_two_sided": 0.7539,
+      "min_attainable_p": 0.002,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2019-03-23",
+       "truth_km2": 16.337,
+       "pred_km2": 16.1637,
+       "err_km2": -0.1733
+      },
+      {
+       "date": "2019-03-29",
+       "truth_km2": 12.771,
+       "pred_km2": 16.5599,
+       "err_km2": 3.7889
+      },
+      {
+       "date": "2019-04-03",
+       "truth_km2": 9.858,
+       "pred_km2": 16.8836,
+       "err_km2": 7.0256
+      },
+      {
+       "date": "2019-04-04",
+       "truth_km2": 15.846,
+       "pred_km2": 16.2182,
+       "err_km2": 0.3722
+      },
+      {
+       "date": "2019-04-27",
+       "truth_km2": 16.895,
+       "pred_km2": 16.1017,
+       "err_km2": -0.7933
+      },
+      {
+       "date": "2022-05-14",
+       "truth_km2": 18.378,
+       "pred_km2": 15.9369,
+       "err_km2": -2.4411
+      },
+      {
+       "date": "2022-05-16",
+       "truth_km2": 18.746,
+       "pred_km2": 15.896,
+       "err_km2": -2.85
+      },
+      {
+       "date": "2022-05-17",
+       "truth_km2": 18.49,
+       "pred_km2": 15.9244,
+       "err_km2": -2.5656
+      },
+      {
+       "date": "2022-05-22",
+       "truth_km2": 16.974,
+       "pred_km2": 16.0929,
+       "err_km2": -0.8811
+      },
+      {
+       "date": "2022-05-23",
+       "truth_km2": 17.515,
+       "pred_km2": 16.0328,
+       "err_km2": -1.4822
+      }
+     ]
+    },
+    "linear_trend": {
+     "family": "linear_trend",
+     "name_ko": "시간 선형추세",
+     "level_station": null,
+     "n": 10,
+     "rmse_km2": 2.4141,
+     "mae_km2": 1.9009,
+     "mse": 5.827676,
+     "skill_vs_persistence": 0.2318,
+     "skill_vs_series_mean": 0.3389,
+     "sign_test_vs_persistence": {
+      "wins": 5,
+      "losses": 5,
+      "ties": 0,
+      "p_two_sided": 1.0,
+      "min_attainable_p": 0.002,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2019-03-23",
+       "truth_km2": 16.337,
+       "pred_km2": 13.7682,
+       "err_km2": -2.5688
+      },
+      {
+       "date": "2019-03-29",
+       "truth_km2": 12.771,
+       "pred_km2": 14.7043,
+       "err_km2": 1.9333
+      },
+      {
+       "date": "2019-04-03",
+       "truth_km2": 9.858,
+       "pred_km2": 15.4513,
+       "err_km2": 5.5933
+      },
+      {
+       "date": "2019-04-04",
+       "truth_km2": 15.846,
+       "pred_km2": 13.9535,
+       "err_km2": -1.8925
+      },
+      {
+       "date": "2019-04-27",
+       "truth_km2": 16.895,
+       "pred_km2": 13.8145,
+       "err_km2": -3.0805
+      },
+      {
+       "date": "2022-05-14",
+       "truth_km2": 18.378,
+       "pred_km2": 17.9222,
+       "err_km2": -0.4558
+      },
+      {
+       "date": "2022-05-16",
+       "truth_km2": 18.746,
+       "pred_km2": 17.8384,
+       "err_km2": -0.9076
+      },
+      {
+       "date": "2022-05-17",
+       "truth_km2": 18.49,
+       "pred_km2": 17.9059,
+       "err_km2": -0.5841
+      },
+      {
+       "date": "2022-05-22",
+       "truth_km2": 16.974,
+       "pred_km2": 18.3068,
+       "err_km2": 1.3328
+      },
+      {
+       "date": "2022-05-23",
+       "truth_km2": 17.515,
+       "pred_km2": 18.1749,
+       "err_km2": 0.6599
+      }
+     ]
+    },
+    "doy_climatology": {
+     "family": "doy_climatology",
+     "name_ko": "연중 시기 평년값 (day-of-year)",
+     "level_station": null,
+     "n": 10,
+     "rmse_km2": 2.4669,
+     "mae_km2": 1.8014,
+     "mse": 6.085613,
+     "skill_vs_persistence": 0.1978,
+     "skill_vs_series_mean": 0.3096,
+     "sign_test_vs_persistence": {
+      "wins": 6,
+      "losses": 4,
+      "ties": 0,
+      "p_two_sided": 0.7539,
+      "min_attainable_p": 0.002,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2019-03-23",
+       "truth_km2": 16.337,
+       "pred_km2": 14.4011,
+       "err_km2": -1.9359
+      },
+      {
+       "date": "2019-03-29",
+       "truth_km2": 12.771,
+       "pred_km2": 15.4408,
+       "err_km2": 2.6698
+      },
+      {
+       "date": "2019-04-03",
+       "truth_km2": 9.858,
+       "pred_km2": 16.1957,
+       "err_km2": 6.3377
+      },
+      {
+       "date": "2019-04-04",
+       "truth_km2": 15.846,
+       "pred_km2": 15.1084,
+       "err_km2": -0.7376
+      },
+      {
+       "date": "2019-04-27",
+       "truth_km2": 16.895,
+       "pred_km2": 16.2423,
+       "err_km2": -0.6527
+      },
+      {
+       "date": "2022-05-14",
+       "truth_km2": 18.378,
+       "pred_km2": 16.8145,
+       "err_km2": -1.5635
+      },
+      {
+       "date": "2022-05-16",
+       "truth_km2": 18.746,
+       "pred_km2": 16.8255,
+       "err_km2": -1.9205
+      },
+      {
+       "date": "2022-05-17",
+       "truth_km2": 18.49,
+       "pred_km2": 16.9026,
+       "err_km2": -1.5874
+      },
+      {
+       "date": "2022-05-22",
+       "truth_km2": 16.974,
+       "pred_km2": 17.3306,
+       "err_km2": 0.3566
+      },
+      {
+       "date": "2022-05-23",
+       "truth_km2": 17.515,
+       "pred_km2": 17.2624,
+       "err_km2": -0.2526
+      }
+     ]
+    },
+    "ar1_mean_reversion": {
+     "family": "ar1_mean_reversion",
+     "name_ko": "AR(1) 평균회귀",
+     "level_station": null,
+     "n": 10,
+     "rmse_km2": 3.2965,
+     "mae_km2": 2.6141,
+     "mse": 10.866782,
+     "skill_vs_persistence": -0.4324,
+     "skill_vs_series_mean": -0.2328,
+     "sign_test_vs_persistence": {
+      "wins": 4,
+      "losses": 6,
+      "ties": 0,
+      "p_two_sided": 0.7539,
+      "min_attainable_p": 0.002,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2019-03-23",
+       "truth_km2": 16.337,
+       "pred_km2": 16.1604,
+       "err_km2": -0.1766
+      },
+      {
+       "date": "2019-03-29",
+       "truth_km2": 12.771,
+       "pred_km2": 16.5599,
+       "err_km2": 3.7889
+      },
+      {
+       "date": "2019-04-03",
+       "truth_km2": 9.858,
+       "pred_km2": 16.23,
+       "err_km2": 6.372
+      },
+      {
+       "date": "2019-04-04",
+       "truth_km2": 15.846,
+       "pred_km2": 10.0595,
+       "err_km2": -5.7865
+      },
+      {
+       "date": "2019-04-27",
+       "truth_km2": 16.895,
+       "pred_km2": 16.1017,
+       "err_km2": -0.7933
+      },
+      {
+       "date": "2022-05-14",
+       "truth_km2": 18.378,
+       "pred_km2": 15.9369,
+       "err_km2": -2.4411
+      },
+      {
+       "date": "2022-05-16",
+       "truth_km2": 18.746,
+       "pred_km2": 15.9884,
+       "err_km2": -2.7576
+      },
+      {
+       "date": "2022-05-17",
+       "truth_km2": 18.49,
+       "pred_km2": 16.5434,
+       "err_km2": -1.9466
+      },
+      {
+       "date": "2022-05-22",
+       "truth_km2": 16.974,
+       "pred_km2": 16.0987,
+       "err_km2": -0.8753
+      },
+      {
+       "date": "2022-05-23",
+       "truth_km2": 17.515,
+       "pred_km2": 16.3123,
+       "err_km2": -1.2027
+      }
+     ]
+    },
+    "level_linear:대청댐": {
+     "family": "level_linear",
+     "name_ko": "같은 날 수위 선형회귀",
+     "level_station": "대청댐",
+     "n": 10,
+     "rmse_km2": 2.4896,
+     "mae_km2": 2.0387,
+     "mse": 6.198052,
+     "skill_vs_persistence": 0.183,
+     "skill_vs_series_mean": 0.2969,
+     "sign_test_vs_persistence": {
+      "wins": 4,
+      "losses": 6,
+      "ties": 0,
+      "p_two_sided": 0.7539,
+      "min_attainable_p": 0.002,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2019-03-23",
+       "truth_km2": 16.337,
+       "pred_km2": 13.7694,
+       "err_km2": -2.5676
+      },
+      {
+       "date": "2019-03-29",
+       "truth_km2": 12.771,
+       "pred_km2": 14.7941,
+       "err_km2": 2.0231
+      },
+      {
+       "date": "2019-04-03",
+       "truth_km2": 9.858,
+       "pred_km2": 15.5767,
+       "err_km2": 5.7187
+      },
+      {
+       "date": "2019-04-04",
+       "truth_km2": 15.846,
+       "pred_km2": 14.1995,
+       "err_km2": -1.6465
+      },
+      {
+       "date": "2019-04-27",
+       "truth_km2": 16.895,
+       "pred_km2": 13.7471,
+       "err_km2": -3.1479
+      },
+      {
+       "date": "2022-05-14",
+       "truth_km2": 18.378,
+       "pred_km2": 17.5266,
+       "err_km2": -0.8514
+      },
+      {
+       "date": "2022-05-16",
+       "truth_km2": 18.746,
+       "pred_km2": 17.5851,
+       "err_km2": -1.1609
+      },
+      {
+       "date": "2022-05-17",
+       "truth_km2": 18.49,
+       "pred_km2": 17.713,
+       "err_km2": -0.777
+      },
+      {
+       "date": "2022-05-22",
+       "truth_km2": 16.974,
+       "pred_km2": 18.5252,
+       "err_km2": 1.5512
+      },
+      {
+       "date": "2022-05-23",
+       "truth_km2": 17.515,
+       "pred_km2": 18.4581,
+       "err_km2": 0.9431
+      }
+     ]
+    },
+    "level_isotonic:대청댐": {
+     "family": "level_isotonic",
+     "name_ko": "같은 날 수위 단조회귀 (PAVA)",
+     "level_station": "대청댐",
+     "n": 10,
+     "rmse_km2": 2.9936,
+     "mae_km2": 2.2669,
+     "mse": 8.961415,
+     "skill_vs_persistence": -0.1812,
+     "skill_vs_series_mean": -0.0166,
+     "sign_test_vs_persistence": {
+      "wins": 4,
+      "losses": 6,
+      "ties": 0,
+      "p_two_sided": 0.7539,
+      "min_attainable_p": 0.002,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2019-03-23",
+       "truth_km2": 16.337,
+       "pred_km2": 16.1637,
+       "err_km2": -0.1733
+      },
+      {
+       "date": "2019-03-29",
+       "truth_km2": 12.771,
+       "pred_km2": 16.616,
+       "err_km2": 3.845
+      },
+      {
+       "date": "2019-04-03",
+       "truth_km2": 9.858,
+       "pred_km2": 16.8836,
+       "err_km2": 7.0256
+      },
+      {
+       "date": "2019-04-04",
+       "truth_km2": 15.846,
+       "pred_km2": 16.2034,
+       "err_km2": 0.3574
+      },
+      {
+       "date": "2019-04-27",
+       "truth_km2": 16.895,
+       "pred_km2": 16.0722,
+       "err_km2": -0.8228
+      },
+      {
+       "date": "2022-05-14",
+       "truth_km2": 18.378,
+       "pred_km2": 15.8869,
+       "err_km2": -2.4911
+      },
+      {
+       "date": "2022-05-16",
+       "truth_km2": 18.746,
+       "pred_km2": 15.8409,
+       "err_km2": -2.9051
+      },
+      {
+       "date": "2022-05-17",
+       "truth_km2": 18.49,
+       "pred_km2": 15.8729,
+       "err_km2": -2.6171
+      },
+      {
+       "date": "2022-05-22",
+       "truth_km2": 16.974,
+       "pred_km2": 16.0624,
+       "err_km2": -0.9116
+      },
+      {
+       "date": "2022-05-23",
+       "truth_km2": 17.515,
+       "pred_km2": 15.9947,
+       "err_km2": -1.5203
+      }
+     ]
+    },
+    "level_linear:대청조정지댐": {
+     "family": "level_linear",
+     "name_ko": "같은 날 수위 선형회귀",
+     "level_station": "대청조정지댐",
+     "n": 10,
+     "rmse_km2": 2.7876,
+     "mae_km2": 2.2692,
+     "mse": 7.770522,
+     "skill_vs_persistence": -0.0242,
+     "skill_vs_series_mean": 0.1185,
+     "sign_test_vs_persistence": {
+      "wins": 5,
+      "losses": 5,
+      "ties": 0,
+      "p_two_sided": 1.0,
+      "min_attainable_p": 0.002,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2019-03-23",
+       "truth_km2": 16.337,
+       "pred_km2": 14.7642,
+       "err_km2": -1.5728
+      },
+      {
+       "date": "2019-03-29",
+       "truth_km2": 12.771,
+       "pred_km2": 15.3672,
+       "err_km2": 2.5962
+      },
+      {
+       "date": "2019-04-03",
+       "truth_km2": 9.858,
+       "pred_km2": 16.1163,
+       "err_km2": 6.2583
+      },
+      {
+       "date": "2019-04-04",
+       "truth_km2": 15.846,
+       "pred_km2": 15.1295,
+       "err_km2": -0.7165
+      },
+      {
+       "date": "2019-04-27",
+       "truth_km2": 16.895,
+       "pred_km2": 13.0591,
+       "err_km2": -3.8359
+      },
+      {
+       "date": "2022-05-14",
+       "truth_km2": 18.378,
+       "pred_km2": 17.6195,
+       "err_km2": -0.7585
+      },
+      {
+       "date": "2022-05-16",
+       "truth_km2": 18.746,
+       "pred_km2": 16.6602,
+       "err_km2": -2.0858
+      },
+      {
+       "date": "2022-05-17",
+       "truth_km2": 18.49,
+       "pred_km2": 16.1586,
+       "err_km2": -2.3314
+      },
+      {
+       "date": "2022-05-22",
+       "truth_km2": 16.974,
+       "pred_km2": 17.7323,
+       "err_km2": 0.7583
+      },
+      {
+       "date": "2022-05-23",
+       "truth_km2": 17.515,
+       "pred_km2": 19.293,
+       "err_km2": 1.778
+      }
+     ]
+    },
+    "level_isotonic:대청조정지댐": {
+     "family": "level_isotonic",
+     "name_ko": "같은 날 수위 단조회귀 (PAVA)",
+     "level_station": "대청조정지댐",
+     "n": 10,
+     "rmse_km2": 3.0125,
+     "mae_km2": 2.2974,
+     "mse": 9.075382,
+     "skill_vs_persistence": -0.1962,
+     "skill_vs_series_mean": -0.0295,
+     "sign_test_vs_persistence": {
+      "wins": 4,
+      "losses": 6,
+      "ties": 0,
+      "p_two_sided": 0.7539,
+      "min_attainable_p": 0.002,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2019-03-23",
+       "truth_km2": 16.337,
+       "pred_km2": 16.0722,
+       "err_km2": -0.2648
+      },
+      {
+       "date": "2019-03-29",
+       "truth_km2": 12.771,
+       "pred_km2": 16.5808,
+       "err_km2": 3.8098
+      },
+      {
+       "date": "2019-04-03",
+       "truth_km2": 9.858,
+       "pred_km2": 16.8821,
+       "err_km2": 7.0241
+      },
+      {
+       "date": "2019-04-04",
+       "truth_km2": 15.846,
+       "pred_km2": 16.1336,
+       "err_km2": 0.2876
+      },
+      {
+       "date": "2019-04-27",
+       "truth_km2": 16.895,
+       "pred_km2": 16.1017,
+       "err_km2": -0.7933
+      },
+      {
+       "date": "2022-05-14",
+       "truth_km2": 18.378,
+       "pred_km2": 15.8171,
+       "err_km2": -2.5609
+      },
+      {
+       "date": "2022-05-16",
+       "truth_km2": 18.746,
+       "pred_km2": 15.7711,
+       "err_km2": -2.9749
+      },
+      {
+       "date": "2022-05-17",
+       "truth_km2": 18.49,
+       "pred_km2": 15.8031,
+       "err_km2": -2.6869
+      },
+      {
+       "date": "2022-05-22",
+       "truth_km2": 16.974,
+       "pred_km2": 15.9926,
+       "err_km2": -0.9814
+      },
+      {
+       "date": "2022-05-23",
+       "truth_km2": 17.515,
+       "pred_km2": 15.925,
+       "err_km2": -1.59
+      }
+     ]
+    },
+    "level_linear:대청댐방수로": {
+     "family": "level_linear",
+     "name_ko": "같은 날 수위 선형회귀",
+     "level_station": "대청댐방수로",
+     "n": 10,
+     "rmse_km2": 2.6585,
+     "mae_km2": 2.1875,
+     "mse": 7.067549,
+     "skill_vs_persistence": 0.0684,
+     "skill_vs_series_mean": 0.1982,
+     "sign_test_vs_persistence": {
+      "wins": 5,
+      "losses": 5,
+      "ties": 0,
+      "p_two_sided": 1.0,
+      "min_attainable_p": 0.002,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2019-03-23",
+       "truth_km2": 16.337,
+       "pred_km2": 14.8504,
+       "err_km2": -1.4866
+      },
+      {
+       "date": "2019-03-29",
+       "truth_km2": 12.771,
+       "pred_km2": 14.8972,
+       "err_km2": 2.1262
+      },
+      {
+       "date": "2019-04-03",
+       "truth_km2": 9.858,
+       "pred_km2": 16.0111,
+       "err_km2": 6.1531
+      },
+      {
+       "date": "2019-04-04",
+       "truth_km2": 15.846,
+       "pred_km2": 14.715,
+       "err_km2": -1.131
+      },
+      {
+       "date": "2019-04-27",
+       "truth_km2": 16.895,
+       "pred_km2": 13.514,
+       "err_km2": -3.381
+      },
+      {
+       "date": "2022-05-14",
+       "truth_km2": 18.378,
+       "pred_km2": 17.8385,
+       "err_km2": -0.5395
+      },
+      {
+       "date": "2022-05-16",
+       "truth_km2": 18.746,
+       "pred_km2": 16.7449,
+       "err_km2": -2.0011
+      },
+      {
+       "date": "2022-05-17",
+       "truth_km2": 18.49,
+       "pred_km2": 16.3197,
+       "err_km2": -2.1703
+      },
+      {
+       "date": "2022-05-22",
+       "truth_km2": 16.974,
+       "pred_km2": 18.0983,
+       "err_km2": 1.1243
+      },
+      {
+       "date": "2022-05-23",
+       "truth_km2": 17.515,
+       "pred_km2": 19.2768,
+       "err_km2": 1.7618
+      }
+     ]
+    },
+    "level_isotonic:대청댐방수로": {
+     "family": "level_isotonic",
+     "name_ko": "같은 날 수위 단조회귀 (PAVA)",
+     "level_station": "대청댐방수로",
+     "n": 10,
+     "rmse_km2": 3.0486,
+     "mae_km2": 2.325,
+     "mse": 9.293683,
+     "skill_vs_persistence": -0.225,
+     "skill_vs_series_mean": -0.0543,
+     "sign_test_vs_persistence": {
+      "wins": 4,
+      "losses": 6,
+      "ties": 0,
+      "p_two_sided": 0.7539,
+      "min_attainable_p": 0.002,
+      "significant_at_0_05": false
+     },
+     "per_point": [
+      {
+       "date": "2019-03-23",
+       "truth_km2": 16.337,
+       "pred_km2": 16.0722,
+       "err_km2": -0.2648
+      },
+      {
+       "date": "2019-03-29",
+       "truth_km2": 12.771,
+       "pred_km2": 16.8573,
+       "err_km2": 4.0863
+      },
+      {
+       "date": "2019-04-03",
+       "truth_km2": 9.858,
+       "pred_km2": 16.8821,
+       "err_km2": 7.0241
+      },
+      {
+       "date": "2019-04-04",
+       "truth_km2": 15.846,
+       "pred_km2": 16.1336,
+       "err_km2": 0.2876
+      },
+      {
+       "date": "2019-04-27",
+       "truth_km2": 16.895,
+       "pred_km2": 16.1017,
+       "err_km2": -0.7933
+      },
+      {
+       "date": "2022-05-14",
+       "truth_km2": 18.378,
+       "pred_km2": 15.8171,
+       "err_km2": -2.5609
+      },
+      {
+       "date": "2022-05-16",
+       "truth_km2": 18.746,
+       "pred_km2": 15.7711,
+       "err_km2": -2.9749
+      },
+      {
+       "date": "2022-05-17",
+       "truth_km2": 18.49,
+       "pred_km2": 15.8031,
+       "err_km2": -2.6869
+      },
+      {
+       "date": "2022-05-22",
+       "truth_km2": 16.974,
+       "pred_km2": 15.9926,
+       "err_km2": -0.9814
+      },
+      {
+       "date": "2022-05-23",
+       "truth_km2": 17.515,
+       "pred_km2": 15.925,
+       "err_km2": -1.59
+      }
+     ]
+    }
+   },
+   "ranking_by_loo_rmse": [
+    "linear_trend",
+    "doy_climatology",
+    "level_linear:대청댐",
+    "level_linear:대청댐방수로",
+    "persistence",
+    "level_linear:대청조정지댐",
+    "series_mean",
+    "level_isotonic:대청댐",
+    "level_isotonic:대청조정지댐",
+    "level_isotonic:대청댐방수로",
+    "ar1_mean_reversion"
+   ],
+   "best_by_loo": "linear_trend",
+   "any_candidate_significant_vs_persistence": false,
+   "verdict_ko": [
+    "탐지 흔들림(ever−always = 15.26 km²)이 계열의 면적 변동폭(8.89 km²)보다 크다 — 날짜별 차이를 수위 변화로 읽으면 안 된다.",
+    "1일 간격 재방문(2019-04-03→2019-04-04)에서 면적이 5.99 km² 달라졌다 — 계열 전체 변동폭 8.89 km² 의 67 %. 이만큼이 관측 잡음 하한이다."
+   ]
+  }
+ },
+ "bridge": {
+  "gate_criteria_ko": {
+   "min_pairs": "짝지은 (면적, 수위) 관측 ≥ 6개",
+   "min_pearson_r": "피어슨 상관 r ≥ +0.60",
+   "require_positive_slope": "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)",
+   "min_level_range_m": "관측일 수위 변동폭 ≥ 0.30 m (일평균 수위 잡음보다 커야 한다)",
+   "min_loo_skill_vs_mean": "검량곡선의 LOO 오차가 '면적 평균'보다 작다",
+   "max_implied_range_frac_of_frame": "10개년 수위폭을 넣었을 때 파생 면적폭 ≤ 공통격자 면적의 50 %",
+   "max_implied_range_over_observed": "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+  },
+  "gate_thresholds": {
+   "min_pairs": 6,
+   "min_pearson_r": 0.6,
+   "require_positive_slope": true,
+   "min_level_range_m": 0.3,
+   "min_loo_skill_vs_mean": 0.0,
+   "max_implied_range_frac_of_frame": 0.5,
+   "max_implied_range_over_observed": 3.0
+  },
+  "evaluated": [
+   {
+    "sensor": "PlanetScope",
+    "level_station": "대청댐",
+    "n_pairs": 10,
+    "pearson_r": -0.6642,
+    "slope_km2_per_m": -1.0469,
+    "level_range_m": 3.75,
+    "loo_rmse_km2": 2.4896,
+    "passes": {
+     "min_pairs": true,
+     "min_pearson_r": false,
+     "require_positive_slope": false,
+     "min_level_range_m": true,
+     "min_loo_skill_vs_mean": true,
+     "max_implied_range_frac_of_frame": true,
+     "max_implied_range_over_observed": true
+    },
+    "defensible": false,
+    "failed_criteria_ko": [
+     "피어슨 상관 r ≥ +0.60",
+     "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)"
+    ],
+    "implied_area_range_km2": 12.25,
+    "implied_over_frame_pct": 9.1,
+    "gauge_level_range_10y_m": 11.699
+   },
+   {
+    "sensor": "PlanetScope",
+    "level_station": "대청조정지댐",
+    "n_pairs": 10,
+    "pearson_r": -0.5272,
+    "slope_km2_per_m": -6.8853,
+    "level_range_m": 0.638,
+    "loo_rmse_km2": 2.7876,
+    "passes": {
+     "min_pairs": true,
+     "min_pearson_r": false,
+     "require_positive_slope": false,
+     "min_level_range_m": true,
+     "min_loo_skill_vs_mean": true,
+     "max_implied_range_frac_of_frame": true,
+     "max_implied_range_over_observed": false
+    },
+    "defensible": false,
+    "failed_criteria_ko": [
+     "피어슨 상관 r ≥ +0.60",
+     "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)",
+     "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+    ],
+    "implied_area_range_km2": 32.02,
+    "implied_over_frame_pct": 23.9,
+    "gauge_level_range_10y_m": 4.65
+   },
+   {
+    "sensor": "PlanetScope",
+    "level_station": "대청댐방수로",
+    "n_pairs": 10,
+    "pearson_r": -0.5737,
+    "slope_km2_per_m": -5.6652,
+    "level_range_m": 0.76,
+    "loo_rmse_km2": 2.6585,
+    "passes": {
+     "min_pairs": true,
+     "min_pearson_r": false,
+     "require_positive_slope": false,
+     "min_level_range_m": true,
+     "min_loo_skill_vs_mean": true,
+     "max_implied_range_frac_of_frame": true,
+     "max_implied_range_over_observed": false
+    },
+    "defensible": false,
+    "failed_criteria_ko": [
+     "피어슨 상관 r ≥ +0.60",
+     "기울기 > 0 (수위가 오르면 면적도 넓어져야 한다)",
+     "그 파생 면적폭 ≤ 실측 면적폭의 3배"
+    ],
+    "implied_area_range_km2": 31.16,
+    "implied_over_frame_pct": 23.2,
+    "gauge_level_range_10y_m": 5.5
+   }
+  ],
+  "any_defensible": false,
+  "demonstration": null,
+  "note_ko": "다리가 하나도 문턱을 넘지 못하면 파생 면적 예측 모델을 공개하지 않는다. 아래 demonstration 은 '문턱을 넘었다면 이렇게 나온다' 를 보여 주는 **시연**일 뿐이며 성과 수치로 인용하면 안 된다."
+ },
+ "notes_ko": [
+  "면적 계열은 센서별 공통 격자 마스크에서 다시 잰 값이다. scenes.json 의 장면별 water_area_km2 는 촬영 범위가 날짜마다 달라 계열 비교에 쓸 수 없다 (부산 PlanetScope 2020-03-25 는 03-12 보다 약 8.5 km 남쪽을 찍어 하구·바다를 더 담았고 그래서 raw 65.3 km² 다. 그 장면의 GT 수동라벨은 65.063 km² 로 **탐지는 맞았다** — 틀린 것은 계열이다).",
+  "LOO(leave-one-out) = 관측 하나를 빼고 나머지로만 적합해 그 하나를 맞히기를 관측 수만큼 반복한 것이다. 따라서 시험점 수 = 관측 수이며, 표본이 4~10개인 여기서는 **순위가 우연히 뒤집힐 수 있다**.",
+  "부호검정(sign test) 최소 달성 가능 p 는 n=4 에서 0.125, n=10 에서 0.002 다. 즉 **n=4 계열에서는 어떤 모델도 persistence 보다 유의하게 낫다고 말할 수 없다** — 표의 skill 은 순위 참고용이다.",
+  "같은 날 수위 회귀(level_linear·level_isotonic)의 수위는 **공통 격자 상자 안에 들어오는 수위계 지점**만 썼다. 상자 밖 지점으로 면적을 설명하지 않는다.",
+  "LOO 의 '직전 관측 유지' 는 뺀 날짜보다 앞선 관측 중 가장 가까운 값을 쓴다. 계열의 **첫 관측**은 앞선 관측이 없어 예외로 그 다음 관측을 쓰므로, 그 한 점에서는 기준선이 미래를 본다(기준선에 유리한 쪽 예외다).",
+  "**LOO 는 내삽(interpolation) 평가이지 예보(forecast) 평가가 아니다.** 기준선을 뺀 모든 후보(계열 평균·시간 선형추세·연중 시기 평년값·AR(1)·수위 회귀)는 뺀 날짜보다 **나중** 관측까지 포함한 나머지 전부로 적합한다. 따라서 표의 skill 은 '그날을 앞에서부터 예보했을 때' 의 성적이 아니다. 실제로 목표일 **이전** 관측만 쓰도록 바꿔(전진연쇄) 다시 재면 대청 1위였던 시간 선형추세는 LOO 2.414 km²(skill +23.2 %) 에서 26.6 km²(persistence 2.51 km² 대비 skill 음수)로 무너지고, 대청에서는 어떤 후보도 persistence 를 이기지 못한다. 이 표는 '표본이 모델을 가르지 못한다' 의 근거로만 읽고, 예보 성능의 근거로 인용하면 안 된다.",
+  "이 실험은 공식 성적표(evaluation.json·화면의 선택 모델·개선율)에 들어가지 않는다. 배포 면적 예측 모델을 새로 만들지도 않는다.",
+  "PlanetScope: 탐지 흔들림(ever−always = 15.26 km²)이 계열의 면적 변동폭(8.89 km²)보다 크다 — 날짜별 차이를 수위 변화로 읽으면 안 된다.",
+  "PlanetScope: 1일 간격 재방문(2019-04-03→2019-04-04)에서 면적이 5.99 km² 달라졌다 — 계열 전체 변동폭 8.89 km² 의 67 %. 이만큼이 관측 잡음 하한이다.",
+  "수위→면적 다리는 어느 조합도 문턱을 넘지 못했다. 따라서 파생 면적 예측 모델을 **공개하지 않는다**. bridge.demonstration 이 있다면 그것은 파이프라인이 도는지 보이는 시연이며 성과 수치가 아니다.",
+  "대청: 공통 격자 면적이 대청댐 수위와 **음의 상관**(r≈−0.66)이다. 저수지에서 물리적으로 거꾸로다. 원인은 수문이 아니라 배치별 탐지 안정도다 — 2019년 3~4월 5씬의 상호 IoU 평균이 0.61 인 데 비해 2022년 5월 5씬은 0.93 이고, 2022 코어(5씬 모두 물)에서 2019 합집합을 뺀 넓이는 0.04 km² 에 불과하다. 즉 같은 수면을 2019 씬들이 제각기 덜 잡은 것이지 물이 늘어난 것이 아니다.",
+  "대청 공통 격자는 134 km² 상자이고 최대 탐지 면적이 약 20 km² 다. 대청호 만수면적(약 72 km²)의 일부(댐 인근 구간)만 보고 있으므로 이 면적을 저수지 저수면적으로 읽어서는 안 된다."
+ ],
+ "verdict_ko": [
+  "PlanetScope (n=10): LOO 최소 RMSE 는 시간 선형추세 2.4141 km² (persistence 2.7544 km², skill 0.2318). persistence 대비 부호검정은 전 후보 유의하지 않음 — 이 표본으로는 모델을 가릴 수 없다.",
+  "결론: 위성 면적 계열 자체로는 어떤 모델도 **검증되지 않는다**(표본 부족). 검증 가능한 것은 10개년 일별 수위 계열이고, 그 결과를 면적으로 옮기려면 검량곡선이 서야 하는데 여기서는 서지 않는다."
+ ],
+ "elapsed_s": 0.1
+}

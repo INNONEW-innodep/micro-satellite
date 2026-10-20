@@ -1,0 +1,562 @@
+{
+ "schema": "watercast.satellite.scenes/1",
+ "region_id": "nakdong_busan",
+ "generated_at": "2026-09-08T09:14:09+00:00",
+ "quicklook_max_px": 1000,
+ "mask_frame_max_px": 640,
+ "note_ko": "퀵룩은 원본을 긴 변 1000px로 내린 것. overlay 청록 = 탐지 마스크(WBMS), gt 노랑 = GT 라벨. masks/<센서>/ 는 센서별 공통 범위로 잘라 같은 크기로 맞춘 이진 마스크로, 수체 면적 시계열 예측의 입력 프레임이다.",
+ "scenes": [
+  {
+   "scene_id": "20200302_ICEYE",
+   "date": "2020-03-02",
+   "sensor": "ICEYE",
+   "sensor_type": "SAR",
+   "source_pre": "data/incoming/handover/05_l1_pre/iceye_pre/2020/20200302/Pre_Busan_ICEYE_20200302T183857.tif",
+   "images": {
+    "input": "quicklooks/20200302_ICEYE_input.png",
+    "overlay": "quicklooks/20200302_ICEYE_overlay.png",
+    "mask": "quicklooks/20200302_ICEYE_mask.png",
+    "gt": "quicklooks/20200302_ICEYE_gt.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 40.1453,
+   "valid_area_km2": 887.01,
+   "source_mask": "data/wbms_runs/wb/2020/20200302/WB_Busan_ICEYE_20200302T183857.tif",
+   "frame": {
+    "path": "masks/ICEYE/20200302_ICEYE.png",
+    "height": 640,
+    "width": 469,
+    "pixel_size_m": 106.066,
+    "pixel_area_m2": 11249.993,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     479038.7,
+     3847364.7,
+     528783.6,
+     3915252.0
+    ]
+   },
+   "gt_available": true,
+   "metrics": {
+    "water_iou": 0.924728,
+    "f1": 0.960892,
+    "precision": 0.951103,
+    "recall": 0.970884
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     473010.364,
+     3847364.664,
+     531723.364,
+     3921935.664
+    ],
+    "width": 787,
+    "height": 1000,
+    "footprint_lonlat": [
+     [
+      128.702627,
+      35.440504
+     ],
+     [
+      129.349529,
+      35.440364
+     ],
+     [
+      129.34667,
+      34.767949
+     ],
+     [
+      128.705059,
+      34.768085
+     ]
+    ]
+   },
+   "area_common_frame_km2": 40.207
+  },
+  {
+   "scene_id": "20200330_ICEYE",
+   "date": "2020-03-30",
+   "sensor": "ICEYE",
+   "sensor_type": "SAR",
+   "source_pre": "data/incoming/handover/05_l1_pre/iceye_pre/2020/20200330/Pre_Busan_ICEYE_20200330T190048.tif",
+   "images": {
+    "input": "quicklooks/20200330_ICEYE_input.png",
+    "overlay": "quicklooks/20200330_ICEYE_overlay.png",
+    "mask": "quicklooks/20200330_ICEYE_mask.png",
+    "gt": "quicklooks/20200330_ICEYE_gt.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 36.4588,
+   "valid_area_km2": 885.78,
+   "source_mask": "data/wbms_runs/wb/2020/20200330/WB_Busan_ICEYE_20200330T190048.tif",
+   "frame": {
+    "path": "masks/ICEYE/20200330_ICEYE.png",
+    "height": 640,
+    "width": 469,
+    "pixel_size_m": 106.066,
+    "pixel_area_m2": 11249.993,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     479038.7,
+     3847364.7,
+     528783.6,
+     3915252.0
+    ]
+   },
+   "gt_available": true,
+   "metrics": {
+    "water_iou": 0.947215,
+    "f1": 0.972892,
+    "precision": 0.960791,
+    "recall": 0.985302
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     476715.62,
+     3842855.282,
+     528783.62,
+     3916319.282
+    ],
+    "width": 709,
+    "height": 1000,
+    "footprint_lonlat": [
+     [
+      128.743611,
+      35.389956
+     ],
+     [
+      129.316941,
+      35.389812
+     ],
+     [
+      129.314391,
+      34.727372
+     ],
+     [
+      128.745674,
+      34.727512
+     ]
+    ]
+   },
+   "area_common_frame_km2": 36.607
+  },
+  {
+   "scene_id": "20200415_ICEYE",
+   "date": "2020-04-15",
+   "sensor": "ICEYE",
+   "sensor_type": "SAR",
+   "source_pre": "data/incoming/handover/05_l1_pre/iceye_pre/2020/20200415/Pre_Busan_ICEYE_20200415T183220.tif",
+   "images": {
+    "input": "quicklooks/20200415_ICEYE_input.png",
+    "overlay": "quicklooks/20200415_ICEYE_overlay.png",
+    "mask": "quicklooks/20200415_ICEYE_mask.png",
+    "gt": "quicklooks/20200415_ICEYE_gt.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 36.6266,
+   "valid_area_km2": 844.93,
+   "source_mask": "data/wbms_runs/wb/2020/20200415/WB_Busan_ICEYE_20200415T183220.tif",
+   "frame": {
+    "path": "masks/ICEYE/20200415_ICEYE.png",
+    "height": 640,
+    "width": 469,
+    "pixel_size_m": 106.066,
+    "pixel_area_m2": 11249.993,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     479038.7,
+     3847364.7,
+     528783.6,
+     3915252.0
+    ]
+   },
+   "gt_available": true,
+   "metrics": {
+    "water_iou": 0.961853,
+    "f1": 0.980556,
+    "precision": 0.976157,
+    "recall": 0.984994
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     479038.674,
+     3843692.998,
+     529147.674,
+     3915251.998
+    ],
+    "width": 700,
+    "height": 1000,
+    "footprint_lonlat": [
+     [
+      128.769218,
+      35.380384
+     ],
+     [
+      129.320912,
+      35.380178
+     ],
+     [
+      129.318397,
+      34.734916
+     ],
+     [
+      128.771027,
+      34.735117
+     ]
+    ]
+   },
+   "area_common_frame_km2": 36.742
+  },
+  {
+   "scene_id": "20200416_ICEYE",
+   "date": "2020-04-16",
+   "sensor": "ICEYE",
+   "sensor_type": "SAR",
+   "source_pre": "data/incoming/handover/05_l1_pre/iceye_pre/2020/20200416/Pre_Busan_ICEYE_20200416T183630.tif",
+   "images": {
+    "input": "quicklooks/20200416_ICEYE_input.png",
+    "overlay": "quicklooks/20200416_ICEYE_overlay.png",
+    "mask": "quicklooks/20200416_ICEYE_mask.png",
+    "gt": "quicklooks/20200416_ICEYE_gt.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 39.2184,
+   "valid_area_km2": 895.58,
+   "source_mask": "data/wbms_runs/wb/2020/20200416/WB_Busan_ICEYE_20200416T183630.tif",
+   "frame": {
+    "path": "masks/ICEYE/20200416_ICEYE.png",
+    "height": 640,
+    "width": 469,
+    "pixel_size_m": 106.066,
+    "pixel_area_m2": 11249.993,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     479038.7,
+     3847364.7,
+     528783.6,
+     3915252.0
+    ]
+   },
+   "gt_available": true,
+   "metrics": {
+    "water_iou": 0.881026,
+    "f1": 0.93675,
+    "precision": 0.947435,
+    "recall": 0.926304
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     472996.885,
+     3842770.01,
+     534316.885,
+     3916822.01
+    ],
+    "width": 828,
+    "height": 1000,
+    "footprint_lonlat": [
+     [
+      128.702647,
+      35.394395
+     ],
+     [
+      129.377889,
+      35.39417
+     ],
+     [
+      129.374824,
+      34.726432
+     ],
+     [
+      128.705059,
+      34.726651
+     ]
+    ]
+   },
+   "area_common_frame_km2": 39.127
+  },
+  {
+   "scene_id": "20200218_PlanetScope",
+   "date": "2020-02-18",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/planet_pre/2020/20200218/Pre_Busan_PlanetScope_20200218T020429.tif",
+   "images": {
+    "input": "quicklooks/20200218_PlanetScope_input.png",
+    "overlay": "quicklooks/20200218_PlanetScope_overlay.png",
+    "mask": "quicklooks/20200218_PlanetScope_mask.png",
+    "gt": "quicklooks/20200218_PlanetScope_gt.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 38.2913,
+   "valid_area_km2": 845.16,
+   "source_mask": "data/wbms_runs/wb_planet/2020/20200218/WB_Busan_PlanetScope_20200218T020429.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20200218_PlanetScope.png",
+    "height": 602,
+    "width": 640,
+    "pixel_size_m": 44.339,
+    "pixel_area_m2": 1965.952,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     480933.0,
+     3888207.0,
+     509310.0,
+     3914898.0
+    ]
+   },
+   "gt_available": true,
+   "metrics": {
+    "water_iou": 0.947618,
+    "f1": 0.973105,
+    "precision": 0.956155,
+    "recall": 0.990666
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     476838.0,
+     3888207.0,
+     509310.0,
+     3924996.0
+    ],
+    "width": 883,
+    "height": 1000,
+    "footprint_lonlat": [
+     [
+      128.744712,
+      35.468194
+     ],
+     [
+      129.102614,
+      35.468421
+     ],
+     [
+      129.102196,
+      35.136695
+     ],
+     [
+      128.745752,
+      35.136472
+     ]
+    ]
+   },
+   "area_common_frame_km2": 30.152
+  },
+  {
+   "scene_id": "20200312_PlanetScope",
+   "date": "2020-03-12",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/planet_pre/2020/20200312/Pre_Busan_PlanetScope_20200312T020959.tif",
+   "images": {
+    "input": "quicklooks/20200312_PlanetScope_input.png",
+    "overlay": "quicklooks/20200312_PlanetScope_overlay.png",
+    "mask": "quicklooks/20200312_PlanetScope_mask.png",
+    "gt": "quicklooks/20200312_PlanetScope_gt.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 33.2651,
+   "valid_area_km2": 775.66,
+   "source_mask": "data/wbms_runs/wb_planet/2020/20200312/WB_Busan_PlanetScope_20200312T020959.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20200312_PlanetScope.png",
+    "height": 602,
+    "width": 640,
+    "pixel_size_m": 44.339,
+    "pixel_area_m2": 1965.952,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     480933.0,
+     3888207.0,
+     509310.0,
+     3914898.0
+    ]
+   },
+   "gt_available": true,
+   "metrics": {
+    "water_iou": 0.931725,
+    "f1": 0.964656,
+    "precision": 0.940967,
+    "recall": 0.989568
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     478884.0,
+     3887565.0,
+     509850.0,
+     3923325.0
+    ],
+    "width": 866,
+    "height": 1000,
+    "footprint_lonlat": [
+     [
+      128.767306,
+      35.453173
+     ],
+     [
+      129.108545,
+      35.453349
+     ],
+     [
+      129.108116,
+      35.130901
+     ],
+     [
+      128.768227,
+      35.130728
+     ]
+    ]
+   },
+   "area_common_frame_km2": 28.87
+  },
+  {
+   "scene_id": "20200325_PlanetScope",
+   "date": "2020-03-25",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/planet_pre/2020/20200325/Pre_Busan_PlanetScope_20200325T021316.tif",
+   "images": {
+    "input": "quicklooks/20200325_PlanetScope_input.png",
+    "overlay": "quicklooks/20200325_PlanetScope_overlay.png",
+    "mask": "quicklooks/20200325_PlanetScope_mask.png",
+    "gt": "quicklooks/20200325_PlanetScope_gt.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 65.3047,
+   "valid_area_km2": 775.55,
+   "source_mask": "data/wbms_runs/wb_planet/2020/20200325/WB_Busan_PlanetScope_20200325T021316.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20200325_PlanetScope.png",
+    "height": 602,
+    "width": 640,
+    "pixel_size_m": 44.339,
+    "pixel_area_m2": 1965.952,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     480933.0,
+     3888207.0,
+     509310.0,
+     3914898.0
+    ]
+   },
+   "gt_available": true,
+   "metrics": {
+    "water_iou": 0.948435,
+    "f1": 0.973535,
+    "precision": 0.971732,
+    "recall": 0.975345
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     480582.0,
+     3879009.0,
+     511668.0,
+     3914898.0
+    ],
+    "width": 866,
+    "height": 1000,
+    "footprint_lonlat": [
+     [
+      128.786218,
+      35.377224
+     ],
+     [
+      129.128459,
+      35.377344
+     ],
+     [
+      129.12795,
+      35.05373
+     ],
+     [
+      128.787065,
+      35.05361
+     ]
+    ]
+   },
+   "area_common_frame_km2": 30.148
+  },
+  {
+   "scene_id": "20200414_PlanetScope",
+   "date": "2020-04-14",
+   "sensor": "PlanetScope",
+   "sensor_type": "OPTIC",
+   "source_pre": "data/incoming/handover/05_l1_pre/planet_pre/2020/20200414/Pre_Busan_PlanetScope_20200414T021413.tif",
+   "images": {
+    "input": "quicklooks/20200414_PlanetScope_input.png",
+    "overlay": "quicklooks/20200414_PlanetScope_overlay.png",
+    "mask": "quicklooks/20200414_PlanetScope_mask.png",
+    "gt": "quicklooks/20200414_PlanetScope_gt.png"
+   },
+   "detection_available": true,
+   "water_area_km2": 40.0362,
+   "valid_area_km2": 812.62,
+   "source_mask": "data/wbms_runs/wb_planet/2020/20200414/WB_Busan_PlanetScope_20200414T021413.tif",
+   "frame": {
+    "path": "masks/PlanetScope/20200414_PlanetScope.png",
+    "height": 602,
+    "width": 640,
+    "pixel_size_m": 44.339,
+    "pixel_area_m2": 1965.952,
+    "native_pixel_m": 3.0,
+    "bounds_epsg32652": [
+     480933.0,
+     3888207.0,
+     509310.0,
+     3914898.0
+    ]
+   },
+   "gt_available": true,
+   "metrics": {
+    "water_iou": 0.932263,
+    "f1": 0.964944,
+    "precision": 0.94545,
+    "recall": 0.985259
+   },
+   "quicklook": {
+    "crs": "EPSG:32652",
+    "source_crs": "EPSG:32652",
+    "bounds_epsg32652": [
+     480933.0,
+     3884394.0,
+     512709.0,
+     3920766.0
+    ],
+    "width": 874,
+    "height": 1000,
+    "footprint_lonlat": [
+     [
+      128.789945,
+      35.430141
+     ],
+     [
+      129.140011,
+      35.430242
+     ],
+     [
+      129.139448,
+      35.102275
+     ],
+     [
+      128.79079,
+      35.102175
+     ]
+    ]
+   },
+   "area_common_frame_km2": 30.974
+  }
+ ]
+}

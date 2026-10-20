@@ -1,0 +1,1600 @@
+{
+ "schema": "watercast.gauge.experiment.future_rain/1",
+ "region_id": "geum_mainstem",
+ "region_name": "금강 본류 (세종·공주·청주)",
+ "generated_at": "2026-09-09T14:26:07+00:00",
+ "split": {
+  "train_end": "2018-12-31",
+  "val_start": "2019-01-01",
+  "val_end": "2023-12-31",
+  "test_start": "2024-01-01",
+  "test_end": "2024-12-31"
+ },
+ "horizon_max": 30,
+ "report_horizons": [
+  1,
+  3,
+  5,
+  7,
+  10,
+  14,
+  30
+ ],
+ "forecasters": [
+  "ridge_arx",
+  "ridge_arx_future"
+ ],
+ "variants": {
+  "future_3d": {
+   "future_days": 3
+  },
+  "future_all": {
+   "future_days": "all"
+  }
+ },
+ "n_stations": 3,
+ "stations": {
+  "금남교": {
+   "horizons": {
+    "1": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.3023842626445397,
+       "mse": 0.09143624229508196,
+       "mae": 0.09424098360655737,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.2842303523025103,
+       "mse": 0.08078689317000912,
+       "mae": 0.09687004430003901,
+       "skill_vs_persistence": 0.11646748442160815
+      },
+      "future_3d": {
+       "rmse": 0.2730694025271708,
+       "mse": 0.07456689859654606,
+       "mae": 0.10653182324283068,
+       "skill_vs_persistence": 0.1844929677238415,
+       "delta_rmse_cm": 1.116094977533949,
+       "skill_gain_pp": 6.802548330223335
+      },
+      "future_all": {
+       "rmse": 0.2730694025271708,
+       "mse": 0.07456689859654606,
+       "mae": 0.10653182324283068,
+       "skill_vs_persistence": 0.1844929677238415,
+       "delta_rmse_cm": 1.116094977533949,
+       "skill_gain_pp": 6.802548330223335
+      }
+     }
+    },
+    "3": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 10.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 10.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.473604754339875,
+       "mse": 0.22430146333333334,
+       "mae": 0.1644398907103825,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.4350561327027346,
+       "mse": 0.1892738386022594,
+       "mae": 0.18111693184223854,
+       "skill_vs_persistence": 0.15616315743343834
+      },
+      "future_3d": {
+       "rmse": 0.40174790380870407,
+       "mse": 0.16140137821468775,
+       "mae": 0.1797252820421013,
+       "skill_vs_persistence": 0.2804265481994207,
+       "delta_rmse_cm": 3.330822889403051,
+       "skill_gain_pp": 12.426339076598236
+      },
+      "future_all": {
+       "rmse": 0.40174790380870407,
+       "mse": 0.16140137821468775,
+       "mae": 0.1797252820421013,
+       "skill_vs_persistence": 0.2804265481994207,
+       "delta_rmse_cm": 3.330822889403051,
+       "skill_gain_pp": 12.426339076598236
+      }
+     }
+    },
+    "5": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 10.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 10.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.5733370504708578,
+       "mse": 0.32871537344262297,
+       "mae": 0.20884098360655737,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.5010584849327946,
+       "mse": 0.2510596053231476,
+       "mae": 0.22148882540004317,
+       "skill_vs_persistence": 0.2362401469276889
+      },
+      "future_3d": {
+       "rmse": 0.4842018409014261,
+       "mse": 0.23445142273232994,
+       "mae": 0.2171041181163278,
+       "skill_vs_persistence": 0.28676465515765337,
+       "delta_rmse_cm": 1.6856644031368495,
+       "skill_gain_pp": 5.052450822996446
+      },
+      "future_all": {
+       "rmse": 0.47025180901541536,
+       "mse": 0.22113676388227066,
+       "mae": 0.21901114783130154,
+       "skill_vs_persistence": 0.32726978490140524,
+       "delta_rmse_cm": 3.0806675917379236,
+       "skill_gain_pp": 9.102963797371633
+      }
+     }
+    },
+    "7": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 10.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.6343727012125567,
+       "mse": 0.40242872404371577,
+       "mae": 0.24910983606557374,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.532014207706495,
+       "mse": 0.28303911720156955,
+       "mae": 0.24678476659926016,
+       "skill_vs_persistence": 0.2966726769463328
+      },
+      "future_3d": {
+       "rmse": 0.523062979851905,
+       "mse": 0.27359488089155437,
+       "mae": 0.24220324776651722,
+       "skill_vs_persistence": 0.3201407738930837,
+       "delta_rmse_cm": 0.8951227854590016,
+       "skill_gain_pp": 2.3468096946750894
+      },
+      "future_all": {
+       "rmse": 0.5021611926754487,
+       "mse": 0.25216586342922914,
+       "mae": 0.2446273720061507,
+       "skill_vs_persistence": 0.37338999836940967,
+       "delta_rmse_cm": 2.9853015031046315,
+       "skill_gain_pp": 7.671732142307686
+      }
+     }
+    },
+    "10": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.7115359281122321,
+       "mse": 0.5062833769945355,
+       "mae": 0.2951459016393443,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.5621209597395754,
+       "mse": 0.31597997337854133,
+       "mae": 0.27604343806358694,
+       "skill_vs_persistence": 0.3758831758326685
+      },
+      "future_3d": {
+       "rmse": 0.5544297462820258,
+       "mse": 0.3073923435623515,
+       "mae": 0.2703130025367889,
+       "skill_vs_persistence": 0.39284527691362603,
+       "delta_rmse_cm": 0.7691213457549639,
+       "skill_gain_pp": 1.6962101080957526
+      },
+      "future_all": {
+       "rmse": 0.5361405044214815,
+       "mse": 0.2874466404813206,
+       "mae": 0.26440292519868464,
+       "skill_vs_persistence": 0.43224159918562144,
+       "delta_rmse_cm": 2.59804553180939,
+       "skill_gain_pp": 5.635842335295294
+      }
+     }
+    },
+    "14": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 30,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.8032372630750827,
+       "mse": 0.6451901007923496,
+       "mae": 0.3480975409836066,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.5937659228099482,
+       "mse": 0.35255797109034936,
+       "mae": 0.3054639820686109,
+       "skill_vs_persistence": 0.4535595467795035
+      },
+      "future_3d": {
+       "rmse": 0.5844901128034966,
+       "mse": 0.34162869196504414,
+       "mae": 0.300583409000716,
+       "skill_vs_persistence": 0.4704991729639151,
+       "delta_rmse_cm": 0.9275810006451612,
+       "skill_gain_pp": 1.6939626184411583
+      },
+      "future_all": {
+       "rmse": 0.5588773314910112,
+       "mse": 0.3123438716545136,
+       "mae": 0.28997821609608904,
+       "skill_vs_persistence": 0.5158886175238458,
+       "delta_rmse_cm": 3.4888591318937068,
+       "skill_gain_pp": 6.232907074434236
+      }
+     }
+    },
+    "30": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.8180371625357967,
+       "mse": 0.6691847992896175,
+       "mae": 0.36755901639344263,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.5844573502250707,
+       "mse": 0.341590394232111,
+       "mae": 0.30704756317037596,
+       "skill_vs_persistence": 0.48954250814613376
+      },
+      "future_3d": {
+       "rmse": 0.5883368444182023,
+       "mse": 0.34614024249996805,
+       "mae": 0.3084144236225195,
+       "skill_vs_persistence": 0.48274341726318637,
+       "delta_rmse_cm": -0.3879494193131605,
+       "skill_gain_pp": -0.679909088294739
+      },
+      "future_all": {
+       "rmse": 0.5670264165859551,
+       "mse": 0.32151895710630907,
+       "mae": 0.31375891161616976,
+       "skill_vs_persistence": 0.5195363710478451,
+       "delta_rmse_cm": 1.743093363911563,
+       "skill_gain_pp": 2.9993862901711354
+      }
+     }
+    }
+   },
+   "events": [
+    {
+     "date": "2024-09-21",
+     "rise_m": 3.4863,
+     "level_m": 3.7042,
+     "errors": {
+      "D+1": {
+       "persistence": 3.4863,
+       "ridge_arx": 3.3182777719812404,
+       "future_all": 3.0763309026901204,
+       "future_rain_mm": 131.2
+      },
+      "D+3": {
+       "persistence": 3.5879000000000003,
+       "ridge_arx": 3.499283737167726,
+       "future_all": 3.184510582668228,
+       "future_rain_mm": 176.79999999999998
+      }
+     }
+    },
+    {
+     "date": "2024-07-10",
+     "rise_m": 1.7229,
+     "level_m": 4.9321,
+     "errors": {
+      "D+1": {
+       "persistence": 1.7229,
+       "ridge_arx": 2.1196232521770777,
+       "future_all": 1.913132340917469,
+       "future_rain_mm": 88.6
+      },
+      "D+3": {
+       "persistence": 3.8379000000000003,
+       "ridge_arx": 4.043038524348573,
+       "future_all": 3.6636701055599765,
+       "future_rain_mm": 241.4
+      }
+     }
+    },
+    {
+     "date": "2024-07-08",
+     "rise_m": 1.4000000000000001,
+     "level_m": 2.4942,
+     "errors": {
+      "D+1": {
+       "persistence": 1.4000000000000001,
+       "ridge_arx": 1.2859929174199216,
+       "future_all": 1.0396864867022937,
+       "future_rain_mm": 137.5
+      },
+      "D+3": {
+       "persistence": 2.1821,
+       "ridge_arx": 1.9924557512703616,
+       "future_all": 1.7397898359702126,
+       "future_rain_mm": 173.8
+      }
+     }
+    },
+    {
+     "date": "2024-07-17",
+     "rise_m": 0.8846,
+     "level_m": 2.165,
+     "errors": {
+      "D+1": {
+       "persistence": 0.8846,
+       "ridge_arx": 0.7313924766202451,
+       "future_all": 0.8308015655732024,
+       "future_rain_mm": 0.8
+      },
+      "D+3": {
+       "persistence": 1.0882999999999998,
+       "ridge_arx": 0.2859031540487278,
+       "future_all": 0.4211396270577854,
+       "future_rain_mm": 46.6
+      }
+     }
+    },
+    {
+     "date": "2024-07-07",
+     "rise_m": 0.8488,
+     "level_m": 1.0942,
+     "errors": {
+      "D+1": {
+       "persistence": 0.8488,
+       "ridge_arx": 0.816363908725188,
+       "future_all": 0.6083814417908409,
+       "future_rain_mm": 36.2
+      },
+      "D+3": {
+       "persistence": 0.6442000000000001,
+       "ridge_arx": 0.507371776821244,
+       "future_all": 0.41206984827349813,
+       "future_rain_mm": 40.2
+      }
+     }
+    }
+   ],
+   "station": {
+    "id": "금남교",
+    "name": "금남교",
+    "terrain": "dam_downstream"
+   }
+  },
+  "금강교": {
+   "horizons": {
+    "1": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 10.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 10.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 10.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.3198001695048027,
+       "mse": 0.10227214841530055,
+       "mae": 0.11731693989071038,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.3093880174862742,
+       "mse": 0.09572094536408711,
+       "mae": 0.13066071898658646,
+       "skill_vs_persistence": 0.06405657016816257
+      },
+      "future_3d": {
+       "rmse": 0.30292282062682774,
+       "mse": 0.09176223525651325,
+       "mae": 0.1396625061610885,
+       "skill_vs_persistence": 0.1027641769693669,
+       "delta_rmse_cm": 0.6465196859446465,
+       "skill_gain_pp": 3.870760680120433
+      },
+      "future_all": {
+       "rmse": 0.30292282062682774,
+       "mse": 0.09176223525651325,
+       "mae": 0.1396625061610885,
+       "skill_vs_persistence": 0.1027641769693669,
+       "delta_rmse_cm": 0.6465196859446465,
+       "skill_gain_pp": 3.870760680120433
+      }
+     }
+    },
+    "3": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 10.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 10.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.5140572639052682,
+       "mse": 0.2642548705737705,
+       "mae": 0.20626639344262293,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.5017043642113966,
+       "mse": 0.25170726906876173,
+       "mae": 0.24491587324474948,
+       "skill_vs_persistence": 0.047482952642516896
+      },
+      "future_3d": {
+       "rmse": 0.4838731611779641,
+       "mse": 0.234133236108356,
+       "mae": 0.25436309802539114,
+       "skill_vs_persistence": 0.11398705499736705,
+       "delta_rmse_cm": 1.7831203033432552,
+       "skill_gain_pp": 6.650410235485015
+      },
+      "future_all": {
+       "rmse": 0.4838731611779641,
+       "mse": 0.234133236108356,
+       "mae": 0.25436309802539114,
+       "skill_vs_persistence": 0.11398705499736705,
+       "delta_rmse_cm": 1.7831203033432552,
+       "skill_gain_pp": 6.650410235485015
+      }
+     }
+    },
+    "5": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 30,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 10.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 10.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.6590674458010759,
+       "mse": 0.43436989811475407,
+       "mae": 0.2824729508196721,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.6384237671949333,
+       "mse": 0.40758490651937046,
+       "mae": 0.3423007332589557,
+       "skill_vs_persistence": 0.061664014269026124
+      },
+      "future_3d": {
+       "rmse": 0.6237141709439724,
+       "mse": 0.38901936703632684,
+       "mae": 0.3419650433516896,
+       "skill_vs_persistence": 0.10440532660126067,
+       "delta_rmse_cm": 1.470959625096091,
+       "skill_gain_pp": 4.274131233223455
+      },
+      "future_all": {
+       "rmse": 0.6126416386759971,
+       "mse": 0.375329777439611,
+       "mae": 0.3431815637868728,
+       "skill_vs_persistence": 0.13592129871657355,
+       "delta_rmse_cm": 2.5782128518936243,
+       "skill_gain_pp": 7.425728444754743
+      }
+     }
+    },
+    "7": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 30,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 10.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.7643376984115823,
+       "mse": 0.5842121172131148,
+       "mae": 0.3527792349726776,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.7260782876812771,
+       "mse": 0.5271896798421755,
+       "mae": 0.4178097308924505,
+       "skill_vs_persistence": 0.09760570808246027
+      },
+      "future_3d": {
+       "rmse": 0.7045490459702323,
+       "mse": 0.49638935817756447,
+       "mae": 0.3997781949092217,
+       "skill_vs_persistence": 0.1503268358323241,
+       "delta_rmse_cm": 2.1529241711044866,
+       "skill_gain_pp": 5.272112774986382
+      },
+      "future_all": {
+       "rmse": 0.6940157579527222,
+       "mse": 0.48165787228669144,
+       "mae": 0.41890041175819187,
+       "skill_vs_persistence": 0.17554282409553756,
+       "delta_rmse_cm": 3.2062529728554945,
+       "skill_gain_pp": 7.793711601307729
+      }
+     }
+    },
+    "10": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 30,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.9148395371855189,
+       "mse": 0.8369313787978144,
+       "mae": 0.45176502732240437,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.8451645243362074,
+       "mse": 0.7143030731964477,
+       "mae": 0.52709393288651,
+       "skill_vs_persistence": 0.14652133819801638
+      },
+      "future_3d": {
+       "rmse": 0.8078252903835563,
+       "mse": 0.6525816997832771,
+       "mae": 0.4863401463125215,
+       "skill_vs_persistence": 0.22026857121708243,
+       "delta_rmse_cm": 3.733923395265104,
+       "skill_gain_pp": 7.374723301906605
+      },
+      "future_all": {
+       "rmse": 0.7839563014035822,
+       "mse": 0.6145874825103842,
+       "mae": 0.4790746649945927,
+       "skill_vs_persistence": 0.2656656231563568,
+       "delta_rmse_cm": 6.120822293262518,
+       "skill_gain_pp": 11.91442849583404
+      }
+     }
+    },
+    "14": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 30,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 1.097132399158895,
+       "mse": 1.203699501284153,
+       "mae": 0.5773658469945355,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.9396237182148074,
+       "mse": 0.8828927318318197,
+       "mae": 0.6144414895669096,
+       "skill_vs_persistence": 0.2665173235596461
+      },
+      "future_3d": {
+       "rmse": 0.9088608720104148,
+       "mse": 0.8260280846715314,
+       "mae": 0.5835419290243054,
+       "skill_vs_persistence": 0.3137588876706413,
+       "delta_rmse_cm": 3.0762846204392624,
+       "skill_gain_pp": 4.724156411099523
+      },
+      "future_all": {
+       "rmse": 0.8777891275806545,
+       "mse": 0.7705137524988065,
+       "mae": 0.5690866073596036,
+       "skill_vs_persistence": 0.35987864772163414,
+       "delta_rmse_cm": 6.183459063415286,
+       "skill_gain_pp": 9.336132416198806
+      }
+     }
+    },
+    "30": {
+     "n_test": 366,
+     "hparams": {
+      "ridge_arx": {
+       "p": 30,
+       "lam": 100.0,
+       "mode": "level"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 1.3910089311565819,
+       "mse": 1.9349058465573765,
+       "mae": 0.8710792349726775,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 1.008863143585243,
+       "mse": 1.0178048424846986,
+       "mae": 0.7244335821286221,
+       "skill_vs_persistence": 0.4739770701010607
+      },
+      "future_3d": {
+       "rmse": 1.0200188641835741,
+       "mse": 1.0404384832903488,
+       "mae": 0.710882387327062,
+       "skill_vs_persistence": 0.4622795289282329,
+       "delta_rmse_cm": -1.1155720598331031,
+       "skill_gain_pp": -1.1697541172827841
+      },
+      "future_all": {
+       "rmse": 1.000945946743889,
+       "mse": 1.0018927883030202,
+       "mae": 0.7051117222195767,
+       "skill_vs_persistence": 0.48220075406479956,
+       "delta_rmse_cm": 0.7917196841354057,
+       "skill_gain_pp": 0.8223683963738848
+      }
+     }
+    }
+   },
+   "events": [
+    {
+     "date": "2024-09-21",
+     "rise_m": 3.5324999999999998,
+     "level_m": 4.1983,
+     "errors": {
+      "D+1": {
+       "persistence": 3.5324999999999998,
+       "ridge_arx": 3.337962210736282,
+       "future_all": 3.0887403040082386,
+       "future_rain_mm": 131.2
+      },
+      "D+3": {
+       "persistence": 3.7066,
+       "ridge_arx": 3.520476159517216,
+       "future_all": 3.117049251174672,
+       "future_rain_mm": 176.79999999999998
+      }
+     }
+    },
+    {
+     "date": "2024-07-08",
+     "rise_m": 1.5753999999999997,
+     "level_m": 3.3629,
+     "errors": {
+      "D+1": {
+       "persistence": 1.5753999999999997,
+       "ridge_arx": 1.3526991567691793,
+       "future_all": 1.0890005212237197,
+       "future_rain_mm": 137.5
+      },
+      "D+3": {
+       "persistence": 2.5103999999999997,
+       "ridge_arx": 2.3683718832086327,
+       "future_all": 1.9566334804740648,
+       "future_rain_mm": 173.8
+      }
+     }
+    },
+    {
+     "date": "2024-07-10",
+     "rise_m": 1.5088,
+     "level_m": 5.7313,
+     "errors": {
+      "D+1": {
+       "persistence": 1.5088,
+       "ridge_arx": 1.8330759321821173,
+       "future_all": 1.6203844735921225,
+       "future_rain_mm": 88.6
+      },
+      "D+3": {
+       "persistence": 3.9438,
+       "ridge_arx": 3.9740742254244994,
+       "future_all": 3.650156417603238,
+       "future_rain_mm": 241.4
+      }
+     }
+    },
+    {
+     "date": "2024-10-19",
+     "rise_m": 1.4300000000000002,
+     "level_m": 2.8513,
+     "errors": {
+      "D+1": {
+       "persistence": 1.4300000000000002,
+       "ridge_arx": 1.1087029209804082,
+       "future_all": 1.1441676897197328,
+       "future_rain_mm": 1.9
+      },
+      "D+3": {
+       "persistence": 0.125,
+       "ridge_arx": 0.0889013665985523,
+       "future_all": 0.15926158523074685,
+       "future_rain_mm": 43.5
+      }
+     }
+    },
+    {
+     "date": "2024-07-07",
+     "rise_m": 1.0475,
+     "level_m": 1.7875,
+     "errors": {
+      "D+1": {
+       "persistence": 1.0475,
+       "ridge_arx": 1.0150601052241557,
+       "future_all": 0.791046643637048,
+       "future_rain_mm": 36.2
+      },
+      "D+3": {
+       "persistence": 0.6779000000000002,
+       "ridge_arx": 0.691505201330036,
+       "future_all": 0.47508046634036183,
+       "future_rain_mm": 40.2
+      }
+     }
+    }
+   ],
+   "station": {
+    "id": "금강교",
+    "name": "금강교",
+    "terrain": "mainstem"
+   }
+  },
+  "미호강교": {
+   "horizons": {
+    "1": {
+     "n_test": 357,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.34884324398857236,
+       "mse": 0.12169160887647061,
+       "mae": 0.10945890756302519,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.30212841820972813,
+       "mse": 0.09128158108991237,
+       "mae": 0.11557417279737808,
+       "skill_vs_persistence": 0.24989420443465016
+      },
+      "future_3d": {
+       "rmse": 0.2801334343284772,
+       "mse": 0.07847474102866725,
+       "mae": 0.12734857143353534,
+       "skill_vs_persistence": 0.355134328872855,
+       "delta_rmse_cm": 2.199498388125093,
+       "skill_gain_pp": 10.524012443820485
+      },
+      "future_all": {
+       "rmse": 0.2801334343284772,
+       "mse": 0.07847474102866725,
+       "mae": 0.12734857143353534,
+       "skill_vs_persistence": 0.355134328872855,
+       "delta_rmse_cm": 2.199498388125093,
+       "skill_gain_pp": 10.524012443820485
+      }
+     }
+    },
+    "3": {
+     "n_test": 357,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.5088203786641977,
+       "mse": 0.25889817774397755,
+       "mae": 0.1925727731092437,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.4179506455674655,
+       "mse": 0.17468274213026114,
+       "mae": 0.17075540856162238,
+       "skill_vs_persistence": 0.32528400295268367
+      },
+      "future_3d": {
+       "rmse": 0.3635053328501779,
+       "mse": 0.13213612701051863,
+       "mae": 0.18010946640158104,
+       "skill_vs_persistence": 0.4896212551129384,
+       "delta_rmse_cm": 5.444531271728758,
+       "skill_gain_pp": 16.433725216025476
+      },
+      "future_all": {
+       "rmse": 0.3635053328501779,
+       "mse": 0.13213612701051863,
+       "mae": 0.18010946640158104,
+       "skill_vs_persistence": 0.4896212551129384,
+       "delta_rmse_cm": 5.444531271728758,
+       "skill_gain_pp": 16.433725216025476
+      }
+     }
+    },
+    "5": {
+     "n_test": 357,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.5546478811060276,
+       "mse": 0.30763427201540616,
+       "mae": 0.22250378151260505,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.43277975409035796,
+       "mse": 0.1872983155505107,
+       "mae": 0.1846871691508796,
+       "skill_vs_persistence": 0.39116563858941267
+      },
+      "future_3d": {
+       "rmse": 0.4161376410025945,
+       "mse": 0.1731705362592042,
+       "mae": 0.18528182233685228,
+       "skill_vs_persistence": 0.4370895832746102,
+       "delta_rmse_cm": 1.6642113087763477,
+       "skill_gain_pp": 4.592394468519756
+      },
+      "future_all": {
+       "rmse": 0.38616017610771675,
+       "mse": 0.1491196816115428,
+       "mae": 0.18538828932139056,
+       "skill_vs_persistence": 0.5152696068789275,
+       "delta_rmse_cm": 4.661957798264122,
+       "skill_gain_pp": 12.410396828951487
+      }
+     }
+    },
+    "7": {
+     "n_test": 357,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.5229437979132273,
+       "mse": 0.27347021577591035,
+       "mae": 0.21542140056022407,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.4218280668592791,
+       "mse": 0.17793891799023642,
+       "mae": 0.18919511537382355,
+       "skill_vs_persistence": 0.34932980732335084
+      },
+      "future_3d": {
+       "rmse": 0.4212231478008879,
+       "mse": 0.17742894024328865,
+       "mae": 0.19129983097264125,
+       "skill_vs_persistence": 0.3511946456769566,
+       "delta_rmse_cm": 0.060491905839121785,
+       "skill_gain_pp": 0.18648383536057356
+      },
+      "future_all": {
+       "rmse": 0.3830535699116713,
+       "mse": 0.14673003742207563,
+       "mae": 0.18506089525692415,
+       "skill_vs_persistence": 0.4634514877396718,
+       "delta_rmse_cm": 3.8774496947607817,
+       "skill_gain_pp": 11.412168041632098
+      }
+     }
+    },
+    "10": {
+     "n_test": 357,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.534922796891714,
+       "mse": 0.28614239863445384,
+       "mae": 0.22035364145658265,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.4348002878269472,
+       "mse": 0.1890512902943961,
+       "mae": 0.19848759539201297,
+       "skill_vs_persistence": 0.33931045802160686
+      },
+      "future_3d": {
+       "rmse": 0.4288157459972986,
+       "mse": 0.18388294401521973,
+       "mae": 0.1974643706945423,
+       "skill_vs_persistence": 0.357372605762875,
+       "delta_rmse_cm": 0.5984541829648582,
+       "skill_gain_pp": 1.806214774126813
+      },
+      "future_all": {
+       "rmse": 0.39695995307395515,
+       "mse": 0.15757720434447667,
+       "mae": 0.18793018406722226,
+       "skill_vs_persistence": 0.449304943634791,
+       "delta_rmse_cm": 3.7840334752992035,
+       "skill_gain_pp": 10.999448561318415
+      }
+     }
+    },
+    "14": {
+     "n_test": 357,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.6075466135982308,
+       "mse": 0.3691128876946779,
+       "mae": 0.2639751820728291,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.45460346295380205,
+       "mse": 0.20666430852958886,
+       "mae": 0.20841666919156096,
+       "skill_vs_persistence": 0.44010541105642176
+      },
+      "future_3d": {
+       "rmse": 0.4547295268451435,
+       "mse": 0.2067789425848081,
+       "mae": 0.20990643590868788,
+       "skill_vs_persistence": 0.4397948446713378,
+       "delta_rmse_cm": -0.012606389134145468,
+       "skill_gain_pp": -0.031056638508397683
+      },
+      "future_all": {
+       "rmse": 0.4165172500242589,
+       "mse": 0.17348661956777098,
+       "mae": 0.20094087305946673,
+       "skill_vs_persistence": 0.5299903488840647,
+       "delta_rmse_cm": 3.8086212929543173,
+       "skill_gain_pp": 8.988493782764294
+      }
+     }
+    },
+    "30": {
+     "n_test": 357,
+     "hparams": {
+      "ridge_arx": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta"
+      },
+      "future_3d": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": 3
+      },
+      "future_all": {
+       "p": 7,
+       "lam": 100.0,
+       "mode": "delta",
+       "future_days": "all"
+      }
+     },
+     "models": {
+      "persistence": {
+       "rmse": 0.6518798241032079,
+       "mse": 0.42494730507282924,
+       "mae": 0.3142636414565826,
+       "skill_vs_persistence": 0.0
+      },
+      "ridge_arx": {
+       "rmse": 0.4534458657617987,
+       "mse": 0.20561315317646717,
+       "mae": 0.21153821560243816,
+       "skill_vs_persistence": 0.51614435314226
+      },
+      "future_3d": {
+       "rmse": 0.45313574356566805,
+       "mse": 0.20533200209681085,
+       "mae": 0.2114835175444963,
+       "skill_vs_persistence": 0.5168059671266295,
+       "delta_rmse_cm": 0.031012219613063552,
+       "skill_gain_pp": 0.06616139843694802
+      },
+      "future_all": {
+       "rmse": 0.43312246440524255,
+       "mse": 0.1875950691724706,
+       "mae": 0.20293389112605723,
+       "skill_vs_persistence": 0.5585451021031425,
+       "delta_rmse_cm": 2.0323401356556134,
+       "skill_gain_pp": 4.240074896088242
+      }
+     }
+    }
+   },
+   "events": [
+    {
+     "date": "2024-09-21",
+     "rise_m": 4.0905000000000005,
+     "level_m": 5.8513,
+     "errors": {
+      "D+1": {
+       "persistence": 4.0905000000000005,
+       "ridge_arx": 3.877921301365398,
+       "future_all": 3.5348807677105536,
+       "future_rain_mm": 131.2
+      },
+      "D+3": {
+       "persistence": 4.2167,
+       "ridge_arx": 4.283635746368397,
+       "future_all": 3.8738900722665983,
+       "future_rain_mm": 176.79999999999998
+      }
+     }
+    },
+    {
+     "date": "2024-07-07",
+     "rise_m": 1.8554,
+     "level_m": 3.48,
+     "errors": {
+      "D+1": {
+       "persistence": 1.8554,
+       "ridge_arx": 1.8325534848148157,
+       "future_all": 1.539603436368639,
+       "future_rain_mm": 36.2
+      },
+      "D+3": {
+       "persistence": 1.6858,
+       "ridge_arx": 1.5754874406746036,
+       "future_all": 1.420245212067392,
+       "future_rain_mm": 40.2
+      }
+     }
+    },
+    {
+     "date": "2024-07-17",
+     "rise_m": 1.7054,
+     "level_m": 3.5429,
+     "errors": {
+      "D+1": {
+       "persistence": 1.7054,
+       "ridge_arx": 1.3146370708551482,
+       "future_all": 1.4275366271044185,
+       "future_rain_mm": 0.8
+      },
+      "D+3": {
+       "persistence": 1.6203999999999998,
+       "ridge_arx": 1.5099630119495515,
+       "future_all": 1.2728507290176077,
+       "future_rain_mm": 46.6
+      }
+     }
+    },
+    {
+     "date": "2024-10-19",
+     "rise_m": 1.0629,
+     "level_m": 2.9204,
+     "errors": {
+      "D+1": {
+       "persistence": 1.0629,
+       "ridge_arx": 0.8465788200628355,
+       "future_all": 0.8861396989666681,
+       "future_rain_mm": 1.9
+      },
+      "D+3": {
+       "persistence": 1.3665999999999998,
+       "ridge_arx": 1.4205218011937721,
+       "future_all": 1.0962565291486994,
+       "future_rain_mm": 43.5
+      }
+     }
+    },
+    {
+     "date": "2024-07-02",
+     "rise_m": 1.0245,
+     "level_m": 2.6483,
+     "errors": {
+      "D+1": {
+       "persistence": 1.0245,
+       "ridge_arx": 1.2269472937426076,
+       "future_all": 0.8820825579801062,
+       "future_rain_mm": 57.0
+      },
+      "D+3": {
+       "persistence": 1.1007999999999998,
+       "ridge_arx": 0.9917977553749138,
+       "future_all": 0.7784429516972013,
+       "future_rain_mm": 67.0
+      }
+     }
+    }
+   ],
+   "station": {
+    "id": "미호강교",
+    "name": "미호강교",
+    "terrain": "tributary"
+   }
+  }
+ },
+ "summary": {
+  "by_horizon": {
+   "1": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.1434727530081403,
+     "future_3d": 0.2141304911886878,
+     "future_all": 0.2141304911886878
+    },
+    "mean_rmse_m": {
+     "persistence": 0.3236758920459716,
+     "ridge_arx": 0.2985822626661709,
+     "future_3d": 0.28537521916082526,
+     "future_all": 0.28537521916082526
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": 1.320704350534563,
+     "future_all": 1.320704350534563
+    }
+   },
+   "3": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.17631003767621298,
+     "future_3d": 0.29467828610324204,
+     "future_all": 0.29467828610324204
+    },
+    "mean_rmse_m": {
+     "persistence": 0.4988274656364469,
+     "ridge_arx": 0.4515703808271989,
+     "future_3d": 0.41637546594561536,
+     "future_all": 0.41637546594561536
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": 3.519491488158355,
+     "future_all": 3.519491488158355
+    }
+   },
+   "5": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.22968993326204257,
+     "future_3d": 0.2760865216778414,
+     "future_all": 0.3261535634989688
+    },
+    "mean_rmse_m": {
+     "persistence": 0.5956841257926537,
+     "ridge_arx": 0.5240873354060286,
+     "future_3d": 0.5080178842826644,
+     "future_all": 0.4896845412663764
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": 1.6069451123364293,
+     "future_all": 3.440279413965223
+    }
+   },
+   "7": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.24786939745071465,
+     "future_3d": 0.2738874184674548,
+     "future_all": 0.337461436734873
+    },
+    "mean_rmse_m": {
+     "persistence": 0.6405513991791221,
+     "ridge_arx": 0.5599735207490171,
+     "future_3d": 0.5496117245410084,
+     "future_all": 0.5264101735132807
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": 1.03617962080087,
+     "future_all": 3.3563347235736365
+    }
+   },
+   "10": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.2872383240174306,
+     "future_3d": 0.3234954846311945,
+     "future_all": 0.3824040553255898
+    },
+    "mean_rmse_m": {
+     "persistence": 0.7204327540631549,
+     "ridge_arx": 0.6140285906342434,
+     "future_3d": 0.5970235942209602,
+     "future_all": 0.5723522529663396
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": 1.7004996413283084,
+     "future_all": 4.16763376679037
+    }
+   },
+   "14": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.3867274271318571,
+     "future_3d": 0.4080176351019647,
+     "future_all": 0.4685858713765149
+    },
+    "mean_rmse_m": {
+     "persistence": 0.8359720919440695,
+     "ridge_arx": 0.6626643679928526,
+     "future_3d": 0.6493601705530182,
+     "future_all": 0.6177279030319749
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": 1.3304197439834262,
+     "future_all": 4.49364649608777
+    }
+   },
+   "30": {
+    "n_stations": 3,
+    "mean_skill": {
+     "persistence": 0.0,
+     "ridge_arx": 0.4932213104631515,
+     "future_3d": 0.4872763044393496,
+     "future_all": 0.5200940757385957
+    },
+    "mean_rmse_m": {
+     "persistence": 0.9536419725985289,
+     "ridge_arx": 0.6822554531907041,
+     "future_3d": 0.6871638173891482,
+     "future_all": 0.6670316092450289
+    },
+    "mean_delta_rmse_cm": {
+     "future_3d": -0.4908364198444,
+     "future_all": 1.5223843945675275
+    }
+   }
+  },
+  "cells_future_beats_arx": {
+   "future_3d": 16,
+   "future_all": 21
+  },
+  "cells_total": 21
+ },
+ "notes_ko": [
+  "완전 예보 가정(perfect prognosis): 시험 연도의 **실측** 미래 강수를 오차 없는 예보로 간주해 넣었다. 따라서 이 표의 이득은 상한이다.",
+  "실시간 전망에서는 원점 이후 강수가 관측에 없으므로 기상청 단기(3일)·중기 예보가 입력이 되어야 하며, 그 연결은 아직 배선되지 않았다. 예보 오차만큼 이득이 줄어든다.",
+  "future_3d = 원점 이후 3일치 강수만 안다(그 뒤는 0). future_all = 목표일까지 전부 안다. D+1·D+3 에서는 두 변형의 입력이 같아 결과도 같다.",
+  "ridge_arx 는 배포 학습과 같은 격자(mode·p·lam 12개) 중 검증 최상을, ridge_arx_future 는 p=7·delta 고정에 lam∈{10,100} 중 검증 최상을 썼다. 격자가 더 큰 쪽은 AR-X 라 미래 강수 쪽에 유리하게 고른 비교가 아니다.",
+  "공식 성능 수치(evaluation.json·화면의 선택 모델·개선율)에는 이 실험이 들어가지 않는다. 배포 후보 풀은 uses_future_exog 예측기를 제외한다.",
+  "skill = 1 − MSE/MSE_persistence. delta_rmse_cm = RMSE(AR-X) − RMSE(+예보) (양수면 예보가 오차를 줄임).",
+  "강수는 지역 대표 ASOS 1지점 값이다. 상류 유역의 비로 오르는 하류 지점(낙동강 하구 구포대교 2024-07-10~11 급상승 때 부산 강수 32 mm·0 mm)에서는 지역 강수 예보의 이득이 거의 없고, 유역 평균 강수(또는 상류 지점 수위)가 있어야 한다."
+ ],
+ "elapsed_s": 9.9
+}

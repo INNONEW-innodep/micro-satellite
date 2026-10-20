@@ -1,0 +1,29 @@
+{
+  "note_ko": "scripts/fetch_wamis_levels.py --spec 입력. WAMIS 관측소 코드와 지형 분류.",
+  "region_id": "geum_mainstem",
+  "basin": 3,
+  "stations": [
+    {
+      "id": "금남교",
+      "name": "금남교",
+      "code": "3012605",
+      "terrain": "dam_downstream",
+      "terrain_note": "금강 본류 상류·세종(대청댐 하류, 세종보 영향)"
+    },
+    {
+      "id": "금강교",
+      "name": "금강교",
+      "code": "3012620",
+      "terrain": "mainstem",
+      "terrain_note": "금강 본류 중류·공주(공주보 상류)"
+    },
+    {
+      "id": "미호강교",
+      "name": "미호강교",
+      "code": "3011665",
+      "terrain": "tributary",
+      "terrain_note": "미호강 지류·청주(유역이 작아 강우 응답이 빠름)"
+    }
+  ],
+  "data_notes_ko": "금강교·금남교는 2018년 공주보·세종보 수문 개방으로 평수위가 2.5~3 m 낮아진다(실제 변화). 학습 구간 안."
+}

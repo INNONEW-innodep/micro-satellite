@@ -1,0 +1,256 @@
+{
+  "schema": "watercast.region/1",
+  "id": "nakdong_busan",
+  "name": "낙동강 하구 (부산·김해)",
+  "description": "낙동강 하구부 본류·하구언·김해 지류. 초소형위성(ICEYE SAR)·PlanetScope 광학 4시점과 지상 수위계 10개년 자료를 모두 보유한 검증 지역.",
+  "crs": "EPSG:32652",
+  "bbox_wgs84": [
+    128.85,
+    35.05,
+    129.05,
+    35.35
+  ],
+  "weather": {
+    "provider": "KMA_ASOS",
+    "station_id": "159",
+    "station_name": "부산"
+  },
+  "satellite": {
+    "available": true,
+    "sensors": [
+      "ICEYE",
+      "PlanetScope"
+    ],
+    "wbms_testbed": "busan",
+    "scenes": {
+      "ICEYE": [
+        "2020-03-02",
+        "2020-03-30",
+        "2020-04-15",
+        "2020-04-16"
+      ],
+      "PlanetScope": [
+        "2020-02-18",
+        "2020-03-12",
+        "2020-03-25",
+        "2020-04-14"
+      ]
+    },
+    "detection_outputs_dir": "data/wbms_runs/wb",
+    "level_outputs_dir": "data/wbms_runs/fused",
+    "ui_sample_ids": [
+      "busan-nas-water-labels",
+      "iceye-nas-water-labels"
+    ],
+    "levels_file": "satellite/levels.json",
+    "gt_labels_available": true,
+    "scenes_file": "satellite/scenes.json",
+    "locations": {
+      "jeongcheon": {
+        "name_ko": "정천교 부근 조만강",
+        "gauge_station": "정천교",
+        "obscd": "2022685",
+        "river": "조만강",
+        "crs": "EPSG:32652",
+        "bbox_epsg32652": [
+          484750.885,
+          3895936.01,
+          485050.885,
+          3896236.01
+        ],
+        "bbox_lonlat": [
+          [
+            128.832462,
+            35.209022
+          ],
+          [
+            128.835758,
+            35.209026
+          ],
+          [
+            128.835764,
+            35.206321
+          ],
+          [
+            128.832468,
+            35.206316
+          ]
+        ],
+        "center_lonlat": [
+          128.834113,
+          35.207671
+        ],
+        "anchor_lonlat": [
+          128.833611,
+          35.205556
+        ],
+        "snap_distance_m": 240.0,
+        "note_ko": "⚠️ 요건 미충족",
+        "source": "aoi_busan.geojson"
+      },
+      "hupo": {
+        "name_ko": "호포대교 부근 양산천",
+        "gauge_station": "호포대교",
+        "obscd": "2022670",
+        "river": "양산천",
+        "crs": "EPSG:32652",
+        "bbox_epsg32652": [
+          501019.885,
+          3904945.01,
+          501319.885,
+          3905245.01
+        ],
+        "bbox_lonlat": [
+          [
+            129.011216,
+            35.290372
+          ],
+          [
+            129.014516,
+            35.290371
+          ],
+          [
+            129.014515,
+            35.287666
+          ],
+          [
+            129.011216,
+            35.287667
+          ]
+        ],
+        "center_lonlat": [
+          129.012866,
+          35.289019
+        ],
+        "anchor_lonlat": [
+          129.011389,
+          35.289444
+        ],
+        "snap_distance_m": 141.4,
+        "note_ko": "OK",
+        "source": "aoi_busan.geojson"
+      },
+      "gimhae": {
+        "name_ko": "김해교 하류 본류 하도(재설정, 930 m)",
+        "gauge_station": null,
+        "obscd": "2022640",
+        "river": "낙동강",
+        "crs": "EPSG:32652",
+        "bbox_epsg32652": [
+          500188.885,
+          3904672.01,
+          500488.885,
+          3904972.01
+        ],
+        "bbox_lonlat": [
+          [
+            129.002077,
+            35.287911
+          ],
+          [
+            129.005376,
+            35.28791
+          ],
+          [
+            129.005376,
+            35.285205
+          ],
+          [
+            129.002077,
+            35.285205
+          ]
+        ],
+        "center_lonlat": [
+          129.003727,
+          35.286558
+        ],
+        "anchor_lonlat": [
+          128.994167,
+          35.289444
+        ],
+        "snap_distance_m": 930.5,
+        "note_ko": "재설정 2026-08-18 — 구 AOI(관측소 직상)는 서측 급경사 구릉·교량부 혼재로 경계표고 std 0.50~0.93 m·0416 경계확장 outlier. 신 AOI=하류 930 m 본류 하도(wf 0.80~0.82, 사이 수리구조물 없음·김해교 교량만). 선정=사전등록 score + 물리 스크린(경사 0.010~0.30·침수확장비 0.02~0.50) + 하도 횡단 조건(wf 0.3~0.9 전 장면, 1위 후보는 범람원 가장자리 접촉으로 시각검증 기각) 첫 생존자. 근거=_output/dem_compare_busan/gimhae_aoi_{search,rescreen}.csv·gimhae_aoi_adopted2_vis.png",
+        "source": "aoi_busan.geojson"
+      },
+      "gupo": {
+        "name_ko": "구포대교 부근 본류 하도(64 m)",
+        "gauge_station": "구포대교",
+        "obscd": "2022680",
+        "river": "낙동강",
+        "crs": "EPSG:32652",
+        "bbox_epsg32652": [
+          499186.885,
+          3895504.01,
+          499486.885,
+          3895804.01
+        ],
+        "bbox_lonlat": [
+          [
+            128.991067,
+            35.205242
+          ],
+          [
+            128.994363,
+            35.205242
+          ],
+          [
+            128.994363,
+            35.202537
+          ],
+          [
+            128.991067,
+            35.202537
+          ]
+        ],
+        "center_lonlat": [
+          128.992715,
+          35.203889
+        ],
+        "anchor_lonlat": [
+          128.993333,
+          35.203611
+        ],
+        "snap_distance_m": 63.8,
+        "note_ko": "OK",
+        "source": "aoi_busan.geojson"
+      }
+    },
+    "level_area": {
+      "station": "구포대교",
+      "slope_km2_per_m": 0.0,
+      "source": "제방 하도 — 제방 안에서는 면적이 수위에 둔감(2020-02~04 위성 8시점 수위 변동 1.5~9.5 cm)",
+      "note_ko": "범람(제방 월류) 구간의 수위-면적 관계는 미보정. 기울기 0 이면 면적은 출발값과 같다."
+    }
+  },
+  "gauge": {
+    "available": true,
+    "series_file": "gauge/series.json",
+    "satellite_location_links": {
+      "구포대교": "gupo",
+      "정천교": "jeongcheon",
+      "호포대교": "hupo"
+    },
+    "notes": "WBMS 위성 수위 산출 지점 4곳(jeongcheon·hupo·gimhae·gupo) 중 WAMIS 일 수위계와 연결한 곳은 구포대교(gupo, 2022680)·정천교(jeongcheon, 2022685)·호포대교(hupo, 2022670) 3곳. gimhae(2022640)는 공개 일 수위계가 없다."
+  },
+  "forecast": {
+    "artifacts_dir": "models/gauge",
+    "horizons_report": [
+      1,
+      3,
+      5,
+      7,
+      10,
+      14,
+      30
+    ],
+    "horizon_max": 30,
+    "split": {
+      "train_end": "2018-12-31",
+      "val_start": "2019-01-01",
+      "val_end": "2023-12-31",
+      "test_start": "2024-01-01",
+      "test_end": "2024-12-31"
+    },
+    "split_note": "검증 2019~2023은 연도별 5폴드 rolling-origin(각 폴드는 그 해 이전 전부로 학습). 시험 2024는 학습·선택에 미사용."
+  }
+}

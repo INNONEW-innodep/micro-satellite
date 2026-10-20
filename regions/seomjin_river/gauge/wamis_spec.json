@@ -1,0 +1,29 @@
+{
+  "note_ko": "scripts/fetch_wamis_levels.py --spec 입력. WAMIS 관측소 코드와 지형 분류.",
+  "region_id": "seomjin_river",
+  "basin": 4,
+  "stations": [
+    {
+      "id": "회문리",
+      "name": "회문리",
+      "code": "4002610",
+      "terrain": "dam_downstream",
+      "terrain_note": "섬진강댐 직하류·방류 조절 영향"
+    },
+    {
+      "id": "구례교",
+      "name": "구례교",
+      "code": "4009610",
+      "terrain": "mainstem",
+      "terrain_note": "섬진강 본류 중류·구례"
+    },
+    {
+      "id": "읍내리",
+      "name": "읍내리",
+      "code": "4009665",
+      "terrain": "mainstem_tidal",
+      "terrain_note": "섬진강 본류 하류·하동(감조 영향)"
+    }
+  ],
+  "data_notes_ko": "구례교(+1 m)·읍내리(+4 m)는 2017년에 수위 기준면이 바뀐다. 회문리는 섬진강댐 방류 조절로 정체 구간이 잦다."
+}
