@@ -1,0 +1,1900 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; font-src 'self'">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>WATERCAST 모델 평가</title>
+<style>
+  :root {
+    --bg: #f3f5f8;
+    --bg-soft: #f7f9fb;
+    --card: #ffffff;
+    --ink: #16202c;
+    --muted: #5e6b7a;
+    --line: #e2e7ee;
+    --line-strong: #c6cfd9;
+    --accent: #0f6fd1;
+    --accent-strong: #0b58a8;
+    --accent-soft: #e8f1fc;
+    --accent-ring: rgba(15, 111, 209, .35);
+    --ok: #178a4c;
+    --ok-soft: #e4f5ea;
+    --warn-bg: #fff6d6;
+    --warn-ink: #7a5a00;
+    --warn-line: #f0dc93;
+    --err: #c62828;
+    --err-bg: #fdecec;
+    --err-line: #f3b9b9;
+    --radius: 18px;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 10px 30px rgba(16, 24, 40, .06);
+    /* 차트 계열색 (범주형 고정 순서) */
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #4a3aa7; --s5: #e87ba4;
+    --grid: #e6e9ee; --axis: #c3c9d2; --dim: #c2cad3;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 16px; -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Pretendard", "Noto Sans KR", "Noto Sans CJK KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5; -webkit-font-smoothing: antialiased;
+  }
+  [hidden] { display: none !important; }
+  .wrap { width: min(1380px, 100% - 48px); margin: 0 auto; }
+  :focus-visible { outline: 3px solid var(--accent-ring); outline-offset: 2px; border-radius: 8px; }
+  .muted { color: var(--muted); }
+  .small { font-size: .9rem; }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .9em; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 6px; padding: 1px 6px; }
+
+  /* ---------- 상단 바 ---------- */
+  .topbar { position: sticky; top: 0; z-index: 30; background: rgba(255,255,255,.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  .topbar__inner { display: flex; align-items: center; gap: 22px; padding: 10px 0; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand__logo { width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #0f6fd1, #39a0f0); display: grid; place-items: center; color: #fff; box-shadow: 0 6px 14px rgba(15,111,209,.28); }
+  .brand__logo svg { width: 24px; height: 24px; }
+  .brand__name { font-weight: 800; font-size: 1.1rem; letter-spacing: .02em; line-height: 1.2; }
+  .brand__sub { color: var(--muted); font-size: .85rem; }
+  .tabs { display: flex; align-items: center; gap: 4px; flex: 1; }
+  .tab { font: inherit; font-weight: 700; color: var(--muted); text-decoration: none; padding: 9px 16px; border-radius: 12px; background: transparent; border: 0; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; line-height: 1.2; }
+  .tab:hover { background: var(--bg); color: var(--ink); }
+  .tab.is-active { background: var(--accent-soft); color: var(--accent-strong); }
+  .menu { position: relative; }
+  .menu summary { list-style: none; }
+  .menu summary::-webkit-details-marker { display: none; }
+  .menu summary::after { content: ""; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: translateY(-2px) rotate(45deg); margin-left: 2px; }
+  .menu__list { position: absolute; right: 0; top: calc(100% + 8px); min-width: 240px; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); padding: 8px; z-index: 40; }
+  .menu__list a, .menu__list button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 12px; font: inherit; font-weight: 600; color: var(--ink); text-decoration: none; padding: 10px 12px; border-radius: 10px; border: 0; background: none; cursor: pointer; text-align: left; }
+  .menu__list a:hover, .menu__list button:hover { background: var(--bg); }
+  .menu__list .sub { color: var(--muted); font-size: .82rem; font-weight: 600; }
+  .health { display: flex; align-items: center; gap: 10px; font-size: .9rem; color: var(--muted); padding: 7px 14px; border-radius: 999px; background: var(--bg-soft); border: 1px solid var(--line); white-space: nowrap; }
+  .health .dot { width: 10px; height: 10px; border-radius: 50%; background: #aab4bf; flex: none; }
+  .health.is-ok .dot { background: var(--ok); box-shadow: 0 0 0 4px rgba(23,138,76,.16); }
+  .health.is-bad .dot { background: var(--err); box-shadow: 0 0 0 4px rgba(198,40,40,.16); }
+  .health .ver { color: #8b97a5; font-variant-numeric: tabular-nums; }
+
+  /* ---------- 레이아웃 ---------- */
+  .intro { margin: 26px 0 18px; display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+  .intro h1 { font-size: 1.6rem; margin: 0 0 4px; letter-spacing: -.01em; }
+  .intro p { margin: 0; color: var(--muted); }
+  .flow { display: flex; gap: 6px; flex-wrap: wrap; }
+  .flow a { font-size: .85rem; font-weight: 700; color: var(--muted); text-decoration: none; background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; }
+  .flow a:hover { color: var(--accent-strong); border-color: var(--accent); }
+  .layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 24px; align-items: start; }
+  .panel { position: sticky; top: 76px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 22px 22px 18px; }
+  .panel h2 { margin: 0 0 4px; font-size: 1.15rem; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .panel__region { color: var(--muted); font-weight: 700; margin-bottom: 14px; min-height: 1.4em; word-break: keep-all; }
+  .ready { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .ready li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--line); align-items: start; }
+  .ready .st { width: 18px; height: 18px; border-radius: 50%; margin-top: 3px; background: var(--line-strong); display: grid; place-items: center; color: #fff; }
+  .ready .st svg { width: 12px; height: 12px; }
+  .ready .st.is-ok { background: var(--ok); }
+  .ready .st.is-no { background: var(--line-strong); }
+  .ready .st.is-part { background: #e0a800; }
+  .ready .k { font-weight: 700; font-size: .95rem; }
+  .ready .v { color: var(--muted); font-size: .88rem; margin-top: 1px; word-break: keep-all; }
+  .next { margin: 16px 0 0; }
+  .next__title { font-weight: 800; font-size: .95rem; margin-bottom: 8px; }
+  .next ol { margin: 0; padding-left: 0; list-style: none; }
+  .next li { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; font-size: .92rem; }
+  .next li::before { content: ""; flex: none; width: 16px; height: 16px; border: 2px solid var(--line-strong); border-radius: 5px; margin-top: 3px; }
+  .next li.is-done { color: var(--muted); text-decoration: line-through; }
+  .next li.is-done::before { background: var(--ok); border-color: var(--ok); }
+  .next .all-done { color: var(--ok); font-weight: 700; font-size: .95rem; margin: 0; }
+  .panel__foot { margin-top: 14px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .btn--mini { padding: 7px 12px; font-size: .85rem; border-radius: 10px; }
+
+  /* ---------- 카드 ---------- */
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 26px 28px; margin-bottom: 20px; box-shadow: var(--shadow); animation: rise .4s ease-out both; scroll-margin-top: 80px; }
+  .card__title { display: flex; align-items: center; gap: 12px; font-size: 1.25rem; margin: 0 0 6px; letter-spacing: -.01em; }
+  .card__title .num { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #fff; font-size: .95rem; font-weight: 800; }
+  .card__title .num--done { background: var(--ok); }
+  .card__title .num--muted { background: #8b97a5; }
+  .card__title .spacer { flex: 1; }
+  .card__lead { color: var(--muted); margin: 0 0 20px; font-size: .97rem; }
+  .card.is-locked { opacity: .78; }
+  .lock { display: inline-flex; align-items: center; gap: 6px; font-size: .82rem; font-weight: 700; color: var(--muted); background: var(--bg); border-radius: 999px; padding: 4px 10px; }
+  .lock svg { width: 14px; height: 14px; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  h3.sub { font-size: 1.02rem; margin: 22px 0 10px; display: flex; align-items: center; gap: 10px; }
+  h3.sub .tag { font-size: .78rem; font-weight: 700; color: var(--muted); background: var(--bg); border-radius: 999px; padding: 2px 9px; }
+
+  /* ---------- 입력 ---------- */
+  .field { margin-bottom: 18px; min-width: 0; }
+  .field:last-child { margin-bottom: 0; }
+  .field > label, .field > legend, .field__label { display: block; font-weight: 700; margin-bottom: 7px; font-size: .95rem; padding: 0; }
+  .field__hint { color: var(--muted); font-size: .86rem; margin-top: 6px; }
+  fieldset.field { border: 0; padding: 0; margin-left: 0; margin-right: 0; }
+  select, input[type="date"], input[type="text"], input[type="number"], input[type="search"], textarea {
+    font: inherit; font-size: .97rem; color: var(--ink); background: #fff;
+    border: 1.5px solid var(--line-strong); border-radius: 11px; padding: 9px 12px; width: 100%; min-height: 44px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  select { appearance: none; -webkit-appearance: none; padding-right: 40px; }
+  select:disabled, input:disabled { background: var(--bg-soft); color: var(--muted); }
+  .select-wrap { position: relative; }
+  .select-wrap::after { content: ""; position: absolute; right: 17px; top: 50%; width: 9px; height: 9px; border-right: 2.5px solid var(--muted); border-bottom: 2.5px solid var(--muted); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+  select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent-ring); outline-offset: 1px; border-color: var(--accent); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .row--3 { grid-template-columns: repeat(3, 1fr); }
+  .row--4 { grid-template-columns: repeat(4, 1fr); }
+  .row--5 { grid-template-columns: repeat(5, 1fr); }
+  .row--search { grid-template-columns: 180px 1fr auto; align-items: end; }
+  .segment { display: inline-flex; background: var(--bg); border-radius: 12px; padding: 4px; gap: 4px; margin-bottom: 18px; }
+  .segment button { font: inherit; font-weight: 700; border: 0; background: transparent; color: var(--muted); padding: 8px 16px; border-radius: 9px; cursor: pointer; }
+  .segment button.is-active { background: #fff; color: var(--accent-strong); box-shadow: 0 1px 3px rgba(16,24,40,.12); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-size: .86rem; font-weight: 700; padding: 5px 12px; border-radius: 999px; background: var(--bg); color: var(--muted); }
+  .chip.is-ok { background: var(--ok-soft); color: #14673a; }
+  .chip.is-no { background: #eef1f5; color: #6b7785; }
+  .checks { border: 1.5px solid var(--line); border-radius: 12px; max-height: 260px; overflow: auto; background: #fff; }
+  .checks label { display: grid; grid-template-columns: 22px 92px 1fr 1fr 1.6fr; gap: 10px; align-items: center; padding: 9px 12px; border-bottom: 1px solid var(--line); cursor: pointer; font-size: .92rem; }
+  .checks label:last-child { border-bottom: 0; }
+  .checks label:hover { background: var(--bg-soft); }
+  .checks input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+  .checks .code { font-variant-numeric: tabular-nums; color: var(--muted); }
+  .checks .name { font-weight: 700; }
+  .checks .addr { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .checks .empty { grid-column: 1 / -1; color: var(--muted); padding: 10px 0; text-align: center; }
+  .fc-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px 16px; }
+  .fc-list label { display: flex; align-items: flex-start; gap: 10px; padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 11px; cursor: pointer; background: #fff; font-size: .92rem; }
+  .fc-list label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
+  .fc-list input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); flex: none; }
+  .fc-list .fc-name { font-weight: 700; }
+  .fc-list .fc-desc { color: var(--muted); font-size: .82rem; display: block; margin-top: 1px; }
+  .fc-list .tag { display: inline-block; font-size: .74rem; font-weight: 700; color: var(--warn-ink); background: var(--warn-bg); border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: middle; }
+  .fc-list .tag--plugin { color: var(--accent-strong); background: var(--accent-soft); }
+  .filebtn { display: inline-flex; align-items: center; gap: 10px; position: relative; }
+  .filebtn input[type="file"] { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  details.more { border: 1.5px solid var(--line); border-radius: 14px; padding: 0 18px; background: var(--bg-soft); margin-top: 20px; }
+  details.more summary { cursor: pointer; font-weight: 700; padding: 13px 0; list-style: none; display: flex; align-items: center; gap: 10px; color: var(--accent-strong); }
+  details.more summary::-webkit-details-marker { display: none; }
+  details.more summary::before { content: ""; width: 9px; height: 9px; border-right: 2.5px solid currentColor; border-bottom: 2.5px solid currentColor; transform: rotate(-45deg); transition: transform .2s; margin-left: 4px; }
+  details.more[open] summary::before { transform: rotate(45deg); }
+  details.more .more__body { padding: 4px 0 18px; }
+
+  /* ---------- 버튼 ---------- */
+  .btn { font: inherit; font-weight: 700; border: 0; border-radius: 12px; padding: 11px 20px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; line-height: 1.2; transition: transform .08s, box-shadow .15s, background .15s, color .15s; color: var(--ink); background: var(--bg); white-space: nowrap; }
+  .btn svg { width: 20px; height: 20px; flex: none; }
+  .btn--primary { background: var(--accent); color: #fff; box-shadow: 0 8px 18px rgba(15,111,209,.26); }
+  .btn--primary:hover:not(:disabled) { background: var(--accent-strong); transform: translateY(-1px); }
+  .btn:disabled { background: #cdd6e0; color: #fff; box-shadow: none; cursor: not-allowed; }
+  .btn--lg { font-size: 1.05rem; padding: 14px 30px; border-radius: 14px; }
+  .btn--secondary { background: var(--accent-soft); color: var(--accent-strong); }
+  .btn--secondary:hover:not(:disabled) { background: #d9e8fa; }
+  .btn--ghost { background: #fff; color: var(--accent-strong); border: 1.5px solid var(--line-strong); }
+  .btn--ghost:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
+  .btn--ghost:disabled { background: var(--bg-soft); color: #9aa6b3; border-color: var(--line); }
+  .start-row { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-top: 20px; }
+  .start-row .hint { color: var(--muted); margin: 0; font-size: .92rem; }
+
+  /* ---------- 진행 ---------- */
+  .progress { margin-top: 20px; }
+  .progress-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 10px; flex-wrap: wrap; }
+  .progress-status { font-size: 1.02rem; font-weight: 700; }
+  .elapsed { color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 600; font-size: .9rem; }
+  .bar { height: 12px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .bar__fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), #4ea1f3); border-radius: 999px; transition: width .6s ease; position: relative; }
+  .bar__fill.is-active::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent); animation: shimmer 1.4s linear infinite; }
+  .bar__fill.is-done { background: linear-gradient(90deg, var(--ok), #3fbf7a); }
+  .bar__fill.is-failed { background: linear-gradient(90deg, var(--err), #e57373); }
+  @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+  .spin { animation: spin 1s linear infinite; transform-origin: 50% 50%; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- 표 ---------- */
+  .table-wrap { overflow-x: auto; margin-top: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th { text-align: left; color: var(--muted); font-weight: 700; padding: 9px 10px; border-bottom: 2px solid var(--line); font-size: .85rem; white-space: nowrap; }
+  td { padding: 10px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.num { font-weight: 600; }
+  tr.is-selected td { background: var(--accent-soft); }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: .8rem; font-weight: 700; white-space: nowrap; }
+  .badge--done { background: var(--ok-soft); color: #14673a; }
+  .badge--running { background: var(--accent-soft); color: var(--accent-strong); }
+  .badge--queued, .badge--pending { background: #eef1f5; color: #4d5b6b; }
+  .badge--failed { background: var(--err-bg); color: var(--err); }
+  .badge--skipped, .badge--warn { background: var(--warn-bg); color: var(--warn-ink); }
+  .badge--sel { background: var(--accent); color: #fff; }
+  .skill { display: inline-block; min-width: 64px; text-align: right; padding: 3px 8px; border-radius: 8px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .skill--pos { background: var(--ok-soft); color: #14673a; }
+  .skill--neg { background: var(--err-bg); color: var(--err); }
+  .skill--zero { background: #eef1f5; color: #4d5b6b; }
+  .matrix td { vertical-align: top; }
+  .matrix .cell { line-height: 1.35; }
+  .matrix .cell .m { font-weight: 800; font-size: .86rem; display: block; word-break: keep-all; }
+  .matrix .cell .s { color: var(--muted); font-size: .8rem; display: block; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .matrix .cell .skill { margin-top: 4px; min-width: 0; font-size: .8rem; padding: 2px 7px; }
+  .matrix th.st, .matrix td.st { position: sticky; left: 0; background: #fff; z-index: 1; font-weight: 800; }
+  .empty { color: var(--muted); text-align: center; padding: 22px 0 8px; margin: 0; font-size: .97rem; }
+  .note { border-radius: 12px; padding: 12px 16px; font-size: .92rem; margin-top: 16px; }
+  .note ul { margin: 6px 0 0; padding-left: 20px; }
+  .note--warn { background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-line); }
+  .note--error { background: var(--err-bg); color: var(--err); border: 1px solid var(--err-line); }
+  .note--info { background: var(--accent-soft); color: var(--accent-strong); }
+  .note--ok { background: var(--ok-soft); color: #14673a; }
+  .note__title { font-weight: 800; }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 14px 0 6px; }
+  .stat { background: var(--bg-soft); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; min-width: 0; }
+  .stat__label { color: var(--muted); font-size: .82rem; font-weight: 700; }
+  .stat__value { font-size: 1.35rem; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; margin-top: 2px; word-break: keep-all; }
+  .stat__value small { font-size: .85rem; font-weight: 700; color: var(--muted); margin-left: 3px; }
+
+  /* ---------- 차트 ---------- */
+  .chart { position: relative; margin-top: 10px; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .chart .axis text { font-size: 11px; fill: #7b8794; font-variant-numeric: tabular-nums; }
+  .chart .grid line { stroke: var(--grid); stroke-width: 1; }
+  .chart .axis line { stroke: var(--axis); stroke-width: 1; }
+  .chart .mark text { font-size: 11px; fill: var(--muted); font-weight: 700; }
+  .chart .xhair { stroke: #8b97a5; stroke-width: 1; pointer-events: none; }
+  .chart .tip { position: absolute; z-index: 5; background: rgba(22,32,44,.96); color: #fff; border-radius: 10px; padding: 8px 12px; font-size: .82rem; pointer-events: none; min-width: 150px; box-shadow: 0 8px 20px rgba(0,0,0,.2); }
+  .chart .tip .d { font-weight: 800; margin-bottom: 4px; font-variant-numeric: tabular-nums; }
+  .chart .tip .r { display: flex; justify-content: space-between; gap: 14px; align-items: center; line-height: 1.5; }
+  .chart .tip .k { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+  .chart .tip .n { color: #cfd6de; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+  .chart .tip .v { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px; font-size: .85rem; }
+  .legend .it { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-weight: 600; background: none; border: 0; font: inherit; padding: 3px 6px; border-radius: 8px; cursor: default; }
+  .legend .it.is-btn { cursor: pointer; }
+  .legend .it.is-btn:hover { background: var(--bg); color: var(--ink); }
+  .legend .it.is-on { color: var(--ink); background: var(--bg); }
+  .legend .k { width: 18px; height: 0; border-top: 3px solid; border-radius: 2px; }
+  .legend .k.is-dash { border-top-style: dashed; }
+  .legend .k.is-area { height: 10px; border: 0; border-radius: 3px; opacity: .35; }
+  .legend-hint { color: var(--muted); font-size: .82rem; margin-top: 4px; }
+  .timeline { margin: 12px 0 4px; }
+  .timeline svg { width: 100%; height: auto; display: block; }
+  .timeline text { font-size: 12px; fill: var(--muted); font-weight: 700; }
+  .timeline .lab { fill: var(--ink); font-size: 12.5px; }
+
+  /* ---------- 대화상자 ---------- */
+  dialog { border: 0; border-radius: 18px; padding: 0; width: min(720px, 92vw); box-shadow: 0 30px 80px rgba(0,0,0,.3); }
+  dialog::backdrop { background: rgba(16,24,40,.45); }
+  .dlg { padding: 28px 30px; }
+  .dlg h2 { margin: 0 0 6px; font-size: 1.35rem; }
+  .dlg h3 { font-size: 1rem; margin: 18px 0 6px; }
+  .dlg p, .dlg li { color: var(--ink); font-size: .95rem; }
+  .dlg ol, .dlg ul { padding-left: 20px; margin: 4px 0; }
+  .dlg dl { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; margin: 6px 0 0; font-size: .92rem; }
+  .dlg dt { font-weight: 800; }
+  .dlg dd { margin: 0; color: var(--muted); }
+  .dlg__foot { display: flex; justify-content: flex-end; margin-top: 20px; }
+
+  footer { color: var(--muted); font-size: .88rem; padding: 10px 0 40px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  footer a { color: var(--accent-strong); font-weight: 700; }
+
+  @media (max-width: 1120px) {
+    .layout { grid-template-columns: 1fr; }
+    .panel { position: static; }
+    .row--5 { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 760px) {
+    .wrap { width: min(1380px, 100% - 28px); }
+    .card { padding: 20px 18px; }
+    .row, .row--3, .row--4, .row--5, .row--search, .fc-list, .stats { grid-template-columns: 1fr; }
+    .checks label { grid-template-columns: 22px 1fr; }
+    .checks .code, .checks .river, .checks .addr { display: none; }
+    .topbar__inner { flex-wrap: wrap; }
+    .tabs { order: 3; width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar__inner">
+    <div class="brand">
+      <div class="brand__logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14c2-2.5 4-2.5 6 0s4 2.5 6 0 4-2.5 6 0"/><path d="M3 19c2-2.5 4-2.5 6 0s4 2.5 6 0 4-2.5 6 0"/><path d="M12 3v5"/><path d="M8.5 6.5 12 8l3.5-1.5"/></svg>
+      </div>
+      <div>
+        <div class="brand__name">WATERCAST</div>
+        <div class="brand__sub">모델 평가</div>
+      </div>
+    </div>
+    <nav class="tabs" aria-label="화면">
+      <a class="tab" href="/app">서비스</a>
+      <a class="tab is-active" href="/eval" aria-current="page">모델 평가</a>
+      <span style="flex:1"></span>
+      <details class="menu" id="helpMenu">
+        <summary class="tab" role="button" aria-haspopup="true">도움말</summary>
+        <div class="menu__list">
+          <button type="button" id="helpBtn">이 화면 설명 <span class="sub">모달</span></button>
+          <a href="/easy">쉬운 화면 <span class="sub">/easy</span></a>
+          <a id="expertLink" href="#" target="_blank" rel="noopener">전문가 화면 <span class="sub">:8501</span></a>
+          <a href="/docs" target="_blank" rel="noopener">API 문서 <span class="sub">/docs</span></a>
+        </div>
+      </details>
+    </nav>
+    <div class="health" id="health" role="status" aria-live="polite">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="healthText">연결 확인 중…</span>
+      <span class="ver" id="healthVer"></span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <div class="intro">
+    <div>
+      <h1>새 지역을 올리고 수위 예측 모델의 성능을 확인해요</h1>
+      <p>지역 → 수위 자료 → 기상 자료 → 학습 → 성능 평가 → 시험. 왼쪽 준비 상태를 보고 다음 할 일을 따라가면 돼요.</p>
+    </div>
+    <div class="flow" aria-label="단계 바로가기">
+      <a href="#step1">① 지역</a><a href="#step2">② 수위 자료</a><a href="#step3">③ 기상 자료</a><a href="#step4">④ 학습</a><a href="#step5">⑤ 성능 평가</a><a href="#step6">⑥ 시험</a>
+    </div>
+  </div>
+
+  <div class="note note--error" id="globalNote" hidden role="alert" style="margin:0 0 18px"></div>
+
+  <div class="layout">
+    <!-- 준비 상태 -->
+    <aside class="panel" id="readyPanel" aria-labelledby="readyTitle">
+      <h2 id="readyTitle">준비 상태 <span class="small muted" id="readyWhen"></span></h2>
+      <div class="panel__region" id="readyRegion">지역을 먼저 골라 주세요</div>
+      <ul class="ready" id="readyList">
+        <li><span class="st is-no" aria-hidden="true"></span><div><div class="k">수위 자료</div><div class="v" id="rdGauge">—</div></div></li>
+        <li><span class="st is-no" aria-hidden="true"></span><div><div class="k">기상 자료</div><div class="v" id="rdWeather">—</div></div></li>
+        <li><span class="st is-no" aria-hidden="true"></span><div><div class="k">학습</div><div class="v" id="rdModels">—</div></div></li>
+        <li><span class="st is-no" aria-hidden="true"></span><div><div class="k">위성 장면</div><div class="v" id="rdSat">—</div></div></li>
+      </ul>
+      <div class="next" id="readyNext" hidden>
+        <div class="next__title">다음 할 일</div>
+        <ol id="readyNextList"></ol>
+      </div>
+      <div class="note note--error small" id="readyNote" hidden role="status" style="margin-top:12px"></div>
+      <div class="panel__foot">
+        <span class="small muted" id="readyHint"></span>
+        <button class="btn btn--ghost btn--mini" type="button" id="readyRefresh" disabled>새로 고침</button>
+      </div>
+    </aside>
+
+    <div class="steps">
+      <!-- ① 지역 -->
+      <section class="card" id="step1" aria-labelledby="step1Title">
+        <h2 class="card__title" id="step1Title"><span class="num" id="num1" aria-hidden="true">1</span>지역</h2>
+        <p class="card__lead">이미 등록된 지역을 고르거나, 새 지역을 만들어요. 고른 지역은 이 브라우저에 기억돼요.</p>
+        <div class="segment" role="tablist" aria-label="지역 선택 방식">
+          <button type="button" class="is-active" data-mode="existing" role="tab" aria-selected="true">기존 지역 고르기</button>
+          <button type="button" data-mode="new" role="tab" aria-selected="false">새 지역 만들기</button>
+        </div>
+        <div id="regionExisting">
+          <div class="row">
+            <div class="field">
+              <label for="regionSelect">지역</label>
+              <div class="select-wrap"><select id="regionSelect"><option value="">지역 목록을 불러오는 중…</option></select></div>
+              <div class="field__hint" id="regionHint"></div>
+            </div>
+            <div class="field">
+              <span class="field__label">이 지역이 가진 것</span>
+              <div class="chips" id="regionChips" style="margin-top:4px"><span class="chip is-no">지역을 고르면 표시돼요</span></div>
+            </div>
+          </div>
+        </div>
+        <form id="regionNew" hidden novalidate>
+          <div class="row row--3">
+            <div class="field">
+              <label for="nrId">지역 ID</label>
+              <input type="text" id="nrId" placeholder="예: geum_sejong" autocomplete="off" pattern="[a-z0-9_-]+" required>
+              <div class="field__hint">영문 소문자·숫자·<code>_</code>·<code>-</code> 만</div>
+            </div>
+            <div class="field">
+              <label for="nrName">이름</label>
+              <input type="text" id="nrName" placeholder="예: 금강 세종" autocomplete="off" required>
+            </div>
+            <div class="field">
+              <label for="nrDesc">설명 (선택)</label>
+              <input type="text" id="nrDesc" placeholder="무엇을 보는 지역인지" autocomplete="off">
+            </div>
+          </div>
+          <fieldset class="field">
+            <legend>범위 (선택) — 경위도 네 숫자</legend>
+            <div class="row row--4">
+              <input type="number" id="nrW" step="0.0001" placeholder="서쪽 경도 (예 127.20)" aria-label="서쪽 경도">
+              <input type="number" id="nrS" step="0.0001" placeholder="남쪽 위도 (예 36.40)" aria-label="남쪽 위도">
+              <input type="number" id="nrE" step="0.0001" placeholder="동쪽 경도 (예 127.40)" aria-label="동쪽 경도">
+              <input type="number" id="nrN" step="0.0001" placeholder="북쪽 위도 (예 36.60)" aria-label="북쪽 위도">
+            </div>
+            <div class="field__hint">모르면 비워 두세요. 나중에 위성 장면을 넣을 때 필요해요.</div>
+          </fieldset>
+          <div class="start-row">
+            <button class="btn btn--primary" type="submit" id="nrSubmit">지역 만들기</button>
+            <p class="hint" id="nrHint">만들면 바로 이 지역이 선택되고 ② 수위 자료 수집으로 넘어가요.</p>
+          </div>
+          <div class="note note--error" id="nrError" hidden role="alert"></div>
+        </form>
+        <div class="note note--error" id="step1Error" hidden role="alert"></div>
+      </section>
+
+      <!-- ② 수위 자료 수집 -->
+      <section class="card" id="step2" aria-labelledby="step2Title">
+        <h2 class="card__title" id="step2Title"><span class="num" id="num2" aria-hidden="true">2</span>수위 자료 수집<span class="spacer"></span><span class="lock" id="lock2" hidden>지역을 먼저 고르세요</span></h2>
+        <p class="card__lead">WAMIS(국가수자원관리종합정보) 수위 관측소를 찾아 고르고, 기간을 정해 일 단위 수위를 가져와요. 파일이 있으면 아래 "CSV 파일로 올리기"를 쓰세요.</p>
+        <div class="row row--search">
+          <div class="field">
+            <label for="basin">유역</label>
+            <div class="select-wrap"><select id="basin">
+              <option value="1">한강</option><option value="2">낙동강</option><option value="3">금강</option><option value="4">섬진강</option><option value="5">영산강</option>
+            </select></div>
+          </div>
+          <div class="field">
+            <label for="wamisQuery">관측소 검색어</label>
+            <input type="search" id="wamisQuery" placeholder="관측소 이름·하천·주소 일부 (예: 구포, 금강, 세종)" autocomplete="off">
+          </div>
+          <div class="field">
+            <button class="btn btn--secondary" type="button" id="wamisSearch">검색</button>
+          </div>
+        </div>
+        <div class="field">
+          <span class="field__label">검색 결과 <span class="muted small" id="wamisCount"></span></span>
+          <div class="checks" id="wamisResults" role="group" aria-label="관측소 검색 결과"><div class="empty" style="padding:14px">유역을 고르고 검색어를 넣어 검색해 주세요.</div></div>
+          <div class="note note--error" id="wamisError" hidden role="alert"></div>
+        </div>
+        <div class="field" id="pickedBox" hidden>
+          <span class="field__label">고른 관측소 <span class="muted small" id="pickedCount"></span></span>
+          <div class="table-wrap" style="margin-top:0">
+            <table>
+              <thead><tr><th scope="col">관측소</th><th scope="col">코드</th><th scope="col">하천</th><th scope="col">지형 (예측 모델 힌트)</th><th scope="col"></th></tr></thead>
+              <tbody id="pickedBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="row row--3">
+          <div class="field"><label for="gaugeStart">시작일</label><input type="date" id="gaugeStart"></div>
+          <div class="field"><label for="gaugeEnd">종료일</label><input type="date" id="gaugeEnd"></div>
+          <div class="field"><label for="minCoverage">최소 자료 비율</label>
+            <div class="select-wrap"><select id="minCoverage"><option value="0.85" selected>85 % (기본)</option><option value="0.7">70 %</option><option value="0.95">95 %</option></select></div>
+            <div class="field__hint">이보다 결측이 많은 관측소는 건너뛰어요.</div>
+          </div>
+        </div>
+        <div class="start-row">
+          <button class="btn btn--primary btn--lg" type="button" id="collectBtn" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+            수집 시작
+          </button>
+          <p class="hint" id="collectHint">관측소를 하나 이상 고르면 시작할 수 있어요.</p>
+        </div>
+        <div class="note note--error" id="collectError" hidden role="alert"></div>
+        <div class="progress" id="collectProgress" hidden>
+          <div class="progress-head"><div class="progress-status" id="collectStatus">수집을 준비하고 있어요…</div><div class="elapsed" id="collectElapsed"></div></div>
+          <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="collectBarWrap"><div class="bar__fill is-active" id="collectBar"></div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">관측소</th><th scope="col" class="num">자료 일수</th><th scope="col" class="num">자료 비율</th><th scope="col">상태</th><th scope="col">비고</th></tr></thead>
+              <tbody id="collectBody"></tbody>
+            </table>
+          </div>
+          <div class="note note--ok" id="collectDone" hidden></div>
+        </div>
+        <details class="more" id="csvBox">
+          <summary>CSV 파일로 올리기 (WAMIS 대신 직접 가진 자료)</summary>
+          <div class="more__body">
+            <p class="muted small" style="margin:0 0 12px">열 이름은 <code>date</code>, <code>water_level_m</code> 면 돼요. 같은 날짜가 있으면 새 값으로 바꿔요.</p>
+            <div class="row row--4" style="align-items:end">
+              <div class="field"><label for="csvStation">관측소 이름 (ID)</label><input type="text" id="csvStation" placeholder="예: 세종보" autocomplete="off"></div>
+              <div class="field"><label for="csvTerrain">지형</label><div class="select-wrap"><select id="csvTerrain"></select></div></div>
+              <div class="field">
+                <span class="field__label">파일</span>
+                <label class="btn btn--ghost filebtn" for="csvFile">파일 고르기<input type="file" id="csvFile" accept=".csv,.json,text/csv,application/json"></label>
+                <span class="muted small" id="csvFileName" style="margin-left:10px">선택 안 함</span>
+              </div>
+              <div class="field"><button class="btn btn--secondary" type="button" id="csvBtn" disabled>올리기</button></div>
+            </div>
+            <div class="note note--ok" id="csvResult" hidden></div>
+            <div class="note note--error" id="csvError" hidden role="alert"></div>
+          </div>
+        </details>
+      </section>
+
+      <!-- ③ 기상 자료 수집 -->
+      <section class="card" id="step3" aria-labelledby="step3Title">
+        <h2 class="card__title" id="step3Title"><span class="num" id="num3" aria-hidden="true">3</span>기상 자료 수집<span class="spacer"></span><span class="lock" id="lock3" hidden>지역을 먼저 고르세요</span></h2>
+        <p class="card__lead">기상청 ASOS 지점의 일 강수·기온을 연도별로 가져와요. 기상 입력을 쓰는 모델(AR-X·신경망)에 필요해요.</p>
+        <div class="row row--3">
+          <div class="field">
+            <label for="asosStation">ASOS 지점</label>
+            <div class="select-wrap"><select id="asosStation"><option value="">지점 목록을 불러오는 중…</option></select></div>
+            <div class="field__hint" id="asosHint"></div>
+          </div>
+          <div class="field"><label for="wxStart">시작일</label><input type="date" id="wxStart"></div>
+          <div class="field"><label for="wxEnd">종료일</label><input type="date" id="wxEnd"></div>
+        </div>
+        <div class="start-row">
+          <button class="btn btn--primary btn--lg" type="button" id="wxBtn" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 17.6A5 5 0 0 0 18 8h-1.3A7 7 0 1 0 6 16.9"/><path d="M8 19l2-3"/><path d="M12 21l2-3"/><path d="M16 19l2-3"/></svg>
+            수집 시작
+          </button>
+          <p class="hint" id="wxHint">지점과 기간을 고르면 시작할 수 있어요.</p>
+        </div>
+        <div class="note note--error" id="wxError" hidden role="alert"></div>
+        <div class="progress" id="wxProgress" hidden>
+          <div class="progress-head"><div class="progress-status" id="wxStatus">수집을 준비하고 있어요…</div><div class="elapsed" id="wxElapsed"></div></div>
+          <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="wxBarWrap"><div class="bar__fill is-active" id="wxBar"></div></div>
+          <div class="note note--warn" id="wxSourceNote" hidden role="status"></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">연도</th><th scope="col" class="num">자료 일수</th><th scope="col">상태</th><th scope="col">비고</th></tr></thead>
+              <tbody id="wxBody"></tbody>
+            </table>
+          </div>
+          <div class="note note--ok" id="wxDone" hidden></div>
+        </div>
+      </section>
+
+      <!-- ④ 학습 -->
+      <section class="card" id="step4" aria-labelledby="step4Title">
+        <h2 class="card__title" id="step4Title"><span class="num" id="num4" aria-hidden="true">4</span>학습<span class="spacer"></span><span class="lock" id="lock4" hidden>수위 자료가 필요해요</span></h2>
+        <p class="card__lead">연도로 학습·검증·시험 구간을 나누고 후보 모델을 골라 학습해요. 검증 연도에서 가장 좋은 모델을 지점·예측일수마다 고르고, 시험 연도 성적을 보고해요.</p>
+        <fieldset class="field">
+          <legend>구간 (연도)</legend>
+          <div class="row row--5">
+            <div class="field"><label for="yTrainEnd">학습 종료</label><div class="select-wrap"><select id="yTrainEnd"></select></div></div>
+            <div class="field"><label for="yValStart">검증 시작</label><div class="select-wrap"><select id="yValStart"></select></div></div>
+            <div class="field"><label for="yValEnd">검증 끝</label><div class="select-wrap"><select id="yValEnd"></select></div></div>
+            <div class="field"><label for="yTestStart">시험 시작</label><div class="select-wrap"><select id="yTestStart"></select></div></div>
+            <div class="field"><label for="yTestEnd">시험 끝</label><div class="select-wrap"><select id="yTestEnd"></select></div></div>
+          </div>
+          <div class="timeline" id="splitTimeline" aria-hidden="true"></div>
+          <div class="field__hint" id="splitHint"></div>
+        </fieldset>
+        <fieldset class="field">
+          <legend>후보 예측기 <span class="muted small" id="fcCount"></span></legend>
+          <div class="fc-list" id="forecasterList"><span class="muted">예측기 목록을 불러오는 중…</span></div>
+          <div class="field__hint">직전값 유지(persistence)는 기준선이라 항상 비교에만 쓰여요. "실험용" 표시는 미래 강수를 안다고 가정하는 상한 실험이라 기본은 꺼 둬요.</div>
+        </fieldset>
+        <div class="row row--3">
+          <div class="field">
+            <label for="horizonMax">최대 예측일수</label>
+            <div class="select-wrap"><select id="horizonMax"><option value="7">7일</option><option value="14">14일</option><option value="30" selected>30일</option></select></div>
+          </div>
+        </div>
+        <div class="start-row">
+          <button class="btn btn--primary btn--lg" type="button" id="trainBtn" disabled>
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            학습 시작
+          </button>
+          <p class="hint" id="trainHint">지역과 구간을 고르면 시작할 수 있어요.</p>
+        </div>
+        <div class="note note--error" id="trainError" hidden role="alert"></div>
+        <div class="progress" id="trainProgress" hidden>
+          <div class="progress-head"><div class="progress-status" id="trainStatus">학습을 준비하고 있어요…</div><div class="elapsed" id="trainElapsed"></div></div>
+          <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="trainBarWrap"><div class="bar__fill is-active" id="trainBar"></div></div>
+          <div class="muted small" id="trainDetail" style="margin-top:8px"></div>
+          <div class="note note--ok" id="trainDone" hidden></div>
+        </div>
+      </section>
+
+      <!-- ⑤ 성능 평가 -->
+      <section class="card" id="step5" aria-labelledby="step5Title">
+        <h2 class="card__title" id="step5Title"><span class="num" id="num5" aria-hidden="true">5</span>성능 평가<span class="spacer"></span><span class="lock" id="lock5" hidden>학습이 필요해요</span></h2>
+        <p class="card__lead">시험 연도에서 지점 × 예측일수마다 선택된 모델과 오차를 봐요. 개선율은 직전값 유지(persistence) 대비 RMSE 감소 비율이에요.</p>
+        <div class="stats" id="evalStats" hidden>
+          <div class="stat"><div class="stat__label">지점</div><div class="stat__value" id="evStations">—</div></div>
+          <div class="stat"><div class="stat__label">시험 연도</div><div class="stat__value" id="evTest">—</div></div>
+          <div class="stat"><div class="stat__label">평균 개선율</div><div class="stat__value" id="evSkill">—</div></div>
+          <div class="stat"><div class="stat__label">평가표 생성</div><div class="stat__value" id="evWhen" style="font-size:1rem">—</div></div>
+        </div>
+        <div class="table-wrap matrix" id="evalTableWrap" hidden><table id="evalTable"><thead></thead><tbody></tbody></table></div>
+        <p class="empty" id="evalEmpty">아직 평가표가 없어요. ④ 학습을 먼저 해 주세요.</p>
+        <div class="note note--error" id="evalError" hidden role="alert"></div>
+
+        <div id="evalDetail" hidden>
+          <h3 class="sub">모델 비교 <span class="tag">마지막 원점에서 모든 모델 계열의 전망</span></h3>
+          <div class="row row--3">
+            <div class="field"><label for="evalStation">지점</label><div class="select-wrap"><select id="evalStation"></select></div></div>
+            <div class="field"><label for="evalHorizon">예측일수</label><div class="select-wrap"><select id="evalHorizon"></select></div></div>
+          </div>
+          <div class="chart" id="compareChart"></div>
+          <div class="legend" id="compareLegend"></div>
+          <div class="legend-hint">범례의 모델 이름을 누르면 그 선을 강조해요(최대 3개). 선택 모델은 파란색, 직전값 유지는 회색 점선.</div>
+          <div class="muted small" id="compareNote" style="margin-top:8px"></div>
+          <div class="table-wrap"><table><thead><tr><th scope="col">모델</th><th scope="col" class="num">시험 MSE</th><th scope="col" class="num">시험 RMSE</th><th scope="col" class="num">시험 MAE</th><th scope="col" class="num">개선율</th><th scope="col">선택</th></tr></thead><tbody id="compareBody"></tbody></table></div>
+          <div class="note note--error" id="compareError" hidden role="alert"></div>
+
+          <h3 class="sub">백테스트 <span class="tag">시험 연도 전 구간 실측 vs 예측 vs 직전값 유지</span></h3>
+          <div class="stats" id="btStats"></div>
+          <div class="chart" id="backtestChart"></div>
+          <div class="legend" id="backtestLegend"></div>
+          <div class="note note--error" id="backtestError" hidden role="alert"></div>
+
+          <div id="expBox" hidden>
+            <h3 class="sub">수체 면적 모델 실험 <span class="tag">위성 면적 계열 · LOO</span></h3>
+            <div class="table-wrap" style="margin-top:0"><table><thead><tr><th scope="col">센서</th><th scope="col">후보</th><th scope="col" class="num">n</th><th scope="col" class="num">LOO RMSE (km²)</th><th scope="col" class="num">개선율</th><th scope="col" class="num">p-value</th></tr></thead><tbody id="expBody"></tbody></table></div>
+            <div class="note note--warn" id="expNote"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ⑥ 시험 -->
+      <section class="card" id="step6" aria-labelledby="step6Title">
+        <h2 class="card__title" id="step6Title"><span class="num" id="num6" aria-hidden="true">6</span>시험<span class="spacer"></span><span class="lock" id="lock6" hidden>학습이 필요해요</span></h2>
+        <p class="card__lead">원점 날짜를 골라 그날까지의 자료만으로 만든 전망을 실측과 비교해요. 원점이 시험 연도 안이어야 공정한 비교예요.</p>
+        <div class="row row--4">
+          <div class="field"><label for="fcDate">원점 날짜</label><input type="date" id="fcDate"></div>
+          <div class="field"><label for="fcStation">지점</label><div class="select-wrap"><select id="fcStation"></select></div></div>
+          <div class="field"><label for="fcModel">모델</label><div class="select-wrap"><select id="fcModel"><option value="">기본 (지평별 선택 모델)</option></select></div></div>
+          <div class="field"><label for="fcHorizon">예측일수</label><div class="select-wrap"><select id="fcHorizon"><option value="7" selected>7일</option><option value="14">14일</option><option value="30">30일</option></select></div></div>
+        </div>
+        <div class="start-row">
+          <button class="btn btn--primary btn--lg" type="button" id="fcBtn" disabled>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 3 5-7 4 4"/></svg>
+            전망 보기
+          </button>
+          <p class="hint" id="fcHint">학습된 지역에서 지점을 고르면 볼 수 있어요.</p>
+        </div>
+        <div class="note note--error" id="fcError" hidden role="alert"></div>
+        <div id="fcResult" hidden>
+          <div class="stats" id="fcStats"></div>
+          <div class="chart" id="fcChart"></div>
+          <div class="legend" id="fcLegend"></div>
+          <div class="note note--warn" id="fcNote" hidden></div>
+          <div class="table-wrap"><table><thead><tr><th scope="col">예측일</th><th scope="col">목표일</th><th scope="col">모델</th><th scope="col" class="num">전망</th><th scope="col" class="num">5–95 % 범위</th><th scope="col" class="num">실측</th><th scope="col" class="num">오차</th></tr></thead><tbody id="fcBody"></tbody></table></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer>
+    <span>수치는 모두 시험 연도(학습에 쓰지 않은 해)에서 잰 값이에요. 궁금한 점은 운영 담당자에게 문의해 주세요.</span>
+    <a href="/app">서비스 화면으로 →</a>
+  </footer>
+</main>
+
+<dialog id="helpDialog" aria-labelledby="helpTitle">
+  <div class="dlg">
+    <h2 id="helpTitle">이 화면은 무엇을 하나요</h2>
+    <p>새 지역이 와도 자료 수집부터 모델 성능 확인까지 한 줄로 끝내는 화면이에요. 왼쪽 "준비 상태"가 지역에 무엇이 갖춰졌는지와 다음 할 일을 알려 줘요.</p>
+    <h3>여섯 단계</h3>
+    <ol>
+      <li><b>지역</b> — 기존 지역을 고르거나 ID·이름으로 새로 만들어요.</li>
+      <li><b>수위 자료 수집</b> — WAMIS 관측소를 검색해 고르고 기간을 정하면 서버가 일 수위를 가져와요. CSV 업로드도 돼요.</li>
+      <li><b>기상 자료 수집</b> — 기상청 ASOS 지점의 일 강수·기온. 기상청 키가 없으면 표본 자료로 대신해요.</li>
+      <li><b>학습</b> — 학습·검증·시험 연도를 나누고 후보 모델을 골라요. 검증 연도에서 모델을 고르고, 시험 연도에서만 성적을 재요.</li>
+      <li><b>성능 평가</b> — 지점 × 예측일수 표, 모든 모델 계열의 전망 비교, 시험 연도 백테스트, 위성 면적 실험.</li>
+      <li><b>시험</b> — 원점 날짜를 골라 그날까지의 자료로 만든 전망을 실측과 비교해요.</li>
+    </ol>
+    <h3>용어</h3>
+    <dl>
+      <dt>MSE</dt><dd>오차 제곱의 평균 (m²). 작을수록 좋아요.</dd>
+      <dt>RMSE</dt><dd>MSE 의 제곱근. 수위와 같은 단위라 cm 로 보여 줘요.</dd>
+      <dt>개선율</dt><dd>직전값 유지(persistence) 대비 RMSE 가 얼마나 줄었나. +50 % 면 오차가 절반. 음수면 직전값 유지만 못해요.</dd>
+      <dt>직전값 유지</dt><dd>"내일도 오늘과 같다"는 가장 단순한 기준선. 모든 모델은 이것을 이겨야 의미가 있어요.</dd>
+      <dt>원점</dt><dd>전망을 만드는 기준 날짜. 그날까지의 자료만 써요.</dd>
+      <dt>5–95 % 범위</dt><dd>검증 연도 잔차에서 계산한 경험적 산포. 모델 신뢰구간은 아니에요.</dd>
+    </dl>
+    <div class="dlg__foot"><button class="btn btn--primary" type="button" id="helpClose">닫기</button></div>
+  </div>
+</dialog>
+
+<script>
+(function () {
+  'use strict';
+
+  var API = '/api/v1';
+  var POLL_MS = 2000;
+  var NET_MSG = '서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.';
+  var STORE_KEY = 'watercast.eval.v1';
+  var TERRAINS = [['river', '하천 (본류·지류 일반)'], ['dam', '댐·저수지'], ['estuary', '하구 (감조 구간)'], ['tributary', '지류']];
+  var TERRAIN_KO = { river: '하천', dam: '댐', estuary: '하구', tributary: '지류', mainstem: '본류', reservoir: '댐', dam_downstream: '댐 하류', mainstem_tidal: '본류(감조)' };
+  var STATUS_KO = { queued: '대기 중', pending: '대기 중', running: '진행 중', done: '완료', failed: '실패', skipped: '건너뜀', low_coverage: '자료 부족', empty: '자료 없음' };
+  var FINISHED = { done: 1, failed: 1, skipped: 1, low_coverage: 1, empty: 1 };
+  var REPORT_H = [1, 3, 5, 7, 10, 14, 30];
+  var COLORS = { ink: '#16202c', s1: '#2a78d6', s2: '#eb6834', s3: '#1baf7a', s4: '#4a3aa7', s5: '#e87ba4', gray: '#8b97a5', dim: '#c2cad3', ok: '#008300' };
+  var EMPH_COLORS = [COLORS.s2, COLORS.s3, COLORS.s4];
+
+  // ---------- 작은 도우미 ----------
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function show(el, on) { if (el) el.hidden = !on; }
+  function text(el, value) { if (el) el.textContent = value == null ? '' : String(value); }
+  function clear(el) { while (el && el.firstChild) el.removeChild(el.firstChild); }
+  function el(tag, attrs, children) {
+    var n = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) {
+      var v = attrs[k];
+      if (v == null) return;
+      if (k === 'class') n.className = v;
+      else if (k === 'text') n.textContent = v;
+      else if (k.indexOf('on') === 0) n.addEventListener(k.slice(2), v);
+      else n.setAttribute(k, v);
+    });
+    (children || []).forEach(function (c) { if (c == null) return; n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function option(value, label, selected) { var o = el('option', { value: value, text: label }); if (selected) o.selected = true; return o; }
+  function fillSelect(sel, items, placeholder) {
+    clear(sel);
+    if (placeholder) sel.appendChild(option('', placeholder));
+    items.forEach(function (it) { sel.appendChild(option(it[0], it[1])); });
+  }
+  function note(elm, msg, kind) {
+    if (!elm) return;
+    elm.className = 'note note--' + (kind || 'error') + (elm.classList.contains('small') ? ' small' : '');
+    text(elm, msg);
+    show(elm, !!msg);
+  }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function isoDate(d) { return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function lastDec31() { return (new Date().getFullYear() - 1) + '-12-31'; }
+  function yearOf(s) { var m = /^(\d{4})/.exec(String(s || '')); return m ? Number(m[1]) : null; }
+  function fmtNum(v, d) { return (v == null || !isFinite(v)) ? '—' : Number(v).toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d }); }
+  function fmtM(v) { return v == null ? '—' : fmtNum(v, 3) + ' m'; }
+  function fmtCm(v) { return v == null ? '—' : fmtNum(v * 100, 1) + ' cm'; }
+  function fmtMse(v) { if (v == null || !isFinite(v)) return '—'; return v < 0.001 ? Number(v).toExponential(2) : fmtNum(v, 4); }
+  function fmtPct(skill, digits) { if (skill == null || !isFinite(skill)) return '—'; var p = skill * 100; return (p > 0 ? '+' : '') + fmtNum(p, digits == null ? 0 : digits) + ' %'; }
+  function fmtPeriod(p) {
+    if (!p) return null;
+    if (Array.isArray(p)) return p.filter(Boolean).join(' ~ ');
+    if (typeof p === 'object') return [p.start, p.end].filter(Boolean).join(' ~ ');
+    return String(p);
+  }
+  function fmtDuration(sec) {
+    sec = Math.max(0, Math.round(sec || 0));
+    var m = Math.floor(sec / 60), s = sec % 60;
+    return m > 0 ? m + '분 ' + s + '초' : s + '초';
+  }
+  function fmtWhen(iso) {
+    if (!iso) return '';
+    var t = Date.parse(iso);
+    if (isNaN(t)) return String(iso);
+    var d = new Date(t);
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function skillCell(skill) {
+    var cls = skill == null ? 'skill--zero' : skill > 0.005 ? 'skill--pos' : skill < -0.005 ? 'skill--neg' : 'skill--zero';
+    return el('span', { class: 'skill ' + cls, text: fmtPct(skill) });
+  }
+  function badge(status) {
+    var key = status || 'pending';
+    if (key === 'low_coverage' || key === 'empty') key = 'warn';
+    return el('span', { class: 'badge badge--' + key, text: STATUS_KO[status] || status || '—' });
+  }
+  function progressFraction(job) {
+    if (!job) return 0;
+    var p = job.progress;
+    if (typeof p === 'number') return p > 1 ? p / 100 : p;
+    if (p && typeof p === 'object') {
+      var total = p.stations_total || p.years_total || p.total || 0;
+      var done = p.stations_done || p.years_done || p.done || 0;
+      if (total > 0) return Math.min(1, done / total + (job.status === 'running' ? 0.5 / total : 0));
+    }
+    if (job.status === 'done') return 1;
+    return 0;
+  }
+  function setBar(bar, wrap, frac, status) {
+    bar.style.width = Math.round(frac * 100) + '%';
+    bar.classList.toggle('is-active', status === 'running' || status === 'queued');
+    bar.classList.toggle('is-done', status === 'done');
+    bar.classList.toggle('is-failed', status === 'failed');
+    if (wrap) wrap.setAttribute('aria-valuenow', String(Math.round(frac * 100)));
+  }
+
+  // ---------- 네트워크 ----------
+  function describeDetail(d) {
+    if (!d) return '';
+    if (typeof d === 'string') return d;
+    if (Array.isArray(d)) return d.map(function (x) { return x && x.msg ? (x.loc ? x.loc.slice(-1)[0] + ': ' : '') + x.msg : JSON.stringify(x); }).join(', ');
+    return JSON.stringify(d);
+  }
+  function httpMessage(status, detail) {
+    var tail = detail ? ' (' + detail + ')' : '';
+    if (status === 404) return '서버에 아직 없는 기능이거나 찾을 수 없는 자료예요.' + tail;
+    if (status === 409) return '이미 진행 중인 작업이 있어요. 끝난 뒤 다시 시도해 주세요.' + tail;
+    if (status === 413) return '파일이 너무 커요.' + tail;
+    if (status === 422 || status === 400) return '입력 내용을 다시 확인해 주세요.' + tail;
+    if (status >= 500) return '서버에서 문제가 생겼어요. 잠시 후 다시 시도해 주세요.' + tail;
+    return '요청을 처리하지 못했어요.' + tail;
+  }
+  function handle(res) {
+    if (res.ok) return res.status === 204 ? null : res.json();
+    return res.json().catch(function () { return {}; }).then(function (body) {
+      var err = new Error(httpMessage(res.status, describeDetail(body && body.detail)));
+      err.status = res.status;
+      throw err;
+    });
+  }
+  function netFail() { throw new Error(NET_MSG); }
+  function getJSON(url) { return fetch(url, { cache: 'no-store', headers: { Accept: 'application/json' } }).catch(netFail).then(handle); }
+  function postJSON(url, body) {
+    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) }).catch(netFail).then(handle);
+  }
+  function postForm(url, form) { return fetch(url, { method: 'POST', body: form, headers: { Accept: 'application/json' } }).catch(netFail).then(handle); }
+  function pollJob(url, onTick) {
+    return new Promise(function (resolve, reject) {
+      var fails = 0;
+      function tick() {
+        getJSON(url).then(function (job) {
+          fails = 0;
+          onTick(job);
+          if (job.status === 'done' || job.status === 'failed') return resolve(job);
+          setTimeout(tick, POLL_MS);
+        }).catch(function (err) {
+          fails += 1;
+          if (fails >= 5) return reject(new Error('진행 상황을 다섯 번 연속 읽지 못했어요. ' + err.message));
+          setTimeout(tick, POLL_MS);
+        });
+      }
+      tick();
+    });
+  }
+  function regionUrl(path) { return API + '/regions/' + encodeURIComponent(state.region.id) + path; }
+  function stationUrl(station, path) { return regionUrl('/gauge/' + encodeURIComponent(station) + path); }
+
+  // ---------- localStorage ----------
+  function loadPrefs() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  function savePrefs(patch) {
+    try { var cur = loadPrefs(); Object.keys(patch).forEach(function (k) { cur[k] = patch[k]; }); localStorage.setItem(STORE_KEY, JSON.stringify(cur)); } catch (e) { /* 저장이 막혀 있어도 동작 */ }
+  }
+
+  // ---------- 상태 ----------
+  var state = {
+    regions: [], region: null, forecasters: [], weatherStations: [],
+    readiness: null, evaluation: null, split: null,
+    picked: {}, wamis: [], collectJob: null, wxJob: null, trainJob: null,
+    compareEmph: [], compareData: null, timers: {}
+  };
+
+  // ---------- 상단 ----------
+  function setHealth(ok, version) {
+    var box = $('#health');
+    box.classList.toggle('is-ok', !!ok);
+    box.classList.toggle('is-bad', !ok);
+    text($('#healthText'), ok ? '연결됨' : '연결 안 됨');
+    text($('#healthVer'), ok && version ? 'v' + version : '');
+  }
+  function checkHealth() { getJSON(API + '/health').then(function (h) { setHealth(true, h && h.version); }).catch(function () { setHealth(false); }); }
+  function setupTop() {
+    $('#expertLink').href = location.protocol + '//' + location.hostname + ':8501';
+    var dlg = $('#helpDialog');
+    $('#helpBtn').addEventListener('click', function () { $('#helpMenu').open = false; if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); });
+    $('#helpClose').addEventListener('click', function () { dlg.close ? dlg.close() : dlg.removeAttribute('open'); });
+    dlg.addEventListener('click', function (e) { if (e.target === dlg) (dlg.close ? dlg.close() : dlg.removeAttribute('open')); });
+    document.addEventListener('click', function (e) { var m = $('#helpMenu'); if (m.open && !m.contains(e.target)) m.open = false; });
+  }
+
+  // ---------- 준비 상태 ----------
+  function setReady(li, status, value) {
+    var dot = $('.st', li);
+    dot.className = 'st ' + (status === 'ok' ? 'is-ok' : status === 'part' ? 'is-part' : 'is-no');
+    clear(dot);
+    if (status === 'ok') dot.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    text($('.v', li), value);
+  }
+  function renderReadiness(r) {
+    var items = $all('#readyList > li');
+    if (!r) {
+      items.forEach(function (li) { setReady(li, 'no', '—'); });
+      show($('#readyNext'), false);
+      return;
+    }
+    var g = r.gauge || {}, w = r.weather || {}, m = r.models || {}, s = r.satellite || {};
+    var gn = g.n_stations || 0;
+    setReady(items[0], gn > 0 ? 'ok' : 'no', gn > 0 ? ('지점 ' + gn + '개 · ' + (fmtPeriod(g.period) || '기간 모름') + (g.n_days ? ' · ' + fmtNum(g.n_days, 0) + '일' : '')) : '아직 없어요');
+    setReady(items[1], w.available ? 'ok' : 'no', w.available ? ((w.station || 'ASOS') + ' · ' + (fmtPeriod(w.period) || '기간 모름') + (w.source === 'sample' ? ' · 표본' : '')) : '아직 없어요');
+    var splitTxt = m.split ? (yearOf(m.split.test_start) || '') + ' 시험' : '';
+    setReady(items[2], m.trained ? 'ok' : 'no', m.trained ? ('학습됨' + (m.trained_at ? ' · ' + fmtWhen(m.trained_at) : '') + (splitTxt ? ' · ' + splitTxt : '')) : '아직 안 했어요');
+    var ns = s.n_scenes || 0;
+    setReady(items[3], ns > 0 ? 'ok' : 'no', ns > 0 ? (ns + '장' + (s.n_with_masks != null ? ' · 탐지 ' + s.n_with_masks + '장' : '')) : '없음 (서비스 화면에서 올려요)');
+    var steps = Array.isArray(r.next_steps) ? r.next_steps : [];
+    var list = $('#readyNextList');
+    clear(list);
+    show($('#readyNext'), true);
+    if (!steps.length) list.appendChild(el('li', { class: 'all-done', text: '준비가 다 됐어요. ⑤ 성능 평가와 ⑥ 시험을 보세요.' }));
+    steps.forEach(function (s) {
+      var label = typeof s === 'string' ? s : (s && (s.text || s.label || s.title)) || JSON.stringify(s);
+      list.appendChild(el('li', { class: /준비 완료/.test(label) ? 'is-done' : null, text: label }));
+    });
+  }
+  function loadReadiness() {
+    if (!state.region) { renderReadiness(null); return Promise.resolve(); }
+    text($('#readyHint'), '읽는 중…');
+    return getJSON(regionUrl('/readiness')).then(function (r) {
+      state.readiness = r;
+      renderReadiness(r);
+      note($('#readyNote'), '');
+      text($('#readyHint'), '');
+      text($('#readyWhen'), '');
+      applyLocks();
+    }).catch(function (err) {
+      state.readiness = null;
+      renderReadiness(deriveReadiness());
+      note($('#readyNote'), '준비 상태를 읽지 못했어요: ' + err.message + ' 지역 정보로 대신 표시해요.');
+      text($('#readyHint'), '');
+      applyLocks();
+    });
+  }
+  // readiness 엔드포인트가 없을 때 지역 요약으로 흉내 낸다
+  function deriveReadiness() {
+    var r = state.region;
+    if (!r) return null;
+    var stations = r.stations || [];
+    var starts = stations.map(function (s) { return s.period && s.period[0]; }).filter(Boolean).sort();
+    var ends = stations.map(function (s) { return s.period && s.period[1]; }).filter(Boolean).sort();
+    var trained = (r.n_stations_trained || 0) > 0;
+    var next = [];
+    if (!stations.length) next.push('② 수위 관측소를 고르고 자료를 수집하세요');
+    if (!r.weather_daily_available) next.push('③ 기상 자료를 수집하세요');
+    if (!trained && stations.length) next.push('④ 학습을 실행하세요');
+    return {
+      gauge: { n_stations: stations.length, period: starts.length ? [starts[0], ends[ends.length - 1]] : null, n_days: stations.reduce(function (a, s) { return a + (s.n_days || 0); }, 0) },
+      weather: { available: !!r.weather_daily_available, station: r.weather && r.weather.station_name, period: null },
+      models: { trained: trained, trained_at: null, split: r.forecast && r.forecast.split },
+      satellite: { n_scenes: r.satellite && r.satellite.scenes ? Object.keys(r.satellite.scenes).reduce(function (a, k) { return a + (r.satellite.scenes[k] || []).length; }, 0) : 0 },
+      next_steps: next
+    };
+  }
+
+  // ---------- 잠금 ----------
+  function hasGauge() { var g = state.readiness && state.readiness.gauge; return !!(g && g.n_stations > 0) || !!(state.region && (state.region.stations || []).length); }
+  function isTrained() { var m = state.readiness && state.readiness.models; return !!(m && m.trained) || !!(state.region && (state.region.n_stations_trained || 0) > 0); }
+  function applyLocks() {
+    var hasRegion = !!state.region;
+    [['#step2', '#lock2', hasRegion], ['#step3', '#lock3', hasRegion], ['#step4', '#lock4', hasRegion && hasGauge()], ['#step5', '#lock5', hasRegion && isTrained()], ['#step6', '#lock6', hasRegion && isTrained()]].forEach(function (x) {
+      $(x[0]).classList.toggle('is-locked', !x[2]);
+      show($(x[1]), !x[2]);
+    });
+    $('#readyRefresh').disabled = !hasRegion;
+    for (var i = 1; i <= 6; i++) $('#num' + i).classList.remove('num--done');
+    if (hasRegion) $('#num1').classList.add('num--done');
+    if (hasRegion && hasGauge()) $('#num2').classList.add('num--done');
+    if (state.readiness && state.readiness.weather && state.readiness.weather.available) $('#num3').classList.add('num--done');
+    if (hasRegion && isTrained()) $('#num4').classList.add('num--done');
+    updateCollectButton();
+    updateWxButton();
+    updateTrainButton();
+    updateFcButton();
+  }
+
+  // ---------- ① 지역 ----------
+  function regionById(id) { for (var i = 0; i < state.regions.length; i++) if (state.regions[i].id === id) return state.regions[i]; return null; }
+  function renderRegionSelect() {
+    var sel = $('#regionSelect');
+    clear(sel);
+    sel.appendChild(option('', state.regions.length ? '지역을 골라 주세요' : '등록된 지역이 없어요 — 새 지역을 만들어 보세요'));
+    state.regions.forEach(function (r) { sel.appendChild(option(r.id, (r.name || r.id) + '  (' + r.id + ')')); });
+  }
+  function renderRegionChips() {
+    var box = $('#regionChips');
+    clear(box);
+    var r = state.region;
+    if (!r) { box.appendChild(el('span', { class: 'chip is-no', text: '지역을 고르면 표시돼요' })); return; }
+    var n = (r.stations || []).length || r.n_stations || 0;
+    box.appendChild(el('span', { class: 'chip ' + (r.gauge_available ? 'is-ok' : 'is-no'), text: r.gauge_available ? '수위계 ' + n + '지점' : '수위계 없음' }));
+    box.appendChild(el('span', { class: 'chip ' + ((r.n_stations_trained || 0) > 0 ? 'is-ok' : 'is-no'), text: (r.n_stations_trained || 0) > 0 ? '학습됨 ' + r.n_stations_trained + '지점' : '학습 전' }));
+    box.appendChild(el('span', { class: 'chip ' + (r.satellite_available ? 'is-ok' : 'is-no'), text: r.satellite_available ? '위성 장면 있음' : '위성 장면 없음' }));
+    if (r.weather && r.weather.station_name) box.appendChild(el('span', { class: 'chip ' + (r.weather_daily_available ? 'is-ok' : 'is-no'), text: '기상 ' + r.weather.station_name }));
+  }
+  function loadRegions(keepId) {
+    return getJSON(API + '/regions').then(function (res) {
+      state.regions = (res && res.items) || (Array.isArray(res) ? res : []);
+      renderRegionSelect();
+      var want = keepId || (state.region && state.region.id) || loadPrefs().region;
+      if (want && regionById(want)) { $('#regionSelect').value = want; }
+      // 같은 지역을 다시 읽는 것(잡이 끝난 뒤 갱신)은 진행 표·결과를 지우지 않는다
+      selectRegion($('#regionSelect').value, !!(state.region && state.region.id === $('#regionSelect').value));
+      show($('#globalNote'), false);
+    }).catch(function (err) {
+      clear($('#regionSelect'));
+      $('#regionSelect').appendChild(option('', '지역 목록을 불러오지 못했어요'));
+      note($('#globalNote'), '지역 목록을 불러오지 못했어요. ' + err.message + ' 화면을 새로 고치면 다시 시도해요.');
+    });
+  }
+  function selectRegion(id, isRefresh) {
+    var r = regionById(id);
+    state.region = r;
+    state.readiness = null;
+    if (!isRefresh) {
+      state.evaluation = null;
+      state.compareData = null;
+      state.compareEmph = [];
+      delete $('#fcDate').dataset.touched;
+      resetStepOutputs();
+    }
+    if (r) savePrefs({ region: r.id });
+    text($('#readyRegion'), r ? (r.name || r.id) : '지역을 먼저 골라 주세요');
+    text($('#regionHint'), r ? (r.description || '') : '');
+    renderRegionChips();
+    fillStationSelects();
+    setupSplitYears();
+    presetWeatherStation();
+    applyLocks();
+    if (!r) { renderReadiness(null); show($('#evalDetail'), false); return; }
+    loadReadiness().then(function () { if (isTrained()) loadEvaluation(); });
+  }
+  function resetStepOutputs() {
+    show($('#collectProgress'), false); show($('#wxProgress'), false); show($('#trainProgress'), false);
+    note($('#collectError'), ''); note($('#wxError'), ''); note($('#trainError'), ''); note($('#evalError'), ''); note($('#fcError'), '');
+    show($('#fcResult'), false); show($('#evalDetail'), false); show($('#evalStats'), false); show($('#evalTableWrap'), false); show($('#evalEmpty'), true);
+    text($('#evalEmpty'), '아직 평가표가 없어요. ④ 학습을 먼저 해 주세요.');
+  }
+  function setupRegionStep() {
+    $all('.segment button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        $all('.segment button').forEach(function (x) { x.classList.toggle('is-active', x === b); x.setAttribute('aria-selected', x === b ? 'true' : 'false'); });
+        var isNew = b.getAttribute('data-mode') === 'new';
+        show($('#regionExisting'), !isNew);
+        show($('#regionNew'), isNew);
+      });
+    });
+    $('#regionSelect').addEventListener('change', function () { selectRegion(this.value); });
+    $('#regionNew').addEventListener('submit', function (e) {
+      e.preventDefault();
+      var id = $('#nrId').value.trim(), name = $('#nrName').value.trim();
+      if (!/^[a-z0-9_-]{1,64}$/.test(id)) return note($('#nrError'), '지역 ID 는 영문 소문자·숫자·_·- 만 1~64자로 적어 주세요.');
+      if (!name) return note($('#nrError'), '이름을 적어 주세요.');
+      var bbox = ['#nrW', '#nrS', '#nrE', '#nrN'].map(function (s) { return $(s).value.trim(); });
+      var body = { id: id, name: name, description: $('#nrDesc').value.trim() };
+      if (bbox.some(Boolean)) {
+        if (!bbox.every(Boolean) || bbox.some(function (v) { return !isFinite(Number(v)); })) return note($('#nrError'), '범위는 네 숫자를 모두 적거나 모두 비워 주세요.');
+        var nums = bbox.map(Number);
+        if (!(nums[0] < nums[2] && nums[1] < nums[3])) return note($('#nrError'), '범위는 서쪽 < 동쪽, 남쪽 < 북쪽이어야 해요.');
+        body.bbox_wgs84 = nums;
+      }
+      note($('#nrError'), '');
+      $('#nrSubmit').disabled = true;
+      postJSON(API + '/regions', body).then(function () {
+        $('#nrSubmit').disabled = false;
+        $('#regionNew').reset();
+        $all('.segment button')[0].click();
+        return loadRegions(id).then(function () { $('#step2').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+      }).catch(function (err) { $('#nrSubmit').disabled = false; note($('#nrError'), '지역을 만들지 못했어요. ' + err.message); });
+    });
+    $('#readyRefresh').addEventListener('click', function () { loadRegions(state.region && state.region.id); });
+  }
+
+  // ---------- ② 수위 자료 ----------
+  function renderWamis(items) {
+    var box = $('#wamisResults');
+    clear(box);
+    text($('#wamisCount'), items.length ? items.length + '곳' : '');
+    if (!items.length) { box.appendChild(el('div', { class: 'empty', text: '검색 결과가 없어요. 다른 검색어나 유역을 시도해 보세요.' })); return; }
+    items.forEach(function (it) {
+      var code = String(it.code || it.obscd || '');
+      var name = String(it.name || it.obsnm || code);
+      var cb = el('input', { type: 'checkbox', value: code });
+      // 키에 'c' 를 붙인다 — 숫자 모양 키는 JS 가 삽입 순서가 아니라 숫자 순으로 늘어놓아 표 행 순서가 뒤섞인다
+      cb.checked = !!state.picked['c' + code];
+      cb.addEventListener('change', function () {
+        if (cb.checked) state.picked['c' + code] = { code: code, name: name, river: it.river || it.bbsnnm || '', address: it.address || '', terrain: 'river' };
+        else delete state.picked['c' + code];
+        renderPicked();
+      });
+      box.appendChild(el('label', null, [cb, el('span', { class: 'code', text: code }), el('span', { class: 'name', text: name }), el('span', { class: 'river', text: it.river || it.bbsnnm || '' }), el('span', { class: 'addr', title: it.address || '', text: it.address || '' })]));
+    });
+  }
+  function renderPicked() {
+    var keys = Object.keys(state.picked);
+    var body = $('#pickedBody');
+    clear(body);
+    show($('#pickedBox'), keys.length > 0);
+    text($('#pickedCount'), keys.length ? keys.length + '곳' : '');
+    keys.forEach(function (key) {
+      var p = state.picked[key];
+      var sel = el('select', { 'aria-label': p.name + ' 지형' });
+      TERRAINS.forEach(function (t) { sel.appendChild(option(t[0], t[1], t[0] === p.terrain)); });
+      sel.addEventListener('change', function () { p.terrain = sel.value; });
+      var rm = el('button', { type: 'button', class: 'btn btn--ghost btn--mini', text: '빼기', onclick: function () { delete state.picked[key]; renderPicked(); var cb = $('#wamisResults input[value="' + p.code.replace(/"/g, '') + '"]'); if (cb) cb.checked = false; } });
+      body.appendChild(el('tr', null, [el('td', { text: p.name }), el('td', { class: 'num', text: p.code }), el('td', { text: p.river }), el('td', null, [el('div', { class: 'select-wrap' }, [sel])]), el('td', null, [rm])]));
+    });
+    updateCollectButton();
+  }
+  function updateCollectButton() {
+    var n = Object.keys(state.picked).length;
+    var ok = !!state.region && n > 0 && !(state.collectJob && (state.collectJob.status === 'running' || state.collectJob.status === 'queued'));
+    $('#collectBtn').disabled = !ok;
+    text($('#collectHint'), !state.region ? '① 에서 지역을 먼저 고르세요.' : n === 0 ? '관측소를 하나 이상 고르면 시작할 수 있어요.' : n + '개 관측소의 자료를 가져와요. 지점 ID 는 관측소 이름을 써요.');
+  }
+  function renderCollectJob(job) {
+    var st = job.status;
+    var stations = job.stations || [];
+    var done = stations.filter(function (s) { return FINISHED[s.status]; }).length;
+    text($('#collectStatus'), st === 'done' ? '수집이 끝났어요' : st === 'failed' ? '수집이 실패했어요' : st === 'queued' ? '대기 중이에요…' : '수집 중이에요 (' + done + '/' + stations.length + ')');
+    setBar($('#collectBar'), $('#collectBarWrap'), progressFraction(job), st);
+    var body = $('#collectBody');
+    clear(body);
+    stations.forEach(function (s) {
+      body.appendChild(el('tr', null, [
+        el('td', { text: s.name || s.id }),
+        el('td', { class: 'num', text: s.n_days != null ? fmtNum(s.n_days, 0) : '—' }),
+        el('td', { class: 'num', text: s.coverage != null ? fmtNum(s.coverage * 100, 1) + ' %' : '—' }),
+        el('td', null, [badge(s.status)]),
+        el('td', { class: 'muted small', text: s.note || '' })
+      ]));
+    });
+    if (st === 'done') {
+      var low = stations.filter(function (s) { return s.status === 'low_coverage'; }).length;
+      var bad = stations.filter(function (s) { return s.status === 'failed' || s.status === 'empty' || s.status === 'skipped'; }).length;
+      note($('#collectDone'), '수위 자료가 지역에 저장됐어요' + (low ? ' (자료 부족 ' + low + '곳은 저장은 됐지만 학습 전에 확인하세요)' : '') + (bad ? ' — ' + bad + '곳은 저장되지 않았어요' : '') + '. 준비 상태가 갱신되고 ④ 학습이 열려요.', 'ok');
+    }
+    else if (st === 'failed') note($('#collectError'), '수집이 실패했어요. ' + (job.error || ''));
+    else show($('#collectDone'), false);
+  }
+  function startCollect() {
+    var body = {
+      stations: Object.keys(state.picked).map(function (k) { var p = state.picked[k]; return { id: p.name, name: p.name, code: p.code, terrain: p.terrain }; }),
+      start: $('#gaugeStart').value, end: $('#gaugeEnd').value,
+      min_coverage: Number($('#minCoverage').value), async_run: true
+    };
+    if (!body.start || !body.end || body.start >= body.end) return note($('#collectError'), '시작일이 종료일보다 앞서야 해요.');
+    note($('#collectError'), '');
+    $('#collectBtn').disabled = true;
+    show($('#collectProgress'), true);
+    show($('#collectDone'), false);
+    clear($('#collectBody'));
+    text($('#collectStatus'), '수집을 요청하고 있어요…');
+    setBar($('#collectBar'), $('#collectBarWrap'), 0, 'queued');
+    var t0 = Date.now();
+    startElapsed('collect', $('#collectElapsed'), t0);
+    postJSON(regionUrl('/gauge/collect'), body).then(function (acc) {
+      var jobId = acc && acc.job_id;
+      if (!jobId) throw new Error('서버가 작업 번호를 주지 않았어요.');
+      var url = acc.poll_url || regionUrl('/gauge/collect/jobs/' + encodeURIComponent(jobId));
+      return pollJob(url, function (job) { state.collectJob = job; renderCollectJob(job); });
+    }).then(function (job) {
+      stopElapsed('collect');
+      if (job.status === 'done') { state.picked = {}; renderPicked(); $all('#wamisResults input').forEach(function (c) { c.checked = false; }); return loadRegions(state.region.id); }
+      updateCollectButton();
+    }).catch(function (err) {
+      stopElapsed('collect');
+      state.collectJob = null;
+      note($('#collectError'), '수집을 시작하지 못했어요. ' + err.message);
+      text($('#collectStatus'), '수집이 중단됐어요');
+      setBar($('#collectBar'), $('#collectBarWrap'), 0, 'failed');
+      updateCollectButton();
+    });
+  }
+  function setupGaugeStep() {
+    $('#gaugeStart').value = '2015-01-01';
+    $('#gaugeEnd').value = lastDec31();
+    var terrainSel = $('#csvTerrain');
+    TERRAINS.forEach(function (t) { terrainSel.appendChild(option(t[0], t[1])); });
+    function search() {
+      var basin = $('#basin').value, q = $('#wamisQuery').value.trim();
+      note($('#wamisError'), '');
+      clear($('#wamisResults'));
+      $('#wamisResults').appendChild(el('div', { class: 'empty', text: '검색 중…' }));
+      $('#wamisSearch').disabled = true;
+      getJSON(API + '/wamis/stations?basin=' + encodeURIComponent(basin) + '&match=' + encodeURIComponent(q)).then(function (res) {
+        state.wamis = (res && res.items) || [];
+        renderWamis(state.wamis);
+      }).catch(function (err) {
+        renderWamis([]);
+        note($('#wamisError'), '관측소 목록을 가져오지 못했어요. ' + err.message);
+      }).then(function () { $('#wamisSearch').disabled = false; });
+    }
+    $('#wamisSearch').addEventListener('click', search);
+    $('#wamisQuery').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); search(); } });
+    $('#collectBtn').addEventListener('click', startCollect);
+    // CSV 업로드
+    var file = null;
+    $('#csvFile').addEventListener('change', function () { file = this.files && this.files[0]; text($('#csvFileName'), file ? file.name : '선택 안 함'); updateCsv(); });
+    $('#csvStation').addEventListener('input', updateCsv);
+    function updateCsv() { $('#csvBtn').disabled = !(state.region && file && $('#csvStation').value.trim()); }
+    $('#csvBtn').addEventListener('click', function () {
+      var station = $('#csvStation').value.trim();
+      var fd = new FormData();
+      fd.append('file', file, file.name);
+      fd.append('station_name', station);
+      fd.append('terrain', $('#csvTerrain').value);
+      fd.append('source', 'user_upload');
+      note($('#csvError'), ''); show($('#csvResult'), false);
+      $('#csvBtn').disabled = true;
+      postForm(stationUrl(station, '/series/file'), fd).then(function (info) {
+        note($('#csvResult'), '올렸어요: ' + (info && info.name || station) + (info && info.n_days ? ' · ' + fmtNum(info.n_days, 0) + '일' : '') + (info && info.period ? ' · ' + fmtPeriod(info.period) : ''), 'ok');
+        $('#csvFile').value = ''; file = null; text($('#csvFileName'), '선택 안 함');
+        return loadRegions(state.region.id);
+      }).catch(function (err) { note($('#csvError'), '파일을 올리지 못했어요. ' + err.message); }).then(updateCsv);
+    });
+  }
+
+  // ---------- ③ 기상 자료 ----------
+  function loadWeatherStations() {
+    return getJSON(API + '/weather/stations').then(function (res) {
+      state.weatherStations = (res && res.items) || (Array.isArray(res) ? res : []);
+      var sel = $('#asosStation');
+      clear(sel);
+      sel.appendChild(option('', '지점을 골라 주세요'));
+      state.weatherStations.forEach(function (s) { sel.appendChild(option(String(s.id), (s.name || s.id) + ' (' + s.id + ')' + (s.aliases && s.aliases.length ? ' · ' + s.aliases.slice(0, 2).join(', ') : ''))); });
+      presetWeatherStation();
+      updateWxButton();
+    }).catch(function (err) {
+      clear($('#asosStation'));
+      $('#asosStation').appendChild(option('', '지점 목록을 불러오지 못했어요'));
+      note($('#wxError'), '기상 지점 목록을 불러오지 못했어요. ' + err.message);
+    });
+  }
+  function presetWeatherStation() {
+    var sel = $('#asosStation');
+    var r = state.region;
+    if (r && r.weather && r.weather.station_id && $all('option', sel).some(function (o) { return o.value === String(r.weather.station_id); })) {
+      sel.value = String(r.weather.station_id);
+      text($('#asosHint'), '이 지역에 설정된 지점이에요.');
+    } else text($('#asosHint'), '');
+    updateWxButton();
+  }
+  function updateWxButton() {
+    var ok = !!state.region && !!$('#asosStation').value && !!$('#wxStart').value && !!$('#wxEnd').value && !(state.wxJob && (state.wxJob.status === 'running' || state.wxJob.status === 'queued'));
+    $('#wxBtn').disabled = !ok;
+    text($('#wxHint'), !state.region ? '① 에서 지역을 먼저 고르세요.' : '지점과 기간을 고르면 시작할 수 있어요. 연도마다 한 번씩 요청해요.');
+  }
+  function renderWxJob(job) {
+    var st = job.status;
+    var years = job.years || [];
+    var done = years.filter(function (y) { return FINISHED[y.status]; }).length;
+    text($('#wxStatus'), st === 'done' ? '수집이 끝났어요' : st === 'failed' ? '수집이 실패했어요' : st === 'queued' ? '대기 중이에요…' : '수집 중이에요 (' + done + '/' + years.length + '년)');
+    setBar($('#wxBar'), $('#wxBarWrap'), progressFraction(job), st);
+    var src = job.source || (job.weather && job.weather.source);
+    var warns = Array.isArray(job.warnings) ? job.warnings.filter(Boolean) : [];
+    if (src === 'sample' || src === 'synthetic') note($('#wxSourceNote'), (warns.length ? warns.join(' ') + ' ' : '기상청 API 키가 서버에 없어 표본 기상 자료를 썼어요. ') + '실제 값이 아니니 성능 수치를 소개할 때 주의하세요.', 'warn');
+    else if (warns.length) note($('#wxSourceNote'), warns.join(' '), 'warn');
+    else if (src) { note($('#wxSourceNote'), '출처: ' + (src === 'kma' || /KMA/i.test(src) ? '기상청 ASOS (' + src + ')' : src), 'info'); }
+    else show($('#wxSourceNote'), false);
+    var body = $('#wxBody');
+    clear(body);
+    years.forEach(function (y) {
+      var nd = y.n_days != null ? y.n_days : y.n_rows;
+      body.appendChild(el('tr', null, [el('td', { text: y.year }), el('td', { class: 'num', text: nd != null ? fmtNum(nd, 0) : '—' }), el('td', null, [badge(y.status)]), el('td', { class: 'muted small', text: y.note || '' })]));
+    });
+    if (st === 'done') note($('#wxDone'), '기상 자료가 지역에 저장됐어요' + (job.station_name ? ' (' + job.station_name + ')' : '') + '.', 'ok');
+    else if (st === 'failed') note($('#wxError'), '수집이 실패했어요. ' + (job.error || ''));
+    else show($('#wxDone'), false);
+  }
+  function startWx() {
+    var body = { station_id: $('#asosStation').value, start: $('#wxStart').value, end: $('#wxEnd').value, async_run: true };
+    if (body.start >= body.end) return note($('#wxError'), '시작일이 종료일보다 앞서야 해요.');
+    note($('#wxError'), '');
+    $('#wxBtn').disabled = true;
+    show($('#wxProgress'), true); show($('#wxDone'), false); show($('#wxSourceNote'), false);
+    clear($('#wxBody'));
+    text($('#wxStatus'), '수집을 요청하고 있어요…');
+    setBar($('#wxBar'), $('#wxBarWrap'), 0, 'queued');
+    startElapsed('wx', $('#wxElapsed'), Date.now());
+    postJSON(regionUrl('/weather/collect'), body).then(function (acc) {
+      var jobId = acc && acc.job_id;
+      if (!jobId) throw new Error('서버가 작업 번호를 주지 않았어요.');
+      var url = acc.poll_url || regionUrl('/weather/collect/jobs/' + encodeURIComponent(jobId));
+      return pollJob(url, function (job) { state.wxJob = job; renderWxJob(job); });
+    }).then(function () { stopElapsed('wx'); return loadRegions(state.region.id); }).catch(function (err) {
+      stopElapsed('wx');
+      state.wxJob = null;
+      note($('#wxError'), '수집을 시작하지 못했어요. ' + err.message);
+      text($('#wxStatus'), '수집이 중단됐어요');
+      setBar($('#wxBar'), $('#wxBarWrap'), 0, 'failed');
+      updateWxButton();
+    });
+  }
+  function setupWeatherStep() {
+    $('#wxStart').value = '2015-01-01';
+    $('#wxEnd').value = lastDec31();
+    ['#asosStation', '#wxStart', '#wxEnd'].forEach(function (s) { $(s).addEventListener('change', updateWxButton); });
+    $('#wxBtn').addEventListener('click', startWx);
+  }
+
+  // ---------- ④ 학습 ----------
+  function dataYearRange() {
+    var r = state.region;
+    var stations = (r && r.stations) || [];
+    var ys = [];
+    stations.forEach(function (s) { if (s.period) { var a = yearOf(s.period[0]), b = yearOf(s.period[1]); if (a) ys.push(a); if (b) ys.push(b); } });
+    var g = state.readiness && state.readiness.gauge && state.readiness.gauge.period;
+    if (Array.isArray(g)) { var a2 = yearOf(g[0]), b2 = yearOf(g[1]); if (a2) ys.push(a2); if (b2) ys.push(b2); }
+    if (!ys.length) { var y = new Date().getFullYear() - 1; return [y - 9, y]; }
+    return [Math.min.apply(null, ys), Math.max.apply(null, ys)];
+  }
+  function setupSplitYears() {
+    var range = dataYearRange();
+    var years = [];
+    for (var y = range[0]; y <= range[1]; y++) years.push(y);
+    var r = state.region;
+    var def = r && r.forecast && (r.forecast.split_active || r.forecast.split);
+    var last = range[1];
+    var vals = def ? [yearOf(def.train_end), yearOf(def.val_start), yearOf(def.val_end), yearOf(def.test_start), yearOf(def.test_end)] : [last - 2, last - 1, last - 1, last, last];
+    ['#yTrainEnd', '#yValStart', '#yValEnd', '#yTestStart', '#yTestEnd'].forEach(function (id, i) {
+      var sel = $(id);
+      clear(sel);
+      years.forEach(function (yy) { sel.appendChild(option(String(yy), String(yy), yy === vals[i])); });
+      if (!sel.value && years.length) sel.value = String(years[Math.min(years.length - 1, i)]);
+    });
+    renderSplit();
+  }
+  function currentSplit() {
+    var v = ['#yTrainEnd', '#yValStart', '#yValEnd', '#yTestStart', '#yTestEnd'].map(function (id) { return Number($(id).value); });
+    return { train_end: v[0] + '-12-31', val_start: v[1] + '-01-01', val_end: v[2] + '-12-31', test_start: v[3] + '-01-01', test_end: v[4] + '-12-31', years: v };
+  }
+  function splitProblem(s) {
+    var v = s.years;
+    if (v.some(function (x) { return !x; })) return '연도를 모두 골라 주세요.';
+    if (!(v[0] < v[1])) return '검증 시작은 학습 종료 다음 해부터예요.';
+    if (!(v[1] <= v[2])) return '검증 끝은 검증 시작보다 같거나 뒤여야 해요.';
+    if (!(v[2] < v[3])) return '시험 시작은 검증 끝 다음 해부터예요.';
+    if (!(v[3] <= v[4])) return '시험 끝은 시험 시작보다 같거나 뒤여야 해요.';
+    var range = dataYearRange();
+    if (v[0] - range[0] + 1 < 2) return '학습 구간은 최소 2년(730일)이 필요해요. 자료 시작 ' + range[0] + '년.';
+    if (v[4] > range[1]) return '시험 끝이 자료 범위(' + range[1] + '년)를 넘어요.';
+    return '';
+  }
+  function renderSplit() {
+    var s = currentSplit();
+    var range = dataYearRange();
+    var y0 = range[0], y1 = Math.max(range[1], s.years[4] || range[1]);
+    var W = 900, H = 64, L = 10, R = 10;
+    var span = Math.max(1, y1 - y0 + 1);
+    function x(y) { return L + (y - y0) / span * (W - L - R); }
+    var segs = [
+      ['학습', y0, s.years[0], '#cfe0f7', '#0b58a8'],
+      ['검증', s.years[1], s.years[2], '#cdebdd', '#14673a'],
+      ['시험', s.years[3], s.years[4], '#fbd9c8', '#9a3b12']
+    ];
+    var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="학습 검증 시험 구간">';
+    svg += '<rect x="' + L + '" y="18" width="' + (W - L - R) + '" height="22" rx="6" fill="#eef1f5"/>';
+    segs.forEach(function (sg) {
+      if (!sg[1] || !sg[2] || sg[2] < sg[1]) return;
+      var xa = x(sg[1]), xb = x(sg[2] + 1);
+      svg += '<rect x="' + (xa + 1) + '" y="18" width="' + Math.max(0, xb - xa - 2) + '" height="22" rx="6" fill="' + sg[3] + '"/>';
+      svg += '<text class="lab" x="' + ((xa + xb) / 2) + '" y="33" text-anchor="middle" fill="' + sg[4] + '">' + sg[0] + ' ' + (sg[1] === sg[2] ? sg[1] : sg[1] + '–' + sg[2]) + '</text>';
+    });
+    for (var y = y0; y <= y1 + 1; y++) {
+      var xx = x(y);
+      svg += '<line x1="' + xx + '" y1="40" x2="' + xx + '" y2="46" stroke="#c3c9d2"/>';
+      if (y <= y1 && (span <= 14 || (y - y0) % 2 === 0)) svg += '<text x="' + (xx + (x(y + 1) - xx) / 2) + '" y="59" text-anchor="middle">' + y + '</text>';
+    }
+    svg += '</svg>';
+    $('#splitTimeline').innerHTML = svg;
+    var problem = splitProblem(s);
+    var hint = $('#splitHint');
+    text(hint, problem || '학습 ' + y0 + '–' + s.years[0] + ' · 검증 ' + s.years[1] + '–' + s.years[2] + ' (모델 선택) · 시험 ' + s.years[3] + '–' + s.years[4] + ' (성적 보고)');
+    hint.style.color = problem ? 'var(--err)' : '';
+    updateTrainButton();
+  }
+  function loadForecasters() {
+    return getJSON(API + '/gauge/forecasters').then(function (res) {
+      state.forecasters = Array.isArray(res) ? res : (res && res.items) || [];
+      renderForecasters();
+      fillModelSelect();
+    }).catch(function (err) {
+      clear($('#forecasterList'));
+      $('#forecasterList').appendChild(el('span', { class: 'muted', text: '예측기 목록을 불러오지 못했어요. 비워 두면 서버 기본 후보 전부를 써요.' }));
+      note($('#trainError'), err.message);
+    });
+  }
+  function renderForecasters() {
+    var box = $('#forecasterList');
+    clear(box);
+    var n = 0;
+    state.forecasters.forEach(function (f) {
+      if (f.is_baseline) return;
+      var cb = el('input', { type: 'checkbox', value: f.id });
+      cb.checked = !f.uses_future_exog;
+      n += cb.checked ? 1 : 0;
+      cb.addEventListener('change', countForecasters);
+      var nameRow = el('span', { class: 'fc-name', text: f.name || f.id });
+      if (f.uses_future_exog) nameRow.appendChild(el('span', { class: 'tag', text: '실험용' }));
+      else if (f.built_in === false) nameRow.appendChild(el('span', { class: 'tag tag--plugin', text: '플러그인' }));
+      if (f.is_reference) nameRow.appendChild(el('span', { class: 'tag', text: '참고' }));
+      box.appendChild(el('label', { title: f.id }, [cb, el('span', null, [nameRow, el('span', { class: 'fc-desc', text: f.description || f.id })])]));
+    });
+    countForecasters();
+  }
+  function selectedForecasters() { return $all('#forecasterList input:checked').map(function (c) { return c.value; }); }
+  function countForecasters() { var n = selectedForecasters().length; text($('#fcCount'), n ? n + '개 선택' : ''); updateTrainButton(); }
+  function updateTrainButton() {
+    var busy = state.trainJob && (state.trainJob.status === 'running' || state.trainJob.status === 'queued');
+    var problem = state.region ? splitProblem(currentSplit()) : '';
+    var ok = !!state.region && hasGauge() && !problem && !busy && (!state.forecasters.length || selectedForecasters().length > 0);
+    $('#trainBtn').disabled = !ok;
+    text($('#trainHint'), !state.region ? '① 에서 지역을 먼저 고르세요.' : !hasGauge() ? '② 수위 자료를 먼저 수집하세요.' : problem ? problem : (state.forecasters.length && !selectedForecasters().length) ? '후보 예측기를 하나 이상 고르세요.' : '학습은 몇 분 걸릴 수 있어요. 끝나면 ⑤ 성능 평가가 자동으로 열려요.');
+  }
+  function renderTrainJob(job) {
+    var st = job.status, p = job.progress || {};
+    var total = p.stations_total || (job.stations || []).length || 0, done = p.stations_done || 0;
+    text($('#trainStatus'), st === 'done' ? '학습이 끝났어요' : st === 'failed' ? '학습이 실패했어요' : st === 'queued' ? '대기 중이에요…' : '학습 중이에요 (' + done + '/' + total + ' 지점)');
+    setBar($('#trainBar'), $('#trainBarWrap'), progressFraction(job), st);
+    var detail = [];
+    if (p.current_station) detail.push('지금: ' + p.current_station);
+    if (job.split_used) detail.push('시험 ' + (yearOf(job.split_used.test_start) || '') + (job.custom_split ? ' (지정 분할)' : ''));
+    if (job.forecasters && job.forecasters.length) detail.push('후보 ' + job.forecasters.length + '개');
+    if (job.horizon_max) detail.push('최대 ' + job.horizon_max + '일');
+    if (job.elapsed_s != null) detail.push(fmtDuration(job.elapsed_s) + ' 경과');
+    text($('#trainDetail'), detail.join(' · '));
+    if (st === 'done') note($('#trainDone'), '평가표가 만들어졌어요. 아래 ⑤ 성능 평가에서 확인하세요.', 'ok');
+    else if (st === 'failed') note($('#trainError'), '학습이 실패했어요. ' + (job.error || ''));
+    else show($('#trainDone'), false);
+  }
+  function startTrain() {
+    var s = currentSplit();
+    var body = { split: { train_end: s.train_end, val_start: s.val_start, val_end: s.val_end, test_start: s.test_start, test_end: s.test_end }, horizon_max: Number($('#horizonMax').value), async_run: true };
+    var fc = selectedForecasters();
+    if (fc.length) body.forecasters = fc;
+    note($('#trainError'), '');
+    $('#trainBtn').disabled = true;
+    show($('#trainProgress'), true); show($('#trainDone'), false);
+    text($('#trainStatus'), '학습을 요청하고 있어요…'); text($('#trainDetail'), '');
+    setBar($('#trainBar'), $('#trainBarWrap'), 0, 'queued');
+    startElapsed('train', $('#trainElapsed'), Date.now());
+    postJSON(regionUrl('/gauge/train'), body).then(function (acc) {
+      var jobId = acc && acc.job_id;
+      if (!jobId) {
+        // 동기 응답(평가표)이면 바로 반영
+        if (acc && acc.rows) { state.trainJob = { status: 'done' }; renderTrainJob(state.trainJob); return { status: 'done', evaluation: acc }; }
+        throw new Error('서버가 작업 번호를 주지 않았어요.');
+      }
+      var url = acc.poll_url || regionUrl('/gauge/train/jobs/' + encodeURIComponent(jobId));
+      return pollJob(url, function (job) { state.trainJob = job; renderTrainJob(job); });
+    }).then(function (job) {
+      stopElapsed('train');
+      if (job.status === 'done') {
+        return loadRegions(state.region.id).then(function () { $('#step5').scrollIntoView({ behavior: 'smooth', block: 'start' }); });
+      }
+      updateTrainButton();
+    }).catch(function (err) {
+      stopElapsed('train');
+      state.trainJob = null;
+      note($('#trainError'), '학습을 시작하지 못했어요. ' + err.message);
+      text($('#trainStatus'), '학습이 중단됐어요');
+      setBar($('#trainBar'), $('#trainBarWrap'), 0, 'failed');
+      updateTrainButton();
+    });
+  }
+  function setupTrainStep() {
+    ['#yTrainEnd', '#yValStart', '#yValEnd', '#yTestStart', '#yTestEnd'].forEach(function (id) { $(id).addEventListener('change', renderSplit); });
+    $('#trainBtn').addEventListener('click', startTrain);
+  }
+
+  // ---------- 경과 시간 ----------
+  function startElapsed(key, elm, t0) {
+    stopElapsed(key);
+    function tickE() { text(elm, '걸린 시간 ' + fmtDuration((Date.now() - t0) / 1000)); }
+    tickE();
+    state.timers[key] = setInterval(tickE, 1000);
+  }
+  function stopElapsed(key) { if (state.timers[key]) { clearInterval(state.timers[key]); state.timers[key] = null; } }
+
+  // ---------- 차트 ----------
+  function niceTicks(lo, hi, n) {
+    if (!(hi > lo)) { hi = lo + 1; lo = lo - 1; }
+    var span = hi - lo, step = Math.pow(10, Math.floor(Math.log10(span / n)));
+    var err = span / n / step;
+    step *= err >= 7.5 ? 10 : err >= 3.5 ? 5 : err >= 1.5 ? 2 : 1;
+    var ticks = [], v = Math.ceil(lo / step) * step;
+    for (; v <= hi + 1e-9; v += step) ticks.push(Number(v.toFixed(6)));
+    return { ticks: ticks, step: step };
+  }
+  function parseDay(s) { return Date.parse(s + 'T00:00:00Z'); }
+  function shortDate(s, withYear) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(s); if (!m) return s; return withYear ? m[1] + '.' + m[2] + '.' + m[3] : Number(m[2]) + '/' + Number(m[3]); }
+  function lineChart(host, spec) {
+    clear(host);
+    var W = Math.max(360, host.clientWidth || 900), H = spec.height || 300;
+    var m = { t: 18, r: 20, b: 36, l: 56 };
+    var pw = W - m.l - m.r, ph = H - m.t - m.b;
+    var dates = {}, ys = [];
+    spec.series.forEach(function (s) { s.points.forEach(function (p) { if (p[1] != null && isFinite(p[1])) { dates[p[0]] = 1; ys.push(p[1]); } }); });
+    if (spec.band) spec.band.points.forEach(function (p) { dates[p[0]] = 1; ys.push(p[1], p[2]); });
+    var keys = Object.keys(dates).sort();
+    if (!keys.length) { host.appendChild(el('p', { class: 'empty', text: '그릴 자료가 없어요.' })); return; }
+    var t0 = parseDay(keys[0]), t1 = parseDay(keys[keys.length - 1]);
+    if (t1 <= t0) t1 = t0 + 86400000;
+    var ylo = Math.min.apply(null, ys), yhi = Math.max.apply(null, ys);
+    var padY = (yhi - ylo) * 0.12 || 0.1;
+    var yt = niceTicks(ylo - padY, yhi + padY, 5);
+    var ymin = yt.ticks[0] != null ? Math.min(yt.ticks[0], ylo - padY) : ylo - padY;
+    var ymax = yt.ticks.length ? Math.max(yt.ticks[yt.ticks.length - 1], yhi + padY) : yhi + padY;
+    function X(d) { return m.l + (parseDay(d) - t0) / (t1 - t0) * pw; }
+    function Y(v) { return m.t + (ymax - v) / (ymax - ymin) * ph; }
+    var out = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + (spec.label || '시계열 차트') + '">';
+    out += '<g class="grid">';
+    yt.ticks.forEach(function (v) { if (v >= ymin && v <= ymax) out += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + Y(v) + '" y2="' + Y(v) + '"/>'; });
+    out += '</g><g class="axis">';
+    out += '<line x1="' + m.l + '" x2="' + (W - m.r) + '" y1="' + (m.t + ph) + '" y2="' + (m.t + ph) + '"/>';
+    var dec = yt.step >= 1 ? 0 : yt.step >= 0.1 ? 1 : yt.step >= 0.01 ? 2 : 3;
+    yt.ticks.forEach(function (v) { if (v >= ymin && v <= ymax) out += '<text x="' + (m.l - 8) + '" y="' + (Y(v) + 4) + '" text-anchor="end">' + v.toFixed(dec) + '</text>'; });
+    var days = (t1 - t0) / 86400000;
+    var nx = Math.min(8, Math.max(2, Math.floor(pw / 110)));
+    var withYear = days > 200;
+    for (var i = 0; i <= nx; i++) {
+      var tt = t0 + (t1 - t0) * i / nx;
+      var d = new Date(tt);
+      var lab = withYear ? d.getUTCFullYear() + '.' + pad(d.getUTCMonth() + 1) : (d.getUTCMonth() + 1) + '/' + d.getUTCDate();
+      var xx = m.l + pw * i / nx;
+      out += '<text x="' + xx + '" y="' + (H - 12) + '" text-anchor="' + (i === 0 ? 'start' : i === nx ? 'end' : 'middle') + '">' + lab + '</text>';
+    }
+    out += '<text x="' + (m.l - 8) + '" y="' + (m.t - 6) + '" text-anchor="end">' + (spec.unit || 'm') + '</text>';
+    out += '</g>';
+    if (spec.band && spec.band.points.length > 1) {
+      var up = spec.band.points.map(function (p) { return X(p[0]).toFixed(1) + ',' + Y(p[2]).toFixed(1); });
+      var lo = spec.band.points.slice().reverse().map(function (p) { return X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); });
+      out += '<polygon points="' + up.concat(lo).join(' ') + '" fill="' + (spec.band.color || COLORS.s1) + '" opacity=".13"/>';
+    }
+    (spec.marks || []).forEach(function (mk) {
+      var xx = X(mk.x);
+      out += '<g class="mark"><line x1="' + xx + '" x2="' + xx + '" y1="' + m.t + '" y2="' + (m.t + ph) + '" stroke="#8b97a5" stroke-dasharray="3 3"/><text x="' + (xx + 5) + '" y="' + (m.t + 11) + '">' + (mk.label || '') + '</text></g>';
+    });
+    spec.series.forEach(function (s) {
+      var d = '', pen = false;
+      s.points.forEach(function (p) {
+        if (p[1] == null || !isFinite(p[1])) { pen = false; return; }
+        d += (pen ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1);
+        pen = true;
+      });
+      out += '<path d="' + d + '" fill="none" stroke="' + s.color + '" stroke-width="' + (s.width || 2) + '" stroke-linejoin="round" stroke-linecap="round"' + (s.dash ? ' stroke-dasharray="' + s.dash + '"' : '') + (s.opacity != null ? ' opacity="' + s.opacity + '"' : '') + '/>';
+      if (s.markers) s.points.forEach(function (p) { if (p[1] != null && isFinite(p[1])) out += '<circle cx="' + X(p[0]).toFixed(1) + '" cy="' + Y(p[1]).toFixed(1) + '" r="4" fill="' + s.color + '" stroke="#fff" stroke-width="2"/>'; });
+    });
+    out += '<line class="xhair" x1="0" x2="0" y1="' + m.t + '" y2="' + (m.t + ph) + '" visibility="hidden"/>';
+    out += '<rect class="hit" x="' + m.l + '" y="' + m.t + '" width="' + pw + '" height="' + ph + '" fill="transparent"/>';
+    out += '</svg>';
+    host.innerHTML = out;
+    // 호버: 가장 가까운 날짜의 모든 계열 값
+    var svg = $('svg', host), hair = $('.xhair', host), hit = $('.hit', host);
+    var tip = el('div', { class: 'tip' }); tip.hidden = true; host.appendChild(tip);
+    var lookup = spec.series.map(function (s) { var mm = {}; s.points.forEach(function (p) { mm[p[0]] = p[1]; }); return mm; });
+    var keyT = keys.map(parseDay);
+    function nearest(t) { var lo = 0, hi = keyT.length - 1; while (lo < hi) { var mid = (lo + hi) >> 1; if (keyT[mid] < t) lo = mid + 1; else hi = mid; } if (lo > 0 && Math.abs(keyT[lo - 1] - t) < Math.abs(keyT[lo] - t)) lo -= 1; return lo; }
+    function move(ev) {
+      var rect = svg.getBoundingClientRect();
+      var px = (ev.clientX - rect.left) * W / rect.width;
+      var t = t0 + (px - m.l) / pw * (t1 - t0);
+      var idx = nearest(t), key = keys[idx];
+      var xx = X(key);
+      hair.setAttribute('x1', xx); hair.setAttribute('x2', xx); hair.setAttribute('visibility', 'visible');
+      clear(tip);
+      tip.appendChild(el('div', { class: 'd', text: shortDate(key, true) }));
+      spec.series.forEach(function (s, i) {
+        var v = lookup[i][key];
+        if (v == null || !isFinite(v)) return;
+        var k = el('span', { class: 'k' }); k.style.background = s.color;
+        tip.appendChild(el('div', { class: 'r' }, [el('span', { class: 'n' }, [k, s.name]), el('span', { class: 'v', text: (spec.fmt || fmtM)(v) })]));
+      });
+      tip.hidden = false;
+      var left = xx * rect.width / W + 14;
+      if (left + tip.offsetWidth > rect.width - 4) left = xx * rect.width / W - tip.offsetWidth - 14;
+      tip.style.left = Math.max(0, left) + 'px';
+      tip.style.top = Math.max(0, (ev.clientY - rect.top) - 20) + 'px';
+    }
+    hit.addEventListener('pointermove', move);
+    hit.addEventListener('pointerleave', function () { tip.hidden = true; hair.setAttribute('visibility', 'hidden'); });
+  }
+  function renderLegend(host, items, onClick) {
+    clear(host);
+    items.forEach(function (it) {
+      var k = el('span', { class: 'k' + (it.dash ? ' is-dash' : '') + (it.area ? ' is-area' : '') });
+      if (it.area) k.style.background = it.color; else k.style.borderTopColor = it.color;
+      var node = el(onClick && it.id ? 'button' : 'span', { class: 'it' + (onClick && it.id ? ' is-btn' : '') + (it.on ? ' is-on' : ''), type: onClick && it.id ? 'button' : null }, [k, it.name]);
+      if (onClick && it.id) node.addEventListener('click', function () { onClick(it.id); });
+      host.appendChild(node);
+    });
+  }
+
+  // ---------- ⑤ 성능 평가 ----------
+  function forecasterName(id) { for (var i = 0; i < state.forecasters.length; i++) if (state.forecasters[i].id === id) return state.forecasters[i].name || id; return id === 'persistence' ? '직전값 유지' : id; }
+  function fillStationSelects() {
+    var stations = (state.region && state.region.stations) || [];
+    var items = stations.map(function (s) { return [s.id, (s.name || s.id) + (s.terrain ? ' · ' + (TERRAIN_KO[s.terrain] || s.terrain) : '')]; });
+    ['#evalStation', '#fcStation'].forEach(function (id) { var prev = $(id).value; fillSelect($(id), items, items.length ? null : '지점이 없어요'); if (prev && items.some(function (x) { return x[0] === prev; })) $(id).value = prev; });
+    fillSelect($('#evalHorizon'), REPORT_H.map(function (h) { return [String(h), h + '일 뒤']; }));
+    $('#evalHorizon').value = '7';
+    updateFcButton();
+  }
+  function fillModelSelect() {
+    var sel = $('#fcModel');
+    clear(sel);
+    sel.appendChild(option('', '기본 (예측일수별 선택 모델)'));
+    state.forecasters.forEach(function (f) { if (!f.is_baseline) sel.appendChild(option(f.id, f.name || f.id)); });
+    sel.appendChild(option('persistence', '직전값 유지 (기준선)'));
+  }
+  function loadEvaluation() {
+    note($('#evalError'), '');
+    return getJSON(regionUrl('/gauge/evaluation')).then(function (ev) {
+      state.evaluation = ev;
+      state.split = ev && ev.split;
+      renderEvaluation(ev);
+      if (ev && ev.split && ev.split.test_start && !$('#fcDate').dataset.touched) $('#fcDate').value = ev.split.test_start;
+      var horizons = uniqueHorizons(ev);
+      if (horizons.length) { fillSelect($('#evalHorizon'), horizons.map(function (h) { return [String(h), h + '일 뒤']; })); $('#evalHorizon').value = String(horizons.indexOf(7) >= 0 ? 7 : horizons[0]); }
+      show($('#evalDetail'), true);
+      loadCompare();
+      loadBacktest();
+      loadExperiments();
+      updateFcButton();
+    }).catch(function (err) {
+      state.evaluation = null;
+      show($('#evalStats'), false); show($('#evalTableWrap'), false); show($('#evalDetail'), false);
+      show($('#evalEmpty'), true);
+      text($('#evalEmpty'), err.status === 404 ? '이 지역에는 아직 평가표가 없어요. ④ 학습을 먼저 해 주세요.' : '평가표를 읽지 못했어요.');
+      if (err.status !== 404) note($('#evalError'), err.message);
+    });
+  }
+  function uniqueHorizons(ev) {
+    var hs = {};
+    ((ev && ev.rows) || []).forEach(function (r) { hs[r.horizon] = 1; });
+    return Object.keys(hs).map(Number).sort(function (a, b) { return a - b; });
+  }
+  function renderEvaluation(ev) {
+    var rows = (ev && ev.rows) || [];
+    if (!rows.length) { show($('#evalStats'), false); show($('#evalTableWrap'), false); show($('#evalEmpty'), true); text($('#evalEmpty'), '평가표에 행이 없어요.'); return; }
+    var stations = [], seen = {};
+    rows.forEach(function (r) { if (!seen[r.station_id]) { seen[r.station_id] = 1; stations.push({ id: r.station_id, name: r.station_name || r.station_id, terrain: r.terrain }); } });
+    var horizons = uniqueHorizons(ev);
+    var avg = rows.reduce(function (a, r) { return a + (r.skill_vs_persistence || 0); }, 0) / rows.length;
+    text($('#evStations'), stations.length + '개');
+    text($('#evTest'), ev.split ? (yearOf(ev.split.test_start) === yearOf(ev.split.test_end) ? yearOf(ev.split.test_start) : yearOf(ev.split.test_start) + '–' + yearOf(ev.split.test_end)) : '—');
+    text($('#evSkill'), fmtPct(avg, 1));
+    text($('#evWhen'), fmtWhen(ev.generated_at) || '—');
+    show($('#evalStats'), true);
+    var table = $('#evalTable'), thead = $('thead', table), tbody = $('tbody', table);
+    clear(thead); clear(tbody);
+    var hr = el('tr', null, [el('th', { class: 'st', scope: 'col', text: '지점' })]);
+    horizons.forEach(function (h) { hr.appendChild(el('th', { scope: 'col', text: h + '일 뒤' })); });
+    thead.appendChild(hr);
+    stations.forEach(function (s) {
+      var tr = el('tr', null, [el('td', { class: 'st' }, [el('div', { text: s.name }), el('div', { class: 'muted small', text: TERRAIN_KO[s.terrain] || s.terrain || '' })])]);
+      horizons.forEach(function (h) {
+        var r = rows.filter(function (x) { return x.station_id === s.id && x.horizon === h; })[0];
+        if (!r) { tr.appendChild(el('td', { class: 'muted', text: '—' })); return; }
+        var cell = el('div', { class: 'cell', title: 'persistence RMSE ' + fmtCm(r.persistence_test_rmse) + ' · n=' + (r.test_n || '') }, [
+          el('span', { class: 'm', text: r.forecaster_name || forecasterName(r.forecaster_id) }),
+          el('span', { class: 's', text: 'MSE ' + fmtMse(r.test_mse) }),
+          el('span', { class: 's', text: 'RMSE ' + fmtCm(r.test_rmse) }),
+          skillCell(r.skill_vs_persistence)
+        ]);
+        tr.appendChild(el('td', null, [cell]));
+      });
+      tbody.appendChild(tr);
+    });
+    show($('#evalTableWrap'), true);
+    show($('#evalEmpty'), false);
+  }
+  function compareSpec(data) {
+    var table = data.table || [];
+    // 과거는 예측일수의 3배(최소 21일)만 — 90일 전부를 그리면 전망 구간이 오른쪽 끝에 눌려 보이지 않는다
+    var hist = (data.history || []).slice(-Math.max(21, 3 * table.length)).map(function (p) { return [p.date, p.water_level_m]; });
+    var models = data.models || Object.keys((table[0] && table[0].models) || {});
+    var selectedId = table.length ? table[0].selected_model : null;
+    var lastHist = hist.length ? hist[hist.length - 1] : (data.as_of ? [data.as_of, data.origin_level_m] : null);
+    var series = [];
+    if (hist.length) series.push({ id: 'history', name: '실측 (원점까지)', color: COLORS.ink, width: 2, points: hist });
+    var obs = table.filter(function (r) { return r.observed_m != null; }).map(function (r) { return [r.target_date, r.observed_m]; });
+    if (obs.length) series.push({ id: 'observed', name: '실측 (원점 이후)', color: COLORS.ok, width: 2, markers: true, points: (lastHist ? [lastHist] : []).concat(obs) });
+    series.push({ id: 'persistence', name: '직전값 유지', color: COLORS.gray, width: 1.5, dash: '5 4', points: (lastHist ? [lastHist] : []).concat(table.map(function (r) { return [r.target_date, r.persistence_m]; })) });
+    var emph = state.compareEmph;
+    models.forEach(function (id) {
+      var pts = table.map(function (r) { var mm = r.models && r.models[id]; return [r.target_date, mm ? mm.forecast_m : null]; });
+      if (lastHist) pts.unshift(lastHist);
+      var isSel = id === selectedId, ei = emph.indexOf(id);
+      series.push({ id: id, name: forecasterName(id) + (isSel ? ' (선택)' : ''), color: isSel ? COLORS.s1 : ei >= 0 ? EMPH_COLORS[ei] : COLORS.dim, width: isSel || ei >= 0 ? 2.5 : 1.3, points: pts, opacity: isSel || ei >= 0 ? 1 : .9 });
+    });
+    // 선택 모델의 경로가 한 줄로 안 오면 selected[] 로 보강
+    if (!selectedId && data.selected && data.selected.length) series.push({ id: 'selected', name: '선택 모델', color: COLORS.s1, width: 2.5, points: (lastHist ? [lastHist] : []).concat(data.selected.map(function (s) { return [s.target_date, s.forecast_m]; })) });
+    // 강조된 계열이 위에 그려지도록 정렬
+    series.sort(function (a, b) { return rank(a) - rank(b); });
+    function rank(s) { if (s.color === COLORS.dim) return 0; if (s.id === 'persistence') return 1; if (s.color === COLORS.ink || s.color === COLORS.ok) return 3; return 2; }
+    return { series: series, models: models, selectedId: selectedId, marks: data.as_of ? [{ x: data.as_of, label: '원점 ' + data.as_of }] : [] };
+  }
+  function renderCompare(data) {
+    var spec = compareSpec(data);
+    lineChart($('#compareChart'), { series: spec.series, marks: spec.marks, height: 320, label: '모델 비교 차트' });
+    var items = [{ name: '실측', color: COLORS.ink }, { name: '직전값 유지', color: COLORS.gray, dash: true }];
+    spec.models.forEach(function (id) {
+      var isSel = id === spec.selectedId, ei = state.compareEmph.indexOf(id);
+      items.push({ id: id, name: forecasterName(id) + (isSel ? ' (선택)' : ''), color: isSel ? COLORS.s1 : ei >= 0 ? EMPH_COLORS[ei] : COLORS.dim, on: ei >= 0 });
+    });
+    renderLegend($('#compareLegend'), items, function (id) {
+      var i = state.compareEmph.indexOf(id);
+      if (i >= 0) state.compareEmph.splice(i, 1); else { if (state.compareEmph.length >= 3) state.compareEmph.shift(); state.compareEmph.push(id); }
+      renderCompare(data);
+    });
+    text($('#compareNote'), [data.params_note_ko, data.note_ko].filter(Boolean).join(' '));
+    var body = $('#compareBody');
+    clear(body);
+    var per = data.per_model || {};
+    var ids = spec.models.slice();
+    ids.sort(function (a, b) { var ra = (per[a] && per[a].test_at_horizon && per[a].test_at_horizon.rmse) || Infinity, rb = (per[b] && per[b].test_at_horizon && per[b].test_at_horizon.rmse) || Infinity; return ra - rb; });
+    ids.forEach(function (id) {
+      var t = (per[id] && per[id].test_at_horizon) || {};
+      var tr = el('tr', { class: t.selected ? 'is-selected' : null }, [
+        el('td', null, [el('span', { class: 'k', style: 'display:inline-block;width:14px;border-top:3px solid ' + (id === spec.selectedId ? COLORS.s1 : state.compareEmph.indexOf(id) >= 0 ? EMPH_COLORS[state.compareEmph.indexOf(id)] : COLORS.dim) + ';margin-right:8px;vertical-align:middle;border-radius:2px' }), forecasterName(id)]),
+        el('td', { class: 'num', text: fmtMse(t.mse) }), el('td', { class: 'num', text: fmtCm(t.rmse) }), el('td', { class: 'num', text: fmtCm(t.mae) }),
+        el('td', { class: 'num' }, [skillCell(t.skill_vs_persistence)]),
+        el('td', null, [t.selected ? el('span', { class: 'badge badge--sel', text: '선택' }) : el('span', { class: 'muted', text: '' })])
+      ]);
+      body.appendChild(tr);
+    });
+  }
+  function loadCompare() {
+    var station = $('#evalStation').value, h = $('#evalHorizon').value;
+    if (!station) return;
+    note($('#compareError'), '');
+    $('#compareChart').style.opacity = '.5';
+    getJSON(stationUrl(station, '/forecast/compare?horizon=' + encodeURIComponent(h))).then(function (data) {
+      state.compareData = data;
+      $('#compareChart').style.opacity = '';
+      renderCompare(data);
+    }).catch(function (err) { $('#compareChart').style.opacity = ''; clear($('#compareChart')); clear($('#compareLegend')); clear($('#compareBody')); note($('#compareError'), '모델 비교를 불러오지 못했어요. ' + err.message); });
+  }
+  function renderBacktest(bt) {
+    var tr = bt.trace || {};
+    var dates = tr.dates || [];
+    function zip(arr) { return dates.map(function (d, i) { return [d, arr && arr[i] != null ? arr[i] : null]; }); }
+    var series = [
+      { id: 'persistence', name: '직전값 유지', color: COLORS.s2, width: 1.5, points: zip(tr.persistence) },
+      { id: 'pred', name: (bt.forecaster_name || forecasterName(bt.forecaster_id)) + ' 예측', color: COLORS.s1, width: 2, points: zip(tr.pred || tr.forecast) },
+      { id: 'truth', name: '실측', color: COLORS.ink, width: 2, points: zip(tr.truth || tr.actual) }
+    ];
+    lineChart($('#backtestChart'), { series: series, height: 300, label: '백테스트 차트' });
+    renderLegend($('#backtestLegend'), [{ name: '실측', color: COLORS.ink }, { name: series[1].name, color: COLORS.s1 }, { name: '직전값 유지', color: COLORS.s2 }]);
+    var st = $('#btStats');
+    clear(st);
+    var t = bt.test || {}, pb = (bt.test_baselines && bt.test_baselines.persistence) || {};
+    [['선택 모델', bt.forecaster_name || forecasterName(bt.forecaster_id), ''], ['시험 RMSE', fmtNum((t.rmse || 0) * 100, 1), 'cm'], ['직전값 유지 RMSE', fmtNum((pb.rmse || 0) * 100, 1), 'cm'], ['개선율', fmtPct(bt.skill_vs_persistence, 1), '']].forEach(function (x) {
+      st.appendChild(el('div', { class: 'stat' }, [el('div', { class: 'stat__label', text: x[0] }), el('div', { class: 'stat__value' }, [x[1], x[2] ? el('small', { text: x[2] }) : null])]));
+    });
+  }
+  function loadBacktest() {
+    var station = $('#evalStation').value, h = $('#evalHorizon').value;
+    if (!station) return;
+    note($('#backtestError'), '');
+    $('#backtestChart').style.opacity = '.5';
+    getJSON(stationUrl(station, '/backtest?horizon=' + encodeURIComponent(h))).then(function (bt) {
+      $('#backtestChart').style.opacity = '';
+      renderBacktest(bt);
+    }).catch(function (err) { $('#backtestChart').style.opacity = ''; clear($('#backtestChart')); clear($('#backtestLegend')); clear($('#btStats')); note($('#backtestError'), '백테스트를 불러오지 못했어요. ' + err.message); });
+  }
+  function loadExperiments() {
+    show($('#expBox'), false);
+    getJSON(regionUrl('/gauge/experiments')).then(function (ex) {
+      var am = ex && ex.items && ex.items.area_models;
+      if (!am || !am.series) return;
+      var body = $('#expBody');
+      clear(body);
+      var n = 0;
+      Object.keys(am.series).forEach(function (sensor) {
+        var s = am.series[sensor];
+        var cands = s.candidates || {};
+        var ids = Object.keys(cands).sort(function (a, b) { return (cands[a].rmse_km2 || Infinity) - (cands[b].rmse_km2 || Infinity); });
+        ids.forEach(function (id, i) {
+          var c = cands[id], st = c.sign_test_vs_persistence;
+          var p = st && st.p_two_sided != null ? st.p_two_sided : null;
+          n += 1;
+          body.appendChild(el('tr', null, [
+            el('td', { text: i === 0 ? sensor + ' (' + (s.n || (s.points || []).length) + '점)' : '' }),
+            el('td', { text: (c.name_ko || id) + (c.level_station ? ' · ' + c.level_station : '') }),
+            el('td', { class: 'num', text: c.n != null ? c.n : '—' }),
+            el('td', { class: 'num', text: fmtNum(c.rmse_km2, 2) }),
+            el('td', { class: 'num' }, [skillCell(c.skill_vs_persistence)]),
+            el('td', { class: 'num', text: p == null ? '—' : fmtNum(p, 3) })
+          ]));
+        });
+      });
+      if (!n) return;
+      var notes = ['이것은 보간 실험이에요. 지역·센서당 표본이 4~10점뿐이라 LOO(하나 빼고 맞히기) 시험점도 그만큼이고, n=4 면 부호검정의 최소 p 가 0.125 라 어떤 후보도 직전값 유지보다 유의하게 낫다고 말할 수 없어요. 공식 평가표·개선율에는 들어가지 않아요.'];
+      if (am.verdict_ko) notes.push(am.verdict_ko);
+      note($('#expNote'), notes.join(' '), 'warn');
+      show($('#expBox'), true);
+    }).catch(function () { /* 실험 자료는 없을 수 있다 */ });
+  }
+  function setupEvalStep() {
+    $('#evalStation').addEventListener('change', function () { state.compareEmph = []; loadCompare(); loadBacktest(); });
+    $('#evalHorizon').addEventListener('change', function () { loadCompare(); loadBacktest(); });
+  }
+
+  // ---------- ⑥ 시험 ----------
+  function updateFcButton() {
+    var ok = !!state.region && isTrained() && !!$('#fcStation').value && !!$('#fcDate').value;
+    $('#fcBtn').disabled = !ok;
+    text($('#fcHint'), !state.region ? '① 에서 지역을 먼저 고르세요.' : !isTrained() ? '④ 학습을 먼저 해야 전망을 만들 수 있어요.' : !$('#fcStation').value ? '지점이 없어요.' : '원점이 시험 연도 안이면 실측과 비교할 수 있어요.');
+  }
+  function renderForecast(fc) {
+    var steps = fc.steps || [];
+    var hist = (fc.history || []).slice(-Math.max(30, 3 * steps.length)).map(function (p) { return [p.date, p.water_level_m]; });
+    var origin = fc.as_of;
+    var originPt = origin != null && fc.origin_level_m != null ? [origin, fc.origin_level_m] : (hist.length ? hist[hist.length - 1] : null);
+    var fpts = steps.map(function (s) { return [s.target_date, s.forecast_m]; });
+    var opts = steps.filter(function (s) { return s.observed_m != null; }).map(function (s) { return [s.target_date, s.observed_m]; });
+    var band = steps.filter(function (s) { return s.q05_m != null && s.q95_m != null; }).map(function (s) { return [s.target_date, s.q05_m, s.q95_m]; });
+    if (originPt && band.length) band.unshift([originPt[0], originPt[1], originPt[1]]);
+    var series = [];
+    if (hist.length) series.push({ id: 'history', name: '실측 (원점까지)', color: COLORS.ink, width: 2, points: hist });
+    if (originPt && steps.length) series.push({ id: 'persistence', name: '직전값 유지', color: COLORS.gray, width: 1.5, dash: '5 4', points: [originPt].concat(steps.map(function (s) { return [s.target_date, s.persistence_reference_m != null ? s.persistence_reference_m : originPt[1]]; })) });
+    series.push({ id: 'forecast', name: '전망', color: COLORS.s1, width: 2.5, markers: steps.length <= 31, points: (originPt ? [originPt] : []).concat(fpts) });
+    if (opts.length) series.push({ id: 'observed', name: '실측 (원점 이후)', color: COLORS.ok, width: 2, markers: steps.length <= 31, points: (originPt ? [originPt] : []).concat(opts) });
+    lineChart($('#fcChart'), { series: series, band: band.length ? { points: band, color: COLORS.s1 } : null, marks: origin ? [{ x: origin, label: '원점 ' + origin }] : [], height: 320, label: '전망 차트' });
+    var leg = [{ name: '실측 (원점까지)', color: COLORS.ink }, { name: '전망', color: COLORS.s1 }, { name: '5–95 % 범위', color: COLORS.s1, area: true }, { name: '직전값 유지', color: COLORS.gray, dash: true }];
+    if (opts.length) leg.push({ name: '실측 (원점 이후)', color: COLORS.ok });
+    renderLegend($('#fcLegend'), leg);
+    var st = $('#fcStats');
+    clear(st);
+    var v = fc.verification;
+    var stats = [['원점 수위', fmtNum(fc.origin_level_m, 3), 'm'], ['모델', fc.forecaster_override ? forecasterName(fc.forecaster_override) : '예측일수별 선택', '']];
+    if (v && v.n) { stats.push(['실측 대비 RMSE (' + v.n + '일)', fmtNum((v.rmse_m || 0) * 100, 1), 'cm']); stats.push(['개선율', fmtPct(v.skill_vs_persistence, 1), '']); }
+    else stats.push(['실측', '아직 없음', ''], ['비교', '원점 이후 실측이 들어오면 계산', '']);
+    stats.forEach(function (x) { st.appendChild(el('div', { class: 'stat' }, [el('div', { class: 'stat__label', text: x[0] }), el('div', { class: 'stat__value', style: x[1].length > 10 ? 'font-size:1rem' : null }, [x[1], x[2] ? el('small', { text: x[2] }) : null])])); });
+    var notes = [];
+    if (fc.in_sample) notes.push(fc.params_note_ko || '원점이 학습·검증 구간 안이라 표본 내 전망이에요. 성능 근거로 쓰지 마세요.');
+    if (fc.forecaster_note_ko) notes.push(fc.forecaster_note_ko);
+    if (fc.coverage_note_ko) notes.push(fc.coverage_note_ko);
+    if (fc.band_note_ko) notes.push(fc.band_note_ko);
+    note($('#fcNote'), notes.join(' '), fc.in_sample ? 'warn' : 'info');
+    var body = $('#fcBody');
+    clear(body);
+    steps.forEach(function (s) {
+      var err = s.error_m != null ? s.error_m : (s.observed_m != null ? s.observed_m - s.forecast_m : null);
+      body.appendChild(el('tr', null, [
+        el('td', { text: 'D+' + s.horizon }), el('td', { text: s.target_date }), el('td', { class: 'muted small', text: forecasterName(s.forecaster_id) }),
+        el('td', { class: 'num', text: fmtM(s.forecast_m) }),
+        el('td', { class: 'num muted', text: s.q05_m != null ? fmtNum(s.q05_m, 2) + ' ~ ' + fmtNum(s.q95_m, 2) : '—' }),
+        el('td', { class: 'num', text: s.observed_m != null ? fmtM(s.observed_m) : '—' }),
+        el('td', { class: 'num' }, [err == null ? el('span', { class: 'muted', text: '—' }) : el('span', { class: 'skill ' + (Math.abs(err) * 100 < 5 ? 'skill--pos' : Math.abs(err) * 100 < 15 ? 'skill--zero' : 'skill--neg'), text: (err > 0 ? '+' : '') + fmtNum(err * 100, 1) + ' cm' })])
+      ]));
+    });
+    show($('#fcResult'), true);
+  }
+  function loadForecast() {
+    var station = $('#fcStation').value, as_of = $('#fcDate').value, model = $('#fcModel').value, h = $('#fcHorizon').value;
+    note($('#fcError'), '');
+    $('#fcBtn').disabled = true;
+    $('#fcChart').style.opacity = '.5';
+    var q = '/forecast?as_of=' + encodeURIComponent(as_of) + '&horizon=' + encodeURIComponent(h) + '&history_days=' + Math.max(30, 3 * Number(h)) + (model ? '&forecaster=' + encodeURIComponent(model) : '');
+    getJSON(stationUrl(station, q)).then(function (fc) {
+      $('#fcChart').style.opacity = '';
+      renderForecast(fc);
+    }).catch(function (err) {
+      $('#fcChart').style.opacity = '';
+      show($('#fcResult'), false);
+      note($('#fcError'), '전망을 만들지 못했어요. ' + err.message);
+    }).then(updateFcButton);
+  }
+  function setupTestStep() {
+    $('#fcDate').addEventListener('change', function () { this.dataset.touched = '1'; updateFcButton(); });
+    $('#fcStation').addEventListener('change', updateFcButton);
+    $('#fcBtn').addEventListener('click', loadForecast);
+  }
+
+  // ---------- 시작 ----------
+  function init() {
+    setupTop();
+    setupRegionStep();
+    setupGaugeStep();
+    setupWeatherStep();
+    setupTrainStep();
+    setupEvalStep();
+    setupTestStep();
+    checkHealth();
+    setInterval(checkHealth, 30000);
+    Promise.all([loadForecasters(), loadWeatherStations()]).then(function () { return loadRegions(); });
+    window.addEventListener('resize', function () {
+      clearTimeout(state.timers.resize);
+      state.timers.resize = setTimeout(function () {
+        if (state.compareData && !$('#evalDetail').hidden) renderCompare(state.compareData);
+      }, 200);
+    });
+  }
+  init();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,2495 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; font-src 'self'">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:,">
+<title>WATERCAST 서비스</title>
+<style>
+  :root {
+    --bg: #f3f5f8;
+    --bg-soft: #f7f9fb;
+    --card: #ffffff;
+    --ink: #16202c;
+    --muted: #5e6b7a;
+    --line: #e2e7ee;
+    --line-strong: #c6cfd9;
+    --accent: #0f6fd1;
+    --accent-strong: #0b58a8;
+    --accent-soft: #e8f1fc;
+    --accent-ring: rgba(15, 111, 209, .35);
+    --ok: #178a4c;
+    --ok-soft: #e4f5ea;
+    --warn-bg: #fff6d6;
+    --warn-ink: #7a5a00;
+    --warn-line: #f0dc93;
+    --err: #c62828;
+    --err-bg: #fdecec;
+    --err-line: #f3b9b9;
+    --radius: 20px;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 10px 30px rgba(16, 24, 40, .06);
+    /* 차트 계열색 (검증된 범주 팔레트, 고정 순서) */
+    --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --s4: #eda100; --s5: #e87ba4; --s6: #008300; --s7: #4a3aa7; --s8: #e34948;
+    --grid: #e6e9ee; --axis: #c3c8d0; --tick: #6b7684;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 18px; -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Pretendard", "Noto Sans KR", "Noto Sans CJK KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  [hidden] { display: none !important; }
+  .wrap { width: min(1160px, 100% - 48px); margin: 0 auto; }
+  :focus-visible { outline: 3px solid var(--accent-ring); outline-offset: 2px; border-radius: 8px; }
+  .muted { color: var(--muted); }
+  .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  a { color: var(--accent-strong); }
+
+  /* ---------- 상단 바 ---------- */
+  .topbar { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.94); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  .topbar__inner { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 12px 0; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand__logo { width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, #0f6fd1, #39a0f0); display: grid; place-items: center; color: #fff; box-shadow: 0 6px 14px rgba(15,111,209,.28); }
+  .brand__logo svg { width: 26px; height: 26px; }
+  .brand__name { font-weight: 800; font-size: 1.15rem; letter-spacing: .02em; line-height: 1.2; }
+  .brand__sub { color: var(--muted); font-size: .9rem; }
+  .tabs { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .tab { font: inherit; font-weight: 700; color: var(--muted); text-decoration: none; padding: 10px 16px; border-radius: 12px; border: 0; background: transparent; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; line-height: 1.2; }
+  .tab:hover { background: var(--bg-soft); color: var(--ink); }
+  .tab.is-active { background: var(--accent-soft); color: var(--accent-strong); }
+  .tab svg { width: 18px; height: 18px; }
+  .menu { position: relative; }
+  .menu__list { position: absolute; right: 0; top: calc(100% + 8px); min-width: 280px; background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 8px; margin: 0; list-style: none; z-index: 30; }
+  .menu__item { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; font: inherit; color: var(--ink); text-decoration: none; padding: 12px 14px; border-radius: 10px; border: 0; background: transparent; cursor: pointer; }
+  .menu__item:hover, .menu__item:focus-visible { background: var(--accent-soft); color: var(--accent-strong); outline: none; }
+  .menu__item small { color: var(--muted); margin-left: auto; font-size: .85rem; }
+  .health { display: flex; align-items: center; gap: 10px; font-size: .92rem; color: var(--muted); padding: 8px 14px; border-radius: 999px; background: var(--bg-soft); border: 1px solid var(--line); white-space: nowrap; }
+  .health .dot { width: 11px; height: 11px; border-radius: 50%; background: #aab4bf; flex: none; }
+  .health.is-ok .dot { background: var(--ok); box-shadow: 0 0 0 4px rgba(23,138,76,.16); }
+  .health.is-bad .dot { background: var(--err); box-shadow: 0 0 0 4px rgba(198,40,40,.16); }
+  .health .ver { color: #8b97a5; font-variant-numeric: tabular-nums; }
+
+  /* ---------- 단계 표시 ---------- */
+  .intro { margin: 30px 0 8px; }
+  .intro h1 { font-size: 1.85rem; margin: 0 0 6px; letter-spacing: -.01em; }
+  .intro p { margin: 0; color: var(--muted); font-size: 1.05rem; }
+  .stepper { display: grid; grid-template-columns: repeat(4, 1fr); list-style: none; margin: 24px 0 22px; padding: 0; gap: 0; }
+  .stepper__item { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .stepper__item:not(:last-child)::after { content: ""; flex: 1; height: 3px; background: var(--line); border-radius: 2px; margin: 0 18px; transition: background .3s; }
+  .stepper__item.is-done:not(:last-child)::after { background: var(--ok); }
+  .stepper__num { flex: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; background: #fff; border: 2px solid var(--line-strong); color: var(--muted); transition: all .25s; }
+  .stepper__num svg { width: 20px; height: 20px; display: none; }
+  .stepper__item.is-current .stepper__num { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 6px var(--accent-soft); }
+  .stepper__item.is-done .stepper__num { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .stepper__item.is-done .stepper__num .n { display: none; }
+  .stepper__item.is-done .stepper__num svg { display: block; }
+  .stepper__label { font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .stepper__item.is-current .stepper__label { color: var(--ink); }
+  .stepper__item.is-done .stepper__label { color: var(--ok); }
+
+  /* ---------- 카드 ---------- */
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 30px 34px; margin-bottom: 20px; box-shadow: var(--shadow); animation: rise .4s ease-out both; }
+  .card__title { display: flex; align-items: center; gap: 14px; font-size: 1.45rem; margin: 0 0 22px; letter-spacing: -.01em; }
+  .card__title .num, .stepcard__num { flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #fff; font-size: 1.05rem; font-weight: 800; }
+  .card__lead { color: var(--muted); margin: -12px 0 22px; }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  /* 단계 카드: 활성이면 펼치고, 끝난 단계는 한 줄 요약으로 접는다 */
+  .stepcard { padding: 0; overflow: hidden; }
+  .stepcard__head { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; font: inherit; background: transparent; border: 0; padding: 22px 34px; cursor: pointer; color: var(--ink); }
+  .stepcard__head:hover { background: var(--bg-soft); }
+  .stepcard__head:focus-visible { outline-offset: -4px; border-radius: var(--radius); }
+  .stepcard__title { font-size: 1.4rem; font-weight: 800; letter-spacing: -.01em; margin: 0; }
+  .stepcard__summary { color: var(--muted); font-size: 1rem; font-weight: 600; margin-left: 6px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .stepcard__chev { flex: none; width: 22px; height: 22px; color: var(--muted); transition: transform .2s; margin-left: auto; }
+  .stepcard.is-expanded .stepcard__chev { transform: rotate(180deg); }
+  .stepcard__body { padding: 0 34px 30px; border-top: 1px solid var(--line); padding-top: 24px; }
+  .stepcard:not(.is-expanded) .stepcard__body { display: none; }
+  .stepcard.is-done .stepcard__num { background: var(--ok); }
+  .stepcard.is-locked { opacity: .62; box-shadow: none; }
+  .stepcard.is-locked .stepcard__head { cursor: not-allowed; }
+  .stepcard.is-locked .stepcard__num { background: #c9d2dc; }
+  .stepcard.is-locked .stepcard__chev { visibility: hidden; }
+  .stepcard.is-failed .stepcard__num { background: var(--err); }
+  .stepcard.is-active { border-color: #bcd4f3; box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 12px 34px rgba(15,111,209,.12); }
+
+  /* ---------- 입력 ---------- */
+  .field { margin-bottom: 22px; min-width: 0; }
+  .field:last-child { margin-bottom: 0; }
+  .field > label, .field > legend, .field__label { display: block; font-weight: 700; margin-bottom: 10px; font-size: 1.05rem; padding: 0; }
+  .field__hint { color: var(--muted); font-size: .95rem; margin-top: 8px; min-height: 1.3em; }
+  fieldset.field { border: 0; padding: 0; margin-left: 0; margin-right: 0; }
+  select, input[type="date"], input[type="time"], input[type="text"], textarea {
+    font: inherit; font-size: 1.05rem; color: var(--ink); background: #fff;
+    border: 1.5px solid var(--line-strong); border-radius: 12px; padding: 11px 14px; width: 100%; min-height: 52px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  select { appearance: none; -webkit-appearance: none; padding-right: 44px; }
+  .select-wrap { position: relative; }
+  .select-wrap::after { content: ""; position: absolute; right: 20px; top: 50%; width: 10px; height: 10px; border-right: 2.5px solid var(--muted); border-bottom: 2.5px solid var(--muted); transform: translateY(-70%) rotate(45deg); pointer-events: none; }
+  select:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid var(--accent-ring); outline-offset: 1px; border-color: var(--accent); }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .row--3 { grid-template-columns: repeat(3, 1fr); }
+  .row--4 { grid-template-columns: repeat(4, 1fr); }
+
+  .choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .choice { position: relative; display: block; cursor: pointer; margin: 0; }
+  .choice input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; }
+  .choice__box { display: block; position: relative; border: 2px solid var(--line); border-radius: 16px; padding: 16px 16px 16px 72px; min-height: 100px; background: #fff; transition: border-color .15s, background .15s, box-shadow .15s; }
+  .choice__icon { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: var(--bg-soft); color: var(--accent); }
+  .choice__icon svg { width: 26px; height: 26px; }
+  .choice__title { font-weight: 800; font-size: 1.08rem; display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .choice__tag { display: inline-block; font-size: .82rem; color: var(--muted); font-weight: 600; background: var(--bg); padding: 2px 8px; border-radius: 999px; }
+  .choice__desc { display: block; color: var(--muted); font-size: .93rem; margin-top: 4px; }
+  .choice__note { font-weight: 700; color: var(--err); }
+  .choice__box:hover { border-color: var(--line-strong); }
+  .choice input:checked + .choice__box { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+  .choice input:checked + .choice__box .choice__icon { background: var(--accent); color: #fff; }
+  .choice input:focus-visible + .choice__box { outline: 3px solid var(--accent-ring); outline-offset: 2px; }
+  .choice.is-disabled { cursor: not-allowed; }
+  .choice.is-disabled .choice__box { opacity: .55; background: var(--bg-soft); }
+
+  details.more { border: 1.5px solid var(--line); border-radius: 14px; padding: 0 18px; background: var(--bg-soft); }
+  details.more summary { cursor: pointer; font-weight: 700; padding: 14px 0; list-style: none; display: flex; align-items: center; gap: 10px; color: var(--accent-strong); }
+  details.more summary::-webkit-details-marker { display: none; }
+  details.more summary::before { content: ""; width: 10px; height: 10px; border-right: 2.5px solid currentColor; border-bottom: 2.5px solid currentColor; transform: rotate(-45deg); transition: transform .2s; margin-left: 4px; }
+  details.more[open] summary::before { transform: rotate(45deg); }
+  details.more .more__body { padding: 6px 0 20px; }
+  .switches { display: flex; gap: 28px; flex-wrap: wrap; }
+  .switch { display: inline-flex; align-items: center; gap: 12px; cursor: pointer; font-weight: 600; }
+  .switch input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .switch__track { width: 52px; height: 30px; border-radius: 999px; background: var(--line-strong); position: relative; transition: background .2s; flex: none; }
+  .switch__track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.2); transition: transform .2s; }
+  .switch input:checked + .switch__track { background: var(--accent); }
+  .switch input:checked + .switch__track::after { transform: translateX(22px); }
+  .switch input:focus-visible + .switch__track { outline: 3px solid var(--accent-ring); outline-offset: 2px; }
+  .filebtn { display: inline-flex; align-items: center; gap: 10px; position: relative; }
+  .filebtn input[type="file"] { position: absolute; opacity: 0; width: 1px; height: 1px; }
+
+  /* ---------- 파일 올리기 ---------- */
+  .source-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  .dropzone { border: 2.5px dashed var(--line-strong); border-radius: 18px; padding: 36px 24px; text-align: center; background: var(--bg-soft); cursor: pointer; transition: border-color .15s, background .15s, transform .15s; }
+  .dropzone:hover, .dropzone.is-over, .dropzone:focus-visible { border-color: var(--accent); background: var(--accent-soft); }
+  .dropzone.is-over { transform: scale(1.005); }
+  .dropzone.has-file { border-style: solid; border-color: var(--ok); background: var(--ok-soft); }
+  .dropzone__icon { width: 56px; height: 56px; color: var(--accent); margin: 0 auto 12px; }
+  .dropzone.has-file .dropzone__icon { color: var(--ok); }
+  .dropzone__title { font-size: 1.25rem; font-weight: 800; }
+  .dropzone__sub { color: var(--muted); margin-top: 6px; font-size: 1rem; }
+  .dropzone__file { margin-top: 14px; display: inline-flex; align-items: center; gap: 10px; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; font-weight: 700; max-width: 100%; }
+  .dropzone__file .size { color: var(--muted); font-weight: 600; }
+  .dropzone__file .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 46ch; }
+  .or-row { display: flex; align-items: center; gap: 14px; color: var(--muted); font-weight: 700; }
+  .or-row::before, .or-row::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+  .pick { border: 1.5px solid var(--line); border-radius: 14px; background: #fff; }
+  .pick__head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 16px; flex-wrap: wrap; }
+  .pick__list { list-style: none; margin: 0; padding: 0 8px 8px; max-height: 320px; overflow: auto; }
+  .pick-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; width: 100%; font: inherit; text-align: left; background: transparent; border: 0; border-top: 1px solid var(--line); padding: 12px 10px; cursor: pointer; color: var(--ink); border-radius: 8px; }
+  .pick-row:hover, .pick-row:focus-visible { background: var(--accent-soft); }
+  .pick-row b { font-weight: 800; }
+  .pick-row .sub { color: var(--muted); font-size: .92rem; }
+  .start-row { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; margin-top: 22px; }
+  .start-row .hint { color: var(--muted); margin: 0; }
+  .upload { margin-top: 20px; }
+  .upload__label { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 8px; }
+  .inputs-summary { display: flex; flex-wrap: wrap; gap: 10px 22px; background: var(--bg-soft); border: 1px solid var(--line); border-radius: 14px; padding: 14px 18px; margin-bottom: 20px; font-size: 1rem; }
+  .inputs-summary b { color: var(--muted); font-weight: 700; margin-right: 6px; }
+
+  /* ---------- 버튼 ---------- */
+  .btn { font: inherit; font-weight: 700; border: 0; border-radius: 14px; padding: 13px 24px; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; text-decoration: none; line-height: 1.2; transition: transform .08s, box-shadow .15s, background .15s, color .15s; color: var(--ink); background: var(--bg); }
+  .btn svg { width: 22px; height: 22px; flex: none; }
+  .btn--primary { background: var(--accent); color: #fff; box-shadow: 0 8px 18px rgba(15,111,209,.26); }
+  .btn--primary:hover:not(:disabled) { background: var(--accent-strong); transform: translateY(-1px); }
+  .btn:disabled { background: #cdd6e0; color: #fff; box-shadow: none; cursor: not-allowed; }
+  .btn--xl { font-size: 1.3rem; padding: 18px 46px; border-radius: 16px; }
+  .btn--secondary { background: var(--accent-soft); color: var(--accent-strong); }
+  .btn--secondary:hover { background: #d9e8fa; }
+  .btn--ghost { background: #fff; color: var(--accent-strong); border: 1.5px solid var(--line-strong); }
+  .btn--ghost:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .btn--sm { padding: 9px 16px; font-size: .95rem; border-radius: 11px; }
+
+  /* ---------- 진행 ---------- */
+  .progress-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+  .progress-status { font-size: 1.15rem; font-weight: 700; }
+  .elapsed { color: var(--muted); font-variant-numeric: tabular-nums; font-weight: 600; }
+  .bar { height: 14px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .bar__fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), #4ea1f3); border-radius: 999px; transition: width .6s ease; position: relative; }
+  .bar__fill.is-active::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent); animation: shimmer 1.4s linear infinite; }
+  .bar__fill.is-done { background: linear-gradient(90deg, var(--ok), #3fbf7a); }
+  .bar__fill.is-failed { background: linear-gradient(90deg, var(--err), #e57373); }
+  @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+  .checklist { list-style: none; margin: 20px 0 0; padding: 0; }
+  .step { display: grid; grid-template-columns: 40px 1fr auto; gap: 14px; align-items: start; padding: 13px 0; border-top: 1px solid var(--line); }
+  .step__icon { width: 32px; height: 32px; color: var(--line-strong); }
+  .step__icon svg { width: 100%; height: 100%; display: block; }
+  .step.is-running .step__icon { color: var(--accent); }
+  .step.is-done .step__icon { color: var(--ok); }
+  .step.is-skipped .step__icon { color: #9aa6b3; }
+  .step.is-failed .step__icon { color: var(--err); }
+  .step__name { font-weight: 700; font-size: 1.1rem; }
+  .step.is-pending .step__name, .step.is-skipped .step__name { color: var(--muted); }
+  .step__detail { color: var(--muted); font-size: .95rem; margin-top: 2px; }
+  .step.is-failed .step__detail { color: var(--err); font-weight: 600; }
+  .step__time { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; padding-top: 4px; }
+  .spin { animation: spin 1s linear infinite; transform-origin: 50% 50%; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- 결과 ---------- */
+  .detect-grid { display: grid; grid-template-columns: 1fr 1.4fr; gap: 18px; margin-top: 22px; align-items: stretch; }
+  .stat { background: var(--bg-soft); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; min-width: 0; }
+  .stat__label { color: var(--muted); font-size: .95rem; font-weight: 700; }
+  .stat__value { font-size: 2.7rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; margin-top: 4px; }
+  .stat__value small { font-size: 1.15rem; font-weight: 700; color: var(--muted); margin-left: 4px; }
+  .stat__sub { color: var(--muted); font-size: .95rem; margin-top: 6px; }
+  .levels { list-style: none; margin: 10px 0 0; padding: 0; }
+  .levels li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 1rem; }
+  .levels li:first-child { border-top: 0; }
+  .levels .val { font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .levels .val small { color: var(--muted); font-weight: 600; margin-left: 6px; }
+  .fig { margin: 0; background: #1b2634; border-radius: 16px; overflow: hidden; }
+  .fig img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: contain; background: #1b2634; }
+  .fig figcaption { color: #d6deea; font-size: .95rem; padding: 10px 14px; background: #121a24; display: flex; align-items: center; gap: 8px; }
+  .fig__missing { color: #d6deea; padding: 40px 20px; text-align: center; aspect-ratio: 4 / 3; display: grid; place-items: center; }
+  .viz-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 18px; align-items: start; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; align-items: center; }
+  .actions .spacer { flex: 1; }
+  .note { border-radius: 14px; padding: 14px 18px; font-size: 1rem; margin-top: 18px; }
+  .note ul { margin: 6px 0 0; padding-left: 22px; }
+  .note--warn { background: var(--warn-bg); color: var(--warn-ink); border: 1px solid var(--warn-line); }
+  .note--error { background: var(--err-bg); color: var(--err); border: 1px solid var(--err-line); }
+  .note--info { background: var(--accent-soft); color: var(--accent-strong); }
+  .note__title { font-weight: 800; }
+  .error-box { display: grid; grid-template-columns: 72px 1fr; gap: 22px; align-items: start; margin-top: 22px; border: 1px solid var(--err-line); border-radius: 16px; padding: 22px; }
+  .error-box__icon { width: 72px; height: 72px; border-radius: 20px; background: var(--err-bg); color: var(--err); display: grid; place-items: center; }
+  .error-box__icon svg { width: 40px; height: 40px; }
+  .error-box h3 { margin: 0 0 6px; font-size: 1.35rem; }
+  .error-box pre { font: inherit; white-space: pre-wrap; word-break: break-word; background: var(--err-bg); color: var(--err); padding: 14px 16px; border-radius: 12px; margin: 12px 0 18px; }
+
+  /* ---------- 지도 ---------- */
+  .map-panel { margin-top: 24px; }
+  .map-panel h3, .viz h3, .subcard h3 { font-size: 1.15rem; margin: 0 0 12px; display: flex; align-items: center; gap: 10px; }
+  .map-panel h3 svg, .viz h3 svg { width: 22px; height: 22px; color: var(--accent); }
+  .map-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; align-items: start; }
+  .map { background: #eef3f8; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; position: relative; }
+  .map svg { display: block; width: 100%; height: auto; max-height: 620px; }
+  .map__badge { position: absolute; right: 12px; bottom: 12px; background: rgba(255,255,255,.9); border-radius: 999px; padding: 4px 12px; font-size: .85rem; color: var(--muted); font-weight: 700; }
+  .map-legend { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: .92rem; color: var(--muted); }
+  .map-legend li { display: inline-flex; align-items: center; gap: 8px; }
+  .sw { width: 22px; height: 14px; border-radius: 3px; display: inline-block; flex: none; }
+  .sw--new { background: rgba(42,120,214,.25); border: 2px solid var(--s1); }
+  .sw--old { background: transparent; border: 1.5px solid #8f9aa8; }
+  .sw--aoi { background: rgba(27,175,122,.25); border: 1.5px solid var(--s3); }
+  .sw--st { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: 2.5px solid var(--ink); }
+  .sw--st.in { background: var(--s1); border-color: var(--s1); }
+  .map-sentence { font-size: 1.15rem; font-weight: 700; line-height: 1.5; margin: 0 0 12px; }
+  .map-sentence .n { color: var(--accent-strong); font-size: 1.35rem; }
+  .map-side .muted { font-size: .95rem; }
+  .map-side ul.covered { margin: 8px 0 14px; padding-left: 20px; }
+
+  /* ---------- 차트 ---------- */
+  .viz { margin-top: 26px; }
+  .chart { position: relative; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 14px 14px 8px; }
+  .chart svg { display: block; width: 100%; height: auto; font-family: inherit; }
+  .chart .grid line { stroke: var(--grid); stroke-width: 1; }
+  .chart .axis line, .chart .axis path { stroke: var(--axis); stroke-width: 1; fill: none; }
+  .chart .tick text { fill: var(--tick); font-size: 13px; font-variant-numeric: tabular-nums; }
+  .chart .ylabel { fill: var(--tick); font-size: 13px; font-weight: 700; }
+  .chart .series path { fill: none; stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; }
+  .chart .series.is-dashed path { stroke-dasharray: 6 5; }
+  .chart .pt { stroke: #fff; stroke-width: 2; cursor: pointer; }
+  .chart .pt:hover { r: 7; }
+  .chart .hit { fill: transparent; }
+  .chart .band { opacity: .14; }
+  .chart .marker line { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 5 4; }
+  .chart .marker text { fill: var(--accent-strong); font-size: 13px; font-weight: 800; }
+  .chart .gauge { fill: #fff; stroke-width: 2.4; }
+  .chart .empty { fill: var(--muted); font-size: 15px; }
+  .chart-legend { list-style: none; margin: 10px 0 0; padding: 0 4px; display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: .92rem; color: var(--muted); }
+  .chart-legend li { display: inline-flex; align-items: center; gap: 8px; }
+  .chart-legend .key { width: 26px; height: 4px; border-radius: 2px; display: inline-block; flex: none; }
+  .chart-legend .key--dot { width: 12px; height: 12px; border-radius: 50%; background: #fff; border-width: 2.5px; border-style: solid; }
+  .chart-legend .key--band { width: 26px; height: 14px; border-radius: 3px; opacity: .3; }
+  .chart-legend .key--dash { background: repeating-linear-gradient(90deg, currentColor 0 6px, transparent 6px 11px); }
+  .tooltip { position: absolute; pointer-events: none; background: var(--ink); color: #fff; font-size: .88rem; padding: 8px 12px; border-radius: 10px; white-space: nowrap; transform: translate(-50%, -115%); box-shadow: 0 6px 16px rgba(0,0,0,.2); z-index: 5; }
+  .tooltip b { font-weight: 800; }
+  .chart-title { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 0 0 8px; }
+  .chart-title h4 { margin: 0; font-size: 1.05rem; }
+  .chart-title .muted { font-size: .9rem; }
+
+  /* ---------- 예측 ---------- */
+  .subcards { display: grid; grid-template-columns: 1fr; gap: 20px; }
+  .subcard { border: 1.5px solid var(--line); border-radius: 18px; padding: 22px 24px; background: #fff; }
+  .subcard h3 { font-size: 1.25rem; }
+  .subcard h3 .tag { font-size: .85rem; font-weight: 700; color: var(--muted); background: var(--bg); padding: 3px 10px; border-radius: 999px; }
+  .ctl-row { display: grid; grid-template-columns: 1.3fr 1.3fr .8fr auto; gap: 14px; align-items: end; }
+  .ctl-row .btn { min-height: 52px; }
+  .table-wrap { overflow-x: auto; margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 1rem; }
+  th { text-align: left; color: var(--muted); font-weight: 700; padding: 10px 12px; border-bottom: 2px solid var(--line); font-size: .95rem; white-space: nowrap; }
+  td { padding: 12px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.num { font-weight: 700; }
+  tr.scene-row { cursor: pointer; transition: background .12s; }
+  tr.scene-row:hover td { background: var(--bg-soft); }
+  tr.scene-row:focus-visible { outline: 3px solid var(--accent-ring); outline-offset: -3px; }
+  tr.scene-row.is-selected td { background: var(--accent-soft); }
+  .badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: .9rem; font-weight: 700; white-space: nowrap; }
+  .badge--done, .badge--normal { background: var(--ok-soft); color: #14673a; }
+  .badge--running { background: var(--accent-soft); color: var(--accent-strong); }
+  .badge--queued { background: #eef1f5; color: #4d5b6b; }
+  .badge--failed, .badge--risk { background: var(--err-bg); color: var(--err); }
+  .badge--caution { background: var(--warn-bg); color: var(--warn-ink); }
+  .empty { color: var(--muted); text-align: center; padding: 26px 0 8px; margin: 0; font-size: 1.05rem; }
+  .link-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .kv { display: flex; flex-wrap: wrap; gap: 8px 22px; color: var(--muted); font-size: .95rem; margin-top: 10px; }
+  .kv b { color: var(--ink); }
+  /* ④ 자료가 있는 기간 · 시나리오 (2026-10-14) */
+  .avail { border: 1.5px solid var(--line); border-radius: 14px; background: var(--bg-soft); padding: 14px 16px; margin: 0 0 16px; }
+  .avail__head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+  .avail__head h4 { margin: 0; font-size: 1.02rem; }
+  .avail__list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 6px 18px; font-size: .95rem; color: var(--muted); }
+  .avail__list b { color: var(--ink); margin-right: 4px; }
+  .timeline { width: 100%; overflow: hidden; }
+  .timeline svg { width: 100%; height: auto; display: block; }
+  .timeline .tl-label { font-size: 12px; fill: var(--muted); }
+  .timeline .tl-tick { font-size: 11px; fill: var(--muted); }
+  .timeline .tl-mark { font-size: 11px; font-weight: 700; fill: #b8470f; }
+  .timeline .tl-axis { stroke: var(--line-strong); stroke-width: 1; }
+  .ctl-row--scn { grid-template-columns: 1.8fr 1fr .9fr 1fr; margin-bottom: 14px; }
+  .plan { background: var(--accent-soft); color: var(--accent-strong); border-radius: 12px; padding: 10px 14px; margin: 12px 0 0; font-size: .97rem; display: grid; gap: 4px; }
+  .plan b { color: var(--ink); }
+  .plan--warn { background: var(--warn-bg); color: var(--warn-ink); }
+
+  /* ---------- 설명 모달 ---------- */
+  .modal { position: fixed; inset: 0; z-index: 50; background: rgba(16,24,40,.45); display: grid; place-items: center; padding: 24px; }
+  .modal__box { background: #fff; border-radius: 22px; max-width: 760px; width: 100%; max-height: 90vh; overflow: auto; padding: 32px 36px; box-shadow: 0 30px 80px rgba(0,0,0,.3); }
+  .modal__box h2 { margin: 0 0 6px; font-size: 1.5rem; }
+  .modal__box p { margin: 14px 0; font-size: 1.02rem; line-height: 1.65; }
+  .modal__box p b { color: var(--accent-strong); }
+  .modal__foot { display: flex; justify-content: flex-end; margin-top: 18px; }
+
+  footer { color: var(--muted); font-size: .92rem; padding: 10px 0 44px; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  footer a { color: var(--accent-strong); font-weight: 700; }
+
+  @media (max-width: 980px) {
+    html { font-size: 17px; }
+    .card { padding: 26px 24px; }
+    .stepcard__head { padding: 18px 24px; }
+    .stepcard__body { padding-left: 24px; padding-right: 24px; }
+    .row--4, .choices, .viz-grid, .map-grid, .detect-grid { grid-template-columns: 1fr 1fr; }
+    .ctl-row { grid-template-columns: 1fr 1fr; }
+    .stepper__label { font-size: .95rem; white-space: normal; }
+    .stepcard__summary { display: none; }
+  }
+  @media (max-width: 720px) {
+    .wrap { width: min(1160px, 100% - 28px); }
+    .choices, .row, .row--3, .row--4, .viz-grid, .map-grid, .detect-grid, .ctl-row { grid-template-columns: 1fr; }
+    .stepper { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .stepper__item::after { display: none; }
+    .topbar__inner { align-items: flex-start; }
+    .btn--xl { width: 100%; justify-content: center; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap topbar__inner">
+    <div class="brand">
+      <div class="brand__logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14c2-2.5 4-2.5 6 0s4 2.5 6 0 4-2.5 6 0"/><path d="M3 19c2-2.5 4-2.5 6 0s4 2.5 6 0 4-2.5 6 0"/><path d="M12 3v5"/><path d="M8.5 6.5 12 8l3.5-1.5"/></svg>
+      </div>
+      <div>
+        <div class="brand__name">WATERCAST</div>
+        <div class="brand__sub">위성 영상으로 물 영역·수위를 보고, 앞날을 내다봐요</div>
+      </div>
+    </div>
+    <nav class="tabs" aria-label="화면 이동">
+      <a class="tab is-active" href="/app" aria-current="page">서비스</a>
+      <a class="tab" href="/eval">모델 평가 <span aria-hidden="true">→</span></a>
+      <div class="menu">
+        <button class="tab" type="button" id="helpBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="helpMenu">도움말
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <ul class="menu__list" id="helpMenu" role="menu" hidden>
+          <li role="none"><button class="menu__item" role="menuitem" type="button" id="aboutBtn">설명 — 이 화면은 무엇을 하나요? <small>이 창</small></button></li>
+          <li role="none"><a class="menu__item" role="menuitem" href="/simple">간단 화면 — 날짜 고르고 예측 <small>/simple</small></a></li>
+          <li role="none"><a class="menu__item" role="menuitem" href="/easy">쉬운 화면 <small>/easy</small></a></li>
+          <li role="none"><a class="menu__item" role="menuitem" id="lnkExpert" href="#" target="_blank" rel="noopener">전문가 화면 <small>새 창 · 8501</small></a></li>
+          <li role="none"><a class="menu__item" role="menuitem" id="lnkDemo" href="#" target="_blank" rel="noopener">파이프라인 데모 <small>새 창 · 8502</small></a></li>
+          <li role="none"><a class="menu__item" role="menuitem" href="/docs" target="_blank" rel="noopener">API 문서 <small>새 창</small></a></li>
+        </ul>
+      </div>
+    </nav>
+    <div class="health" id="health" role="status" aria-live="polite">
+      <span class="dot" aria-hidden="true"></span>
+      <span id="healthText">연결 확인 중…</span>
+      <span class="ver" id="healthVer"></span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap" id="main">
+  <div class="intro">
+    <h1>위성 영상 한 장을 넣으면, 네 단계로 끝나요</h1>
+    <p>어디 영상인지 확인하고 → 물 영역과 수위를 찾고 → 그림과 그래프로 보고 → 앞으로의 변화를 내다봐요.</p>
+  </div>
+
+  <ol class="stepper" id="stepper" aria-label="진행 단계">
+    <li class="stepper__item is-current" aria-current="step"><span class="stepper__num"><span class="n">1</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="stepper__label">자료 넣기 · 위치 확인</span></li>
+    <li class="stepper__item"><span class="stepper__num"><span class="n">2</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="stepper__label">탐지</span></li>
+    <li class="stepper__item"><span class="stepper__num"><span class="n">3</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="stepper__label">시각화</span></li>
+    <li class="stepper__item"><span class="stepper__num"><span class="n">4</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="stepper__label">예측</span></li>
+  </ol>
+
+  <div class="note note--error" id="globalNote" hidden role="alert"></div>
+
+  <!-- ① 자료 넣기 · 위치 확인 -->
+  <section class="card stepcard is-active is-expanded" id="step1" aria-labelledby="step1Title">
+    <button class="stepcard__head" type="button" id="step1Head" aria-expanded="true" aria-controls="step1Body">
+      <span class="stepcard__num" aria-hidden="true">1</span>
+      <h2 class="stepcard__title" id="step1Title">자료 넣기 · 위치 확인</h2>
+      <span class="stepcard__summary" id="step1Summary"></span>
+      <svg class="stepcard__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="stepcard__body" id="step1Body">
+      <div id="formArea">
+        <div class="row">
+          <div class="field">
+            <label for="region">어느 지역인가요?</label>
+            <div class="select-wrap">
+              <select id="region" name="region_id" aria-describedby="regionHint">
+                <option value="">지역 목록을 불러오는 중…</option>
+              </select>
+            </div>
+            <div class="field__hint" id="regionHint"></div>
+            <ul class="avail__list" id="regionData" aria-label="이 지역 자료" hidden style="margin-top:8px"></ul>
+          </div>
+          <div class="field">
+            <label for="imageDate">영상을 찍은 날짜</label>
+            <div class="row" style="gap:12px">
+              <input type="date" id="imageDate" name="image_date" required aria-describedby="dateHint">
+              <input type="time" id="acqTime" name="acquisition_time" step="1" aria-label="영상을 찍은 시각 (선택)">
+            </div>
+            <div class="field__hint" id="dateHint">시각은 몰라도 괜찮아요. 날짜만 꼭 골라 주세요.</div>
+          </div>
+        </div>
+
+        <fieldset class="field">
+          <legend>어떤 위성 영상인가요?</legend>
+          <div class="choices" id="sensorChoices" role="radiogroup" aria-label="위성 영상 종류"></div>
+          <div class="field__hint" id="sensorHint"></div>
+        </fieldset>
+
+        <div class="field">
+          <span class="field__label">영상 파일</span>
+          <div class="source-grid">
+            <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="위성 영상 파일 고르기. 파일을 여기에 끌어다 놓아도 돼요." aria-describedby="dropHint">
+              <svg class="dropzone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16.5A4.5 4.5 0 0 1 6 8a6 6 0 0 1 11.5 1.5A4 4 0 0 1 18 17.5"/><path d="M12 12v9"/><path d="M8.5 15.5 12 12l3.5 3.5"/></svg>
+              <div class="dropzone__title" id="dropTitle">위성 영상 파일을 여기에 끌어다 놓으세요</div>
+              <div class="dropzone__sub" id="dropHint">또는 눌러서 파일을 고르세요 · .tif / .tiff 파일</div>
+              <div class="dropzone__file" id="fileChip" hidden>
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>
+                <span class="name" id="fileName"></span><span class="size" id="fileSize"></span>
+              </div>
+              <input type="file" id="preFile" accept=".tif,.tiff,image/tiff" class="visually-hidden" tabindex="-1" aria-hidden="true">
+            </div>
+            <div class="or-row">또는</div>
+            <div class="pick">
+              <div class="pick__head">
+                <span><b>최근 장면 고르기</b> <span class="muted">— 이미 들어온 영상을 다시 보거나, 보유 자료로 시나리오를 돌릴 때</span></span>
+                <button class="btn btn--ghost btn--sm" type="button" id="recentScenesBtn" aria-expanded="false" aria-controls="recentScenes">목록 보기</button>
+              </div>
+              <ul class="pick__list" id="recentScenes" hidden aria-label="최근 장면 목록"></ul>
+              <p class="empty" id="recentScenesEmpty" hidden style="padding:8px 0 16px">아직 들어온 장면이 없어요.</p>
+            </div>
+          </div>
+        </div>
+
+        <details class="more" id="advanced">
+          <summary>자세히 (연계 번호 · 실행 선택 · 보조 파일)</summary>
+          <div class="more__body">
+            <div class="row row--3" style="margin-bottom:18px">
+              <div class="field"><label for="f_order_id">주문 번호</label><input type="text" id="f_order_id" autocomplete="off" placeholder="없으면 비워 두세요"></div>
+              <div class="field"><label for="f_scene_id">장면 번호</label><input type="text" id="f_scene_id" autocomplete="off" placeholder="없으면 비워 두세요"></div>
+              <div class="field"><label for="f_work_id">작업 번호</label><input type="text" id="f_work_id" autocomplete="off" placeholder="없으면 비워 두세요"></div>
+              <div class="field"><label for="f_algm_id">알고리즘 번호</label><input type="text" id="f_algm_id" autocomplete="off" placeholder="예: AG000003"></div>
+              <div class="field"><label for="f_product_type">산출물 종류</label><input type="text" id="f_product_type" autocomplete="off" placeholder="예: PT000003"></div>
+              <div class="field"><label for="f_product_id">제품 번호</label><input type="text" id="f_product_id" autocomplete="off" placeholder="비우면 파일 이름에서 만들어요"></div>
+            </div>
+            <div class="field">
+              <span class="field__label">무엇을 실행할까요?</span>
+              <div class="switches">
+                <label class="switch"><input type="checkbox" id="optDetect" checked><span class="switch__track" aria-hidden="true"></span><span>물 영역 찾기</span></label>
+                <label class="switch"><input type="checkbox" id="optPredict" checked><span class="switch__track" aria-hidden="true"></span><span>앞으로의 변화 예측</span></label>
+              </div>
+            </div>
+            <div class="row">
+              <div class="field">
+                <span class="field__label">지형 구분 파일 (레이더 영상용, 선택)</span>
+                <label class="btn btn--ghost filebtn" for="mask3File">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+                  파일 고르기
+                  <input type="file" id="mask3File" accept=".tif,.tiff,image/tiff">
+                </label>
+                <span class="muted" id="mask3FileName" style="margin-left:12px">선택 안 함</span>
+                <div class="field__hint">바다·제외 구역을 나눈 파일이에요. 없으면 영상 범위로 자동으로 만들어요.</div>
+              </div>
+              <div class="field">
+                <span class="field__label">이미 찾아 둔 물 영역 파일 (선택)</span>
+                <label class="btn btn--ghost filebtn" for="maskFile">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
+                  파일 고르기
+                  <input type="file" id="maskFile" accept=".tif,.tiff,image/tiff">
+                </label>
+                <span class="muted" id="maskFileName" style="margin-left:12px">선택 안 함</span>
+                <div class="field__hint">주면 물 영역 찾기를 건너뛰고 이 파일을 그대로 써요.</div>
+              </div>
+            </div>
+            <div class="field">
+              <label for="f_note">메모 (선택)</label>
+              <input type="text" id="f_note" autocomplete="off" placeholder="이 작업에 남길 말이 있으면 적어 주세요">
+            </div>
+          </div>
+        </details>
+
+        <div class="upload" id="uploadBox" hidden>
+          <div class="upload__label"><span id="uploadText">파일을 올리는 중…</span><span id="uploadPct">0%</span></div>
+          <div class="bar"><div class="bar__fill is-active" id="uploadBar"></div></div>
+        </div>
+
+        <div class="start-row">
+          <button class="btn btn--primary btn--xl" id="startBtn" type="button" disabled>
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            시작하기
+          </button>
+          <p class="hint" id="startHint">지역·영상 종류·날짜를 고르고 파일을 올리면 시작할 수 있어요.</p>
+        </div>
+        <div class="note note--error" id="submitError" hidden role="alert"></div>
+      </div>
+
+      <!-- 입력 요약 + 위치 지도 (시작한 뒤) -->
+      <div id="inputsSummary" class="inputs-summary" hidden></div>
+      <div class="map-panel" id="mapPanel" hidden>
+        <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14"/><path d="M15 6v14"/></svg>위치 지도</h3>
+        <div class="map-grid">
+          <div>
+            <div class="map" id="mapBox">
+              <svg id="mapSvg" viewBox="0 0 800 600" role="img" aria-labelledby="mapSvgTitle"><title id="mapSvgTitle">지역 지도</title></svg>
+              <span class="map__badge">인터넷 없이 그린 약도</span>
+            </div>
+            <ul class="map-legend" aria-label="지도 범례">
+              <li><span class="sw sw--new"></span>이 영상의 촬영 범위</li>
+              <li><span class="sw sw--old"></span>예전 영상 촬영 범위</li>
+              <li><span class="sw sw--aoi"></span>수위를 재는 물 구역</li>
+              <li><span class="sw sw--st in"></span>이 영상이 덮는 수위 지점</li>
+              <li><span class="sw sw--st"></span>덮지 않는 지점</li>
+            </ul>
+          </div>
+          <div class="map-side">
+            <p class="map-sentence" id="mapSentence">촬영 범위를 확인하고 있어요…</p>
+            <ul class="covered" id="coveredList" hidden></ul>
+            <p class="muted" id="mapNote"></p>
+            <p id="mapFallback" class="muted" hidden></p>
+            <a class="btn btn--ghost btn--sm" id="osmLink" href="#" target="_blank" rel="noopener" hidden>지도에서 보기 (OpenStreetMap) ↗</a>
+          </div>
+        </div>
+      </div>
+      <div class="actions" id="step1Actions" hidden>
+        <button class="btn btn--ghost" type="button" id="newRunBtn">다른 영상 넣기</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ② 탐지 -->
+  <section class="card stepcard is-locked" id="step2" aria-labelledby="step2Title">
+    <button class="stepcard__head" type="button" id="step2Head" aria-expanded="false" aria-controls="step2Body" disabled>
+      <span class="stepcard__num" aria-hidden="true">2</span>
+      <h2 class="stepcard__title" id="step2Title">탐지 <span class="muted" style="font-size:1rem;font-weight:600">(물 영역 · 수위)</span></h2>
+      <span class="stepcard__summary" id="step2Summary">①을 끝내면 자동으로 시작돼요</span>
+      <svg class="stepcard__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="stepcard__body" id="step2Body">
+      <div class="progress-head">
+        <div class="progress-status" id="progressStatus" aria-live="polite">작업을 준비하고 있어요…</div>
+        <div class="elapsed" id="elapsed">걸린 시간 0초</div>
+      </div>
+      <div class="bar" role="progressbar" aria-labelledby="progressStatus" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="overallBarWrap"><div class="bar__fill is-active" id="overallBar"></div></div>
+      <ol class="checklist" id="checklist" aria-label="단계별 진행"></ol>
+      <p class="muted" id="afterNote" hidden style="margin:10px 0 0;font-size:.95rem"></p>
+      <div class="note note--warn" id="pollNote" hidden role="status"></div>
+
+      <div class="detect-grid" id="detectResult" hidden>
+        <div class="stat">
+          <div class="stat__label">물 면적</div>
+          <div class="stat__value" id="areaValue">—</div>
+          <div class="stat__sub" id="areaSub"></div>
+        </div>
+        <div class="stat">
+          <div class="stat__label">지점별 위성 수위</div>
+          <ul class="levels" id="levelList"></ul>
+          <div class="stat__sub" id="levelsNote"></div>
+        </div>
+      </div>
+      <div class="note note--info" id="skipNote" hidden></div>
+      <div class="note note--warn" id="warnings" hidden><div class="note__title">참고해 주세요</div><ul id="warningList"></ul></div>
+
+      <div class="error-box" id="failedBox" hidden role="alert">
+        <div class="error-box__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16.5h.01"/></svg>
+        </div>
+        <div>
+          <h3 id="failedTitle">작업이 끝나지 못했어요</h3>
+          <p class="muted" style="margin:0">아래 내용을 확인한 뒤 다시 시도해 주세요. 입력한 내용은 그대로 남아 있어요.</p>
+          <pre id="failedText"></pre>
+          <button class="btn btn--primary" type="button" id="retryBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 3v6h6"/></svg>
+            다시 시도
+          </button>
+        </div>
+      </div>
+      <div class="actions" id="step2Actions" hidden>
+        <button class="btn btn--primary" type="button" id="toVizBtn">③ 시각화 보기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ 시각화 -->
+  <section class="card stepcard is-locked" id="step3" aria-labelledby="step3Title">
+    <button class="stepcard__head" type="button" id="step3Head" aria-expanded="false" aria-controls="step3Body" disabled>
+      <span class="stepcard__num" aria-hidden="true">3</span>
+      <h2 class="stepcard__title" id="step3Title">시각화</h2>
+      <span class="stepcard__summary" id="step3Summary">탐지가 끝나면 볼 수 있어요</span>
+      <svg class="stepcard__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="stepcard__body" id="step3Body">
+      <div class="viz-grid">
+        <figure class="fig" id="overlayFig">
+          <img id="overlayImg" alt="물 영역을 색으로 표시한 위성 영상">
+          <div class="fig__missing" id="overlayMissing" hidden>물 영역 그림을 불러오지 못했어요</div>
+          <figcaption>물 영역 표시 (파란색이 물)</figcaption>
+        </figure>
+        <div>
+          <figure class="fig" id="quicklookFig">
+            <img id="quicklookImg" alt="올린 위성 영상 미리보기">
+            <div class="fig__missing" id="quicklookMissing" hidden>미리보기를 불러오지 못했어요</div>
+            <figcaption>원본 미리보기</figcaption>
+          </figure>
+          <div class="kv" id="vizMeta"></div>
+        </div>
+      </div>
+      <div class="actions">
+        <a class="btn btn--primary" id="btnProduct" href="#" download>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+          결과 파일 내려받기
+        </a>
+        <a class="btn btn--secondary" id="btnMask" href="#" download>물 영역 원본</a>
+      </div>
+
+      <div class="viz">
+        <div class="chart-title"><h4 id="areaChartTitle">물 면적 변화 (영상 종류별)</h4><span class="muted">같은 틀로 잰 면적이라 날짜끼리 비교할 수 있어요</span></div>
+        <div class="chart" id="areaChart"></div>
+      </div>
+      <div class="viz">
+        <div class="chart-title"><h4 id="levelChartTitle">위성 수위 변화 (지점별)</h4><span class="muted">동그라미 테두리가 같은 날 지상 수위계 실측이에요</span></div>
+        <div class="chart" id="levelChart"></div>
+      </div>
+      <div class="actions">
+        <span class="spacer"></span>
+        <button class="btn btn--primary" type="button" id="toPredictBtn">④ 예측하러 가기 →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ④ 예측 -->
+  <section class="card stepcard is-locked" id="step4" aria-labelledby="step4Title">
+    <button class="stepcard__head" type="button" id="step4Head" aria-expanded="false" aria-controls="step4Body" disabled>
+      <span class="stepcard__num" aria-hidden="true">4</span>
+      <h2 class="stepcard__title" id="step4Title">예측</h2>
+      <span class="stepcard__summary" id="step4Summary">탐지가 끝나면 할 수 있어요</span>
+      <svg class="stepcard__chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="stepcard__body" id="step4Body">
+      <div class="subcards">
+        <div class="subcard" id="fcCard">
+          <h3>수위 전망 <span class="tag">지상 수위계 10년 자료로 학습한 모델</span></h3>
+          <p class="card__lead" style="margin:0 0 16px">출발일(원점)까지의 자료만으로 그 뒤 물 높이를 내다봐요. 자료가 있는 기간 안에서 출발일을 고르면, 그 뒤 실제 수위와 나란히 맞춰 볼 수 있어요.</p>
+          <div class="avail" id="availBox">
+            <div class="avail__head"><h4>자료가 있는 기간</h4><span class="muted" id="availNote">불러오는 중…</span></div>
+            <div class="timeline" id="availTimeline" role="img" aria-label="자료 기간 시간표"></div>
+            <ul class="avail__list" id="availList"></ul>
+          </div>
+          <div class="ctl-row ctl-row--scn">
+            <div class="field"><label for="fcScenario">시나리오</label><div class="select-wrap"><select id="fcScenario"><option value="">불러오는 중…</option></select></div></div>
+            <div class="field"><label for="fcDate">출발일 (원점)</label><input type="date" id="fcDate"></div>
+            <div class="field"><label for="fcHorizon">며칠 뒤까지</label><div class="select-wrap"><select id="fcHorizon"></select></div></div>
+            <div class="field"><label for="fcUntil">끝 날짜</label><input type="date" id="fcUntil"></div>
+          </div>
+          <div class="ctl-row" style="grid-template-columns: 1.3fr 1.3fr auto">
+            <div class="field"><label for="fcStation">지점</label><div class="select-wrap"><select id="fcStation"><option value="">불러오는 중…</option></select></div></div>
+            <div class="field"><label for="fcModel">모델</label><div class="select-wrap"><select id="fcModel"><option value="">검증에서 고른 모델 (기본)</option></select></div></div>
+            <div class="field"><button class="btn btn--primary" type="button" id="fcBtn">수위 전망 보기</button></div>
+          </div>
+          <div class="plan" id="fcPlan" hidden></div>
+          <div class="field__hint" id="fcHint"></div>
+          <div class="note note--error" id="fcError" hidden role="alert"></div>
+          <div id="fcResult" hidden>
+            <div class="chart" id="fcChart"></div>
+            <div class="kv" id="fcMeta"></div>
+            <div class="note note--info" id="fcNote" hidden></div>
+            <div class="table-wrap"><table id="fcTable"><thead><tr><th scope="col">날짜</th><th scope="col">며칠 뒤</th><th scope="col" class="num">전망 수위</th><th scope="col" class="num">범위 (±1σ)</th><th scope="col" class="num">실제 수위</th><th scope="col">쓴 모델</th></tr></thead><tbody id="fcBody"></tbody></table></div>
+          </div>
+        </div>
+
+        <div class="subcard" id="apCard">
+          <h3>수체 면적 전망 <span class="tag">이 영상의 물 영역이 앞으로 어떻게 변할지</span></h3>
+          <p class="card__lead" style="margin:0 0 16px">물 영역 그림(마스크)의 시계열로 면적이 늘지 줄지 내다봐요. 출발 영상을 예전 것으로 고르면 그 뒤 영상의 실제 면적과 비교할 수 있고, 모델도 바꿔 가며 볼 수 있어요.</p>
+          <div class="ctl-row" style="grid-template-columns: 1.5fr 1.4fr .8fr auto">
+            <div class="field"><label for="apOrigin">출발 영상 (원점)</label><div class="select-wrap"><select id="apOrigin"><option value="">전부 (마지막 영상까지)</option></select></div></div>
+            <div class="field"><label for="apModel">모델</label><div class="select-wrap"><select id="apModel"><option value="">불러오는 중…</option></select></div></div>
+            <div class="field"><label for="apHorizon">예측일수</label><div class="select-wrap"><select id="apHorizon"></select></div></div>
+            <div class="field"><button class="btn btn--primary" type="button" id="apBtn">면적 전망 보기</button></div>
+          </div>
+          <div class="field__hint" id="apHint"></div>
+          <div class="note note--error" id="apError" hidden role="alert"></div>
+          <div id="apResult" hidden>
+            <div class="viz-grid" style="grid-template-columns: 1.2fr 1fr">
+              <div class="chart" id="apChart"></div>
+              <div class="table-wrap" style="margin-top:0"><table id="apTable"><thead><tr><th scope="col">날짜</th><th scope="col">며칠 뒤</th><th scope="col" class="num">물 면적</th><th scope="col" class="num">변화</th><th scope="col">상태</th></tr></thead><tbody id="apBody"></tbody></table></div>
+            </div>
+            <div class="kv" id="apMeta"></div>
+            <div class="note note--info" id="apCompare" hidden></div>
+            <div class="note note--warn" id="apWarn" hidden></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 최근 결과 -->
+  <section class="card" id="recent" aria-labelledby="recentTitle">
+    <div class="link-row">
+      <h2 class="card__title" id="recentTitle" style="margin-bottom:16px"><span class="num" aria-hidden="true" style="background:#5e6b7a">≡</span>최근 결과</h2>
+      <button class="btn btn--ghost" type="button" id="recentRefresh" style="margin-bottom:16px">새로 고침</button>
+    </div>
+    <p class="muted" style="margin:0 0 14px">줄을 누르면 그 결과를 위에 다시 보여 줘요.</p>
+    <div class="table-wrap" id="recentTableWrap" hidden>
+      <table>
+        <thead><tr><th scope="col">영상 날짜</th><th scope="col">지역</th><th scope="col">영상 종류</th><th scope="col" class="num">물 면적</th><th scope="col">상태</th><th scope="col">들어온 때</th></tr></thead>
+        <tbody id="recentBody"></tbody>
+      </table>
+    </div>
+    <p class="empty" id="recentEmpty">아직 결과가 없어요. 첫 번째 위성 영상을 올려 보세요.</p>
+    <div class="note note--warn" id="recentNote" hidden role="status"></div>
+  </section>
+
+  <footer>
+    <span>궁금한 점이 있으면 운영 담당자에게 문의해 주세요.</span>
+    <a href="/eval">모델 평가 화면 →</a>
+  </footer>
+</main>
+
+<!-- 설명 모달 -->
+<div class="modal" id="aboutModal" hidden role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+  <div class="modal__box">
+    <h2 id="aboutTitle">이 화면은 무엇을 하나요?</h2>
+    <p class="muted" style="margin-top:0">WATERCAST 서비스 화면을 처음 보는 분을 위한 짧은 설명이에요.</p>
+    <p><b>① 자료 넣기.</b> 초소형 위성(레이더 ICEYE·Umbra, 광학 PlanetScope)이 찍은 영상 파일 한 장을 넣어요. 지역과 날짜를 고르면 끝이에요. 영상이 어디를 찍었는지 약도로 보여 주고, 그 안에 지상 수위계가 몇 개 들어 있는지 알려 줘요.</p>
+    <p><b>② 탐지.</b> 학습된 인공지능 모델이 영상에서 물이 있는 곳을 찾아 색칠해요(수체 탐지). 그 물 영역의 넓이를 km² 로 재고, 물가의 땅 높이를 이용해 지점별 물 높이(수위)도 계산해요.</p>
+    <p><b>③ 시각화.</b> 찾은 물 영역을 원본 영상 위에 겹쳐 보여 주고, 지금까지 들어온 영상들의 물 면적과 위성 수위를 날짜순 그래프로 그려요. 같은 날 지상 수위계가 잰 값이 있으면 나란히 표시해 얼마나 맞는지 볼 수 있어요.</p>
+    <p><b>④ 예측.</b> 지상 수위계의 10년치 기록으로 학습한 모델이 앞으로 며칠간의 물 높이를 내다봐요. 여러 모델 가운데 검증 성적이 좋은 것을 자동으로 고르지만, 직접 바꿔 볼 수도 있어요. 물 영역의 넓이가 늘지 줄지도 간단한 모델로 전망해요. 자료가 있는 기간을 먼저 보여 주고, 그 안에서 출발일과 어디까지 내다볼지 고를 수 있어요(시나리오). 출발일 뒤에 실제 수위나 실제 영상이 있으면 전망과 나란히 비교해요.</p>
+    <p><b>결과 파일.</b> 모든 결과는 통합 플랫폼 규약에 맞춘 파일로 정리돼요. 내려받아 다른 시스템에 넘기거나, 아래 '최근 결과'에서 언제든 다시 열어 볼 수 있어요.</p>
+    <p><b>주의할 점.</b> 전망은 과거 자료로 배운 추정이라 실제와 다를 수 있어요. 그래프의 띠(범위)는 예전 검증에서 본 흔들림의 폭이지 보증이 아니에요. 중요한 판단에는 반드시 지상 관측과 함께 보세요. 더 자세한 성능은 상단 '모델 평가' 탭에서 확인할 수 있어요.</p>
+    <div class="modal__foot"><button class="btn btn--primary" type="button" id="aboutClose">알겠어요</button></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var API = '/api/v1';
+  var POLL_MS = 2000;
+  var NET_MSG = '서버에 연결할 수 없어요. 잠시 후 다시 시도해 주세요.';
+  var STORE_KEY = 'watercast.app.v1';
+  var HORIZONS = [1, 3, 5, 7, 10, 14, 30];
+  var SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300', '#4a3aa7', '#e34948'];
+  var SENSOR_COLOR = { ICEYE: SERIES[0], PlanetScope: SERIES[1], UMBRA: SERIES[2], Umbra: SERIES[2] };
+
+  // 화면에 보여 줄 쉬운 말. 서버 단계 키(register 등)를 쉬운 말로 바꾼다.
+  var STEP_COPY = { register: '영상 등록', detect: '물 영역 찾기', area: '물 면적 계산', levels: '물 높이(수위) 계산', predict: '앞으로의 변화 예측', deliver: '결과 파일 정리' };
+  var DETECT_KEYS = ['register', 'detect', 'area', 'levels'];
+  var SENSOR_COPY = {
+    ICEYE: { title: '레이더 영상', tag: 'ICEYE', desc: '구름이 끼거나 밤이어도 찍혀요.', icon: 'radar' },
+    UMBRA: { title: '레이더 영상', tag: 'Umbra', desc: '구름이 끼거나 밤이어도 찍혀요. (대청댐)', icon: 'radar' },
+    Umbra: { title: '레이더 영상', tag: 'Umbra', desc: '구름이 끼거나 밤이어도 찍혀요. (대청댐)', icon: 'radar' },
+    PlanetScope: { title: '광학 영상', tag: 'PlanetScope', desc: '사진처럼 눈에 보이는 대로 찍혀요.', icon: 'camera' }
+  };
+  var STATUS_COPY = { queued: '대기 중', running: '진행 중', done: '완료', failed: '실패' };
+  var RISK_COPY = { normal: '정상', caution: '주의', risk: '위험', warning: '주의', danger: '위험' };
+  // 면적 전망 모델 한글 표기 (GET /models 의 id → 화면 이름)
+  var MODEL_COPY = { 'irregular-area-trend': '면적 추세 (기본)', 'persistence': '지금 그대로 유지 (기준선)', 'weather-morphology': '비·가뭄 규칙', 'gauge-level-forecast': '수위 모델 연동', 'level-area-bridge': '수위-면적 곡선 연동 (면적을 수위 전망에 종속)' };
+  var ICONS = {
+    radar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12 19 5"/><path d="M12 12a3 3 0 1 0 3 3"/><path d="M4.9 19.1A10 10 0 0 1 19.1 4.9"/><path d="M7.8 16.2A6 6 0 0 1 16.2 7.8"/></svg>',
+    camera: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+    satellite: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 7 17 3l4 4-4 4"/><path d="M7 13l-4 4 4 4 4-4"/><path d="M9 9l6 6"/><path d="M15 9l-6 6"/></svg>',
+    pending: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>',
+    running: '<svg class="spin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-dasharray="34 20" stroke-linecap="round"/></svg>',
+    done: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    skipped: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M8 12h8" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/></svg>',
+    failed: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M9 9l6 6M15 9l-6 6" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>'
+  };
+
+  // 서버 경고는 기술 용어라, 아는 것은 쉬운 말로 바꿔 보여 준다. 모르는 문구는 그대로.
+  function friendlyWarning(w) {
+    if (/GPU/.test(w) && /VRAM|폴백/.test(w)) return '그래픽 처리 장치가 바빠서 일반 처리 장치로 계산했어요. 결과는 같고 시간만 더 걸렸어요.';
+    if (/3-class 마스크/.test(w)) return '이 날짜의 지형 구분 자료가 없어 영상 범위로 자동으로 만들어 썼어요. 결과는 거의 같아요.';
+    if (/completed-mask cache/.test(w)) return '이미 계산해 둔 결과가 있어 그걸 그대로 보여 드려요.';
+    if (/liaison log/.test(w)) return '결과는 정상인데, 통합 플랫폼에 기록을 보내는 데는 실패했어요. 담당자에게 알려 주세요.';
+    if (/기존 공통 격자 재사용/.test(w)) return '예전에 등록된 지역 자료를 이어서 사용했어요.';
+    if (/표본 자료/.test(w)) return w;
+    return w;
+  }
+  function friendlyStepDetail(key, d) {
+    if (!d) return '';
+    if (key === 'register' && /공통 격자/.test(d)) return '영상을 등록하고 예전 자료와 같은 틀에 맞췄어요';
+    return d;
+  }
+
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function $all(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
+  function show(el, on) { if (el) el.hidden = !on; }
+  function text(el, value) { if (el) el.textContent = value == null ? '' : String(value); }
+  function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function el(tag, attrs, children) {
+    var e = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) { if (k === 'text') e.textContent = attrs[k]; else if (k === 'html') e.innerHTML = attrs[k]; else e.setAttribute(k, attrs[k]); });
+    (children || []).forEach(function (c) { e.appendChild(c); });
+    return e;
+  }
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  function svgEl(tag, attrs, children) {
+    var e = document.createElementNS(SVG_NS, tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) { if (k === 'text') e.textContent = attrs[k]; else e.setAttribute(k, attrs[k]); });
+    (children || []).forEach(function (c) { e.appendChild(c); });
+    return e;
+  }
+
+  var state = {
+    options: null, file: null, maskFile: null, mask3File: null,
+    sceneId: null, scene: null, pollTimer: null, tickTimer: null, polling: false, startedAt: null, xhr: null,
+    geometry: null, geometryRegion: null, footprintTries: 0, coverage: null,
+    stations: null, stationsRegion: null, forecasters: null, models: null,
+    scenarios: null, scenariosRegion: null,
+    stage: 1, vizLoadedFor: null
+  };
+
+  // ---------- 날짜/숫자 ----------
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+  function todayLocal() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function parseDate(v) { if (!v) return null; var t = Date.parse(v); return isNaN(t) ? null : t; }
+  function dayMs(v) { if (!v) return null; var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(v)); if (!m) return parseDate(v); return Date.UTC(+m[1], +m[2] - 1, +m[3]); }
+  function fmtDay(ms, withYear) { var d = new Date(ms); var s = (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); return withYear ? d.getUTCFullYear() + '.' + s : s; }
+  function fmtDateKo(iso) { var ms = dayMs(iso); if (ms == null) return iso || ''; var d = new Date(ms); return d.getUTCFullYear() + '년 ' + (d.getUTCMonth() + 1) + '월 ' + d.getUTCDate() + '일'; }
+  function formatBytes(n) {
+    if (n == null) return '';
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return (n / 1024).toFixed(0) + ' KB';
+    if (n < 1024 * 1024 * 1024) return (n / 1024 / 1024).toFixed(1) + ' MB';
+    return (n / 1024 / 1024 / 1024).toFixed(2) + ' GB';
+  }
+  function formatDuration(sec) {
+    sec = Math.max(0, Math.round(sec));
+    var m = Math.floor(sec / 60), s = sec % 60;
+    if (m >= 60) { var h = Math.floor(m / 60); return h + '시간 ' + (m % 60) + '분'; }
+    return m > 0 ? m + '분 ' + s + '초' : s + '초';
+  }
+  function num(v, digits) {
+    if (v == null || v === '') return null;
+    var n = Number(v);
+    if (!isFinite(n)) return null;
+    return n.toLocaleString('ko-KR', { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  }
+  function formatArea(v) { return num(v, 2); }
+  function describeDetail(d) {
+    if (!d) return '';
+    if (typeof d === 'string') return d;
+    if (Array.isArray(d)) return d.map(function (x) { return x && x.msg ? x.msg : JSON.stringify(x); }).join(', ');
+    return JSON.stringify(d);
+  }
+  function httpMessage(status, detail) {
+    var tail = detail ? ' (' + detail + ')' : '';
+    if (status === 404) return '찾을 수 없어요.' + tail;
+    if (status === 409) return '지금은 할 수 없어요. 진행 중인 작업이 끝난 뒤 다시 시도해 주세요.' + tail;
+    if (status === 413) return '파일이 너무 커요. 담당자에게 문의해 주세요.' + tail;
+    if (status === 422 || status === 400) return '입력 내용을 다시 확인해 주세요.' + tail;
+    if (status >= 500) return '서버에서 문제가 생겼어요. 잠시 후 다시 시도해 주세요.' + tail;
+    return '요청을 처리하지 못했어요.' + tail;
+  }
+  function parseBody(res) { return res.json().catch(function () { return {}; }); }
+  function getJSON(url) {
+    return fetch(url, { cache: 'no-store', headers: { 'Accept': 'application/json' } })
+      .catch(function () { throw new Error(NET_MSG); })
+      .then(function (res) {
+        if (res.ok) return res.json();
+        return parseBody(res).then(function (body) { var e = new Error(httpMessage(res.status, describeDetail(body && body.detail))); e.status = res.status; throw e; });
+      });
+  }
+  function postJSON(url, payload) {
+    return fetch(url, { method: 'POST', cache: 'no-store', headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+      .catch(function () { throw new Error(NET_MSG); })
+      .then(function (res) {
+        if (res.ok) return res.json();
+        return parseBody(res).then(function (body) { var e = new Error(httpMessage(res.status, describeDetail(body && body.detail))); e.status = res.status; throw e; });
+      });
+  }
+
+  // ---------- localStorage ----------
+  function loadPrefs() { try { return JSON.parse(localStorage.getItem(STORE_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  function savePrefs(patch) {
+    try {
+      var cur = loadPrefs();
+      Object.keys(patch).forEach(function (k) { cur[k] = patch[k]; });
+      localStorage.setItem(STORE_KEY, JSON.stringify(cur));
+    } catch (e) { /* 저장이 막혀 있어도 화면은 그대로 동작 */ }
+  }
+
+  // ---------- 상단 바 ----------
+  function hostUrl(port) { return location.protocol + '//' + location.hostname + ':' + port; }
+  function setHealth(ok, version) {
+    var box = $('#health');
+    box.classList.toggle('is-ok', !!ok);
+    box.classList.toggle('is-bad', !ok);
+    text($('#healthText'), ok ? '연결됨' : '연결 안 됨');
+    text($('#healthVer'), ok && version ? 'v' + version : '');
+  }
+  function checkHealth() {
+    getJSON(API + '/health').then(function (h) { setHealth(true, h && h.version); }).catch(function () { setHealth(false); });
+  }
+  function bindMenu() {
+    var btn = $('#helpBtn'), menu = $('#helpMenu');
+    function open(on) { show(menu, on); btn.setAttribute('aria-expanded', on ? 'true' : 'false'); if (on) { var first = $('.menu__item', menu); if (first) first.focus(); } }
+    btn.addEventListener('click', function () { open(menu.hidden); });
+    document.addEventListener('click', function (e) { if (!menu.hidden && !btn.contains(e.target) && !menu.contains(e.target)) open(false); });
+    document.addEventListener('keydown', function (e) {
+      if (menu.hidden) return;
+      var items = $all('.menu__item', menu), i = items.indexOf(document.activeElement);
+      if (e.key === 'Escape') { open(false); btn.focus(); }
+      else if (e.key === 'ArrowDown') { e.preventDefault(); items[(i + 1) % items.length].focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+    });
+    $all('.menu__item', menu).forEach(function (it) { it.addEventListener('click', function () { open(false); }); });
+    $('#lnkExpert').href = hostUrl(8501);
+    $('#lnkDemo').href = hostUrl(8502);
+
+    var modal = $('#aboutModal'), lastFocus = null;
+    function openAbout() { lastFocus = document.activeElement; show(modal, true); $('#aboutClose').focus(); }
+    function closeAbout() { show(modal, false); if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+    $('#aboutBtn').addEventListener('click', openAbout);
+    $('#aboutClose').addEventListener('click', closeAbout);
+    modal.addEventListener('click', function (e) { if (e.target === modal) closeAbout(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) closeAbout(); });
+  }
+
+  // ---------- 단계 카드 ----------
+  function cardEl(n) { return $('#step' + n); }
+  function setExpanded(n, on) {
+    var c = cardEl(n);
+    if (c.classList.contains('is-locked')) on = false;
+    c.classList.toggle('is-expanded', on);
+    $('#step' + n + 'Head').setAttribute('aria-expanded', on ? 'true' : 'false');
+  }
+  function setStage(stage, opts) {
+    opts = opts || {};
+    state.stage = stage;
+    for (var n = 1; n <= 4; n++) {
+      var c = cardEl(n), head = $('#step' + n + 'Head');
+      var locked = n > stage && !(opts.unlockUpTo && n <= opts.unlockUpTo);
+      c.classList.toggle('is-locked', locked);
+      c.classList.toggle('is-active', n === stage);
+      c.classList.toggle('is-done', n < stage);
+      head.disabled = locked;
+      setExpanded(n, n === stage);
+    }
+    $all('#stepper .stepper__item').forEach(function (li, i) {
+      var n = i + 1;
+      li.classList.toggle('is-current', n === stage);
+      li.classList.toggle('is-done', n < stage);
+      if (n === stage) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+    });
+    if (!opts.noScroll) cardEl(stage).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  function bindCards() {
+    for (var n = 1; n <= 4; n++) {
+      (function (k) {
+        $('#step' + k + 'Head').addEventListener('click', function () {
+          if (cardEl(k).classList.contains('is-locked')) return;
+          setExpanded(k, !cardEl(k).classList.contains('is-expanded'));
+        });
+      })(n);
+    }
+  }
+
+  // ---------- ① 선택지 ----------
+  function regionById(id) {
+    var regions = (state.options && state.options.regions) || [];
+    for (var i = 0; i < regions.length; i++) if (regions[i].id === id) return regions[i];
+    return null;
+  }
+  function sensorById(id) {
+    var sensors = (state.options && state.options.sensors) || [];
+    for (var i = 0; i < sensors.length; i++) if (sensors[i].id === id || sensors[i].id.toLowerCase() === String(id || '').toLowerCase()) return sensors[i];
+    return null;
+  }
+  function sensorTitle(id) {
+    var c = SENSOR_COPY[id];
+    if (c) return c.title + ' (' + c.tag + ')';
+    var s = sensorById(id);
+    return s ? s.label : (id || '');
+  }
+  function regionName(id) { var r = regionById(id); return r ? r.name : (id || ''); }
+
+  function renderRegions() {
+    var sel = $('#region');
+    var regions = (state.options && state.options.regions) || [];
+    sel.innerHTML = '';
+    sel.appendChild(el('option', { value: '', text: regions.length ? '지역을 골라 주세요' : '등록된 지역이 없어요' }));
+    regions.forEach(function (r) {
+      var noImg = Array.isArray(r.sensors) && r.sensors.length === 0;
+      var o = el('option', { value: r.id, text: (r.name || r.id) + (noImg ? ' — 영상 자료 없음' : '') });
+      if (noImg) o.disabled = true;
+      sel.appendChild(o);
+    });
+  }
+  function renderSensors() {
+    var box = $('#sensorChoices');
+    var sensors = (state.options && state.options.sensors) || [];
+    box.innerHTML = '';
+    sensors.forEach(function (s) {
+      var copy = SENSOR_COPY[s.id] || { title: s.label || s.id, tag: s.type || '', desc: s.type === 'SAR' ? '레이더로 찍은 영상이에요.' : '빛으로 찍은 영상이에요.', icon: 'satellite' };
+      var label = document.createElement('label');
+      label.className = 'choice';
+      label.setAttribute('data-sensor', s.id);
+      label.innerHTML =
+        '<input type="radio" name="sensor" value="' + escapeHtml(s.id) + '">' +
+        '<span class="choice__box">' +
+          '<span class="choice__icon" aria-hidden="true">' + (ICONS[copy.icon] || ICONS.satellite) + '</span>' +
+          '<span class="choice__title">' + escapeHtml(copy.title) + '<span class="choice__tag">' + escapeHtml(copy.tag) + '</span></span>' +
+          '<span class="choice__desc">' + escapeHtml(copy.desc) + '</span>' +
+          '<span class="choice__desc choice__note" hidden></span>' +
+        '</span>';
+      box.appendChild(label);
+    });
+    $all('input[name="sensor"]').forEach(function (r) {
+      r.addEventListener('change', function () { savePrefs({ sensor: r.value }); applyRegionRules(); updateStart(); });
+    });
+  }
+  function selectedSensor() { var r = $('input[name="sensor"]:checked'); return r ? r.value : ''; }
+  // ① 지역을 고르면 그 지역에 어떤 자료가 언제 있는지 바로 보여 준다 (GET /regions/{id}/scenarios)
+  var regionDataCache = {};
+  function renderRegionData(regionId) {
+    var box = $('#regionData'), sc = regionDataCache[regionId];
+    if (!sc) { show(box, false); return; }
+    var g = sc.gauge || {}, w = sc.weather || {}, s = sc.satellite || {}, m = sc.models || {};
+    function per(p) { return p ? fmtDateKo(p[0]) + ' ~ ' + fmtDateKo(p[1]) : '없음'; }
+    box.innerHTML = '';
+    [['위성 영상', s.available ? escapeHtml(String(s.n_scenes)) + '장 · ' + escapeHtml(per(s.period)) + (s.sensors && s.sensors.length ? ' (' + escapeHtml(s.sensors.join(', ')) + ')' : '') : '없음'],
+     ['지상 수위계', g.available ? escapeHtml(String(g.n_stations)) + '지점 · ' + escapeHtml(per(g.period)) : '없음 — 수위 단계는 건너뛰어요'],
+     ['기상' + (w.station_name ? ' (' + escapeHtml(w.station_name) + ')' : ''), w.available ? escapeHtml(per(w.period)) : '없음'],
+     ['수위 예측 모델', m.trained ? '학습됨' + (m.split ? ' · 시험 ' + escapeHtml(String(m.split.test_start).slice(0, 4)) : '') : '학습 안 됨']].forEach(function (r) {
+      box.appendChild(el('li', { html: '<b>' + r[0] + '</b>' + r[1] }));
+    });
+    show(box, true);
+    updateDateHint();
+  }
+  function loadRegionData(regionId) {
+    if (!regionId) { show($('#regionData'), false); return; }
+    if (regionDataCache[regionId]) { renderRegionData(regionId); return; }
+    getJSON(API + '/regions/' + encodeURIComponent(regionId) + '/scenarios').then(function (sc) {
+      regionDataCache[regionId] = sc;
+      if ($('#region').value === regionId) renderRegionData(regionId);
+    }).catch(function () { show($('#regionData'), false); });
+  }
+  // 영상 날짜를 넣으면 그 날짜에 수위 자료가 있는지, 없으면 전망 출발일이 어디로 가는지 미리 알려 준다
+  function updateDateHint() {
+    var h = $('#dateHint'), sc = regionDataCache[$('#region').value], d = $('#imageDate').value;
+    var base = '시각은 몰라도 괜찮아요. 날짜만 꼭 골라 주세요.';
+    if (!sc || !d || !sc.gauge || !sc.gauge.period) { text(h, base); return; }
+    var p = sc.gauge.period, hmax = (sc.forecast_window && sc.forecast_window.horizon_max) || 30;
+    if (d >= p[0] && d <= p[1]) text(h, '이 날짜에는 지상 수위 자료가 있어요 → ④에서 전망을 실제 수위와 비교할 수 있어요.');
+    else if (d > p[1]) text(h, '이 날짜에는 지상 수위 자료가 없어요(자료 ' + fmtDateKo(p[0]) + ' ~ ' + fmtDateKo(p[1]) + '). 탐지·면적은 그대로 되고, 수위 전망은 ④에서 자료 끝 ' + hmax + '일 전을 출발일로 잡아요.');
+    else text(h, '이 날짜는 지상 수위 자료가 시작되기 전이에요(자료 ' + fmtDateKo(p[0]) + ' ~ ' + fmtDateKo(p[1]) + ').');
+  }
+  function applyRegionRules() {
+    var region = regionById($('#region').value);
+    var hint = $('#regionHint');
+    if (!region) text(hint, '');
+    else if (region.has_gauge) text(hint, '이 지역은 물 높이(수위)도 함께 계산하고, 수위 전망도 볼 수 있어요.');
+    else text(hint, '이 지역은 물 높이(수위) 자료가 없어서 그 단계는 건너뛰어요.');
+    loadRegionData(region ? region.id : '');
+
+    $all('.choice').forEach(function (label) {
+      var id = label.getAttribute('data-sensor');
+      var input = $('input', label);
+      var note = $('.choice__note', label);
+      var allowed = !region || !Array.isArray(region.sensors) || region.sensors.length === 0 || region.sensors.indexOf(id) >= 0;
+      label.classList.toggle('is-disabled', !allowed);
+      input.disabled = !allowed;
+      show(note, !allowed);
+      text(note, allowed ? '' : '이 지역에서는 쓸 수 없는 영상이에요.');
+      if (!allowed && input.checked) input.checked = false;
+    });
+    var sensor = sensorById(selectedSensor());
+    text($('#sensorHint'), sensor && sensor.needs_mask ? '레이더 영상은 "자세히"에서 지형 구분 파일을 함께 올릴 수 있어요. 없어도 돼요.' : '');
+  }
+  function restorePrefs() {
+    var p = loadPrefs();
+    if (p.region && regionById(p.region)) $('#region').value = p.region;
+    var r = p.sensor ? $('input[name="sensor"][value="' + p.sensor.replace(/"/g, '') + '"]') : null;
+    if (r && !r.disabled) r.checked = true;
+  }
+  function loadOptions() {
+    return getJSON(API + '/scenes/options').then(function (opts) {
+      state.options = opts || {};
+      renderRegions();
+      renderSensors();
+      restorePrefs();
+      applyRegionRules();
+      updateStart();
+      show($('#globalNote'), false);
+      loadRecent();
+    }).catch(function (err) {
+      $('#region').innerHTML = '<option value="">지역 목록을 불러오지 못했어요</option>';
+      text($('#globalNote'), err.message + ' 화면을 새로 고치면 다시 시도해요.');
+      show($('#globalNote'), true);
+    });
+  }
+
+  // ---------- ① 파일 ----------
+  function isTiff(file) {
+    var name = (file && file.name || '').toLowerCase();
+    return /\.(tif|tiff)$/.test(name) || (file && /tiff?$/.test(file.type || ''));
+  }
+  function setFile(file) {
+    var err = $('#submitError');
+    if (!file) return;
+    if (!isTiff(file)) {
+      text(err, '위성 영상 파일(.tif 또는 .tiff)만 올릴 수 있어요. 고른 파일: ' + file.name);
+      show(err, true);
+      return;
+    }
+    show(err, false);
+    state.file = file;
+    text($('#fileName'), file.name);
+    text($('#fileSize'), formatBytes(file.size));
+    show($('#fileChip'), true);
+    $('#dropzone').classList.add('has-file');
+    text($('#dropTitle'), '파일이 준비됐어요');
+    text($('#dropHint'), '다른 파일로 바꾸려면 다시 누르거나 끌어다 놓으세요');
+    updateStart();
+  }
+  function formReady() { return !!($('#region').value && selectedSensor() && $('#imageDate').value); }
+  function updateStart() {
+    var ready = formReady();
+    var btn = $('#startBtn'), hint = $('#startHint');
+    btn.disabled = !(ready && !!state.file && !state.xhr);
+    if (state.xhr) text(hint, '올리는 중이에요. 잠시만 기다려 주세요.');
+    else if (!ready && !state.file) text(hint, '지역·영상 종류·날짜를 고르고 파일을 올리면 시작할 수 있어요.');
+    else if (!ready) text(hint, '지역·영상 종류·날짜를 모두 골라 주세요.');
+    else if (!state.file) text(hint, '위성 영상 파일을 올려 주세요. 또는 "최근 장면 고르기"에서 들어온 영상을 고르세요.');
+    else text(hint, '준비됐어요. 시작하기를 누르세요.');
+  }
+  function setUpload(frac, label) {
+    var pct = Math.max(0, Math.min(100, Math.round(frac * 100)));
+    $('#uploadBar').style.width = pct + '%';
+    text($('#uploadPct'), pct + '%');
+    if (label) text($('#uploadText'), label);
+  }
+  function resetUploadUi() {
+    state.xhr = null;
+    show($('#uploadBox'), false);
+    setUpload(0, '파일을 올리는 중…');
+    updateStart();
+  }
+  function normalizeTime(v) {
+    if (!v) return '';
+    var parts = v.split(':');
+    while (parts.length < 3) parts.push('00');
+    return parts.slice(0, 3).map(function (p) { return pad(parseInt(p, 10) || 0); }).join(':');
+  }
+  function startRun() {
+    if (!formReady() || !state.file || state.xhr) return;
+    var err = $('#submitError');
+    show(err, false);
+    var fd = new FormData();
+    fd.append('region_id', $('#region').value);
+    fd.append('sensor', selectedSensor());
+    fd.append('image_date', $('#imageDate').value);
+    var t = normalizeTime($('#acqTime').value);
+    if (t) fd.append('acquisition_time', t);
+    fd.append('pre_file', state.file, state.file.name);
+    if (state.maskFile) fd.append('mask_file', state.maskFile, state.maskFile.name);
+    if (state.mask3File) fd.append('mask3_file', state.mask3File, state.mask3File.name);
+    ['order_id', 'scene_id', 'work_id', 'algm_id', 'product_type', 'product_id'].forEach(function (k) {
+      var v = $('#f_' + k).value.trim();
+      if (v) fd.append(k, v);
+    });
+    fd.append('detect', $('#optDetect').checked ? 'true' : 'false');
+    fd.append('predict', $('#optPredict').checked ? 'true' : 'false');
+    var note = $('#f_note').value.trim();
+    if (note) fd.append('note', note);
+
+    var xhr = new XMLHttpRequest();
+    state.xhr = xhr;
+    show($('#uploadBox'), true);
+    setUpload(0, '파일을 올리는 중…');
+    updateStart();
+    xhr.open('POST', API + '/scenes');
+    xhr.setRequestHeader('Accept', 'application/json');
+    xhr.upload.onprogress = function (e) {
+      if (e.lengthComputable) setUpload(e.loaded / e.total, e.loaded >= e.total ? '서버가 파일을 확인하는 중…' : '파일을 올리는 중…');
+    };
+    xhr.onload = function () {
+      var body = {};
+      try { body = JSON.parse(xhr.responseText || '{}'); } catch (e) { body = {}; }
+      if (xhr.status === 202 || xhr.status === 200 || xhr.status === 201) {
+        setUpload(1, '올리기 완료');
+        state.xhr = null;
+        show($('#uploadBox'), false);
+        updateStart();
+        if (!body.scene_id) { text(err, '서버가 작업 번호를 돌려주지 않았어요. 담당자에게 문의해 주세요.'); show(err, true); return; }
+        beginScene(body.scene_id, {
+          region_id: $('#region').value, sensor: selectedSensor(), image_date: $('#imageDate').value,
+          file_name: state.file.name, status: 'queued', steps: [], outputs: {}
+        }, Date.now());
+      } else {
+        text(err, httpMessage(xhr.status, describeDetail(body && body.detail)));
+        show(err, true);
+        resetUploadUi();
+      }
+    };
+    xhr.onerror = function () { text(err, NET_MSG); show(err, true); resetUploadUi(); };
+    xhr.onabort = function () { resetUploadUi(); };
+    xhr.send(fd);
+  }
+
+  // ---------- ① 최근 장면 고르기 ----------
+  function loadRecentScenes() {
+    var list = $('#recentScenes'), empty = $('#recentScenesEmpty');
+    var region = $('#region').value;
+    list.innerHTML = '';
+    return getJSON(API + '/scenes' + (region ? '?region_id=' + encodeURIComponent(region) : '')).then(function (data) {
+      var items = ((data && data.items) || []).filter(function (it) { return it.status === 'done' || it.status === 'running' || it.status === 'queued'; });
+      show(list, items.length > 0);
+      show(empty, items.length === 0);
+      items.slice(0, 30).forEach(function (it) {
+        var li = document.createElement('li');
+        var area = formatArea(it.water_area_km2);
+        var b = el('button', { type: 'button', 'class': 'pick-row' });
+        b.innerHTML = '<span><b>' + escapeHtml(fmtDateKo(it.image_date)) + '</b> · ' + escapeHtml(sensorTitle(it.sensor)) +
+          '<div class="sub">' + escapeHtml(regionName(it.region_id)) + (area != null ? ' · 물 면적 ' + escapeHtml(area) + ' km²' : '') + '</div></span>' +
+          '<span class="badge badge--' + escapeHtml(it.status) + '">' + escapeHtml(STATUS_COPY[it.status] || it.status) + '</span>';
+        b.addEventListener('click', function () { openScene(it.scene_id); });
+        li.appendChild(b);
+        list.appendChild(li);
+      });
+    }).catch(function (err) {
+      show(empty, true); text(empty, '목록을 불러오지 못했어요. ' + err.message);
+    });
+  }
+
+  // ---------- 입력 요약 / 지도 ----------
+  function renderInputsSummary(scene) {
+    var box = $('#inputsSummary');
+    box.innerHTML = '';
+    [['지역', regionName(scene.region_id)], ['영상 종류', sensorTitle(scene.sensor)], ['영상 날짜', fmtDateKo(scene.image_date)],
+     ['파일', scene.file_name || (scene.outputs && scene.outputs.product_name) || scene.scene_id || '']].forEach(function (r) {
+      if (!r[1]) return;
+      box.appendChild(el('span', { html: '<b>' + escapeHtml(r[0]) + '</b>' + escapeHtml(r[1]) }));
+    });
+    show(box, true);
+    show($('#formArea'), false);
+    show($('#step1Actions'), true);
+  }
+  function step1SummaryText(scene) {
+    var parts = [regionName(scene.region_id), sensorTitle(scene.sensor), scene.image_date];
+    if (state.coverage) parts.push('지점 ' + state.coverage.inside.length + '개 덮음');
+    return parts.filter(Boolean).join(' · ');
+  }
+
+  function pointInPolygon(lon, lat, poly) {
+    var inside = false;
+    for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      var xi = poly[i][0], yi = poly[i][1], xj = poly[j][0], yj = poly[j][1];
+      var hit = ((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi);
+      if (hit) inside = !inside;
+    }
+    return inside;
+  }
+  function centroid(poly) {
+    var x = 0, y = 0;
+    poly.forEach(function (p) { x += p[0]; y += p[1]; });
+    return [x / poly.length, y / poly.length];
+  }
+  function loadGeometry(regionId, force) {
+    if (!force && state.geometry && state.geometryRegion === regionId) return Promise.resolve(state.geometry);
+    return getJSON(API + '/regions/' + encodeURIComponent(regionId) + '/geometry').then(function (g) {
+      state.geometry = g; state.geometryRegion = regionId;
+      return g;
+    });
+  }
+  function renderMap(geo, sceneId) {
+    var svg = $('#mapSvg');
+    while (svg.lastChild) svg.removeChild(svg.lastChild);
+    svg.appendChild(svgEl('title', { id: 'mapSvgTitle', text: (geo.name || geo.region_id) + ' 지역 약도' }));
+    var bb = geo.bbox_wgs84 || [0, 0, 1, 1];
+    var dlon = bb[2] - bb[0] || 1, dlat = bb[3] - bb[1] || 1;
+    var lon0 = bb[0] - dlon * 0.05, lon1 = bb[2] + dlon * 0.05, lat0 = bb[1] - dlat * 0.05, lat1 = bb[3] + dlat * 0.05;
+    var k = Math.cos((lat0 + lat1) / 2 * Math.PI / 180);
+    var W = 800, scale = W / ((lon1 - lon0) * k), H = Math.round((lat1 - lat0) * scale);
+    if (H < 320) { scale = scale * 320 / H; H = 320; W = Math.round((lon1 - lon0) * k * scale); }
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    function X(lon) { return ((lon - lon0) * k * scale).toFixed(1); }
+    function Y(lat) { return ((lat1 - lat) * scale).toFixed(1); }
+    function pts(poly) { return poly.map(function (p) { return X(p[0]) + ',' + Y(p[1]); }).join(' '); }
+
+    svg.appendChild(svgEl('rect', { x: 0, y: 0, width: W, height: H, fill: '#eef3f8' }));
+    // 지역 경계
+    svg.appendChild(svgEl('rect', { x: X(bb[0]), y: Y(bb[3]), width: ((bb[2] - bb[0]) * k * scale).toFixed(1), height: ((bb[3] - bb[1]) * scale).toFixed(1), fill: '#f6f9fc', stroke: '#b9c4d1', 'stroke-width': 1.5, 'stroke-dasharray': '6 5' }));
+    svg.appendChild(svgEl('text', { x: Number(X(bb[0])) + 8, y: Number(Y(bb[3])) + 22, 'font-size': 15, fill: '#6b7684', 'font-weight': 700, text: (geo.name || geo.region_id) + ' 지역 범위' }));
+    // 예전 장면 촬영범위
+    var newScene = null;
+    (geo.scenes || []).forEach(function (s) {
+      if (!Array.isArray(s.footprint_lonlat) || s.footprint_lonlat.length < 3) return;
+      if (sceneId && s.scene_id === sceneId) { newScene = s; return; }
+      var p = svgEl('polygon', { points: pts(s.footprint_lonlat), fill: 'none', stroke: '#8f9aa8', 'stroke-width': 1.2, opacity: .8 });
+      p.appendChild(svgEl('title', { text: (s.date || '') + ' · ' + sensorTitle(s.sensor) + (s.water_area_km2 != null ? ' · 물 면적 ' + formatArea(s.water_area_km2) + ' km²' : '') }));
+      svg.appendChild(p);
+    });
+    // 수위를 재는 물 구역(AOI)
+    (geo.aois || []).forEach(function (a) {
+      if (!Array.isArray(a.polygon_lonlat) || a.polygon_lonlat.length < 3) return;
+      var c = centroid(a.polygon_lonlat);
+      var g = svgEl('g');
+      g.appendChild(svgEl('polygon', { points: pts(a.polygon_lonlat), fill: 'rgba(27,175,122,.35)', stroke: '#1baf7a', 'stroke-width': 1.5 }));
+      g.appendChild(svgEl('circle', { cx: X(c[0]), cy: Y(c[1]), r: 9, fill: 'rgba(27,175,122,.18)', stroke: '#1baf7a', 'stroke-width': 1.5 }));
+      g.appendChild(svgEl('title', { text: '물 구역 ' + (a.loc_id || '') + (a.station_id ? ' (' + a.station_id + ')' : '') }));
+      svg.appendChild(g);
+    });
+    // 새 장면 촬영범위
+    var covered = [];
+    if (newScene) {
+      var np = svgEl('polygon', { points: pts(newScene.footprint_lonlat), fill: 'rgba(42,120,214,.16)', stroke: '#2a78d6', 'stroke-width': 3, 'stroke-linejoin': 'round' });
+      np.appendChild(svgEl('title', { text: '이 영상의 촬영 범위 · ' + (newScene.date || '') + ' · ' + sensorTitle(newScene.sensor) }));
+      svg.appendChild(np);
+      (geo.stations || []).forEach(function (st) { if (st.lat != null && st.lon != null && pointInPolygon(st.lon, st.lat, newScene.footprint_lonlat)) covered.push(st); });
+    }
+    // 지점
+    (geo.stations || []).forEach(function (st) {
+      if (st.lat == null || st.lon == null) return;
+      var inside = covered.indexOf(st) >= 0;
+      var g = svgEl('g');
+      g.appendChild(svgEl('circle', { cx: X(st.lon), cy: Y(st.lat), r: 7, fill: inside ? '#2a78d6' : '#fff', stroke: inside ? '#2a78d6' : '#16202c', 'stroke-width': 2.5 }));
+      g.appendChild(svgEl('text', { x: Number(X(st.lon)) + 12, y: Number(Y(st.lat)) + 5, 'font-size': 16, 'font-weight': 700, fill: '#16202c', stroke: '#fff', 'stroke-width': 4, 'paint-order': 'stroke', text: st.name || st.id }));
+      g.appendChild(svgEl('title', { text: (st.name || st.id) + (inside ? ' — 이 영상이 덮어요' : ' — 이 영상 밖') }));
+      svg.appendChild(g);
+    });
+    return { newScene: newScene, inside: covered };
+  }
+  function renderMapPanel(geo, sceneId, regionId) {
+    show($('#mapPanel'), true);
+    show($('#mapFallback'), false);
+    var res = renderMap(geo, sceneId);
+    var sentence = $('#mapSentence'), list = $('#coveredList'), osm = $('#osmLink');
+    var stations = geo.stations || [];
+    var name = geo.name || regionName(regionId);
+    list.innerHTML = '';
+    if (!res.newScene) {
+      state.coverage = null;
+      var st = state.scene && state.scene.status;
+      if (st === 'failed' || st === 'done') sentence.innerHTML = '이 영상의 촬영 범위 정보가 없어요. <b>' + escapeHtml(name) + '</b> 지역의 지점과 예전 영상 범위만 표시했어요.';
+      else sentence.innerHTML = '이 영상의 촬영 범위를 아직 확인하는 중이에요… 등록이 끝나면 파란색으로 표시돼요.';
+      show(list, false);
+    } else {
+      if (!state.coverage) state.coverageAt = Date.now();
+      state.coverage = res;
+      var names = res.inside.map(function (s) { return s.name || s.id; });
+      if (!stations.length) sentence.innerHTML = '이 지역에는 등록된 수위 지점이 없어요. 촬영 범위만 파란색으로 표시했어요.';
+      else if (!names.length) sentence.innerHTML = '이 영상은 <b>' + escapeHtml(name) + '</b>의 수위 지점을 하나도 덮지 않아요. 물 영역은 찾을 수 있지만 수위 비교는 어려워요.';
+      else sentence.innerHTML = '이 영상은 <b>' + escapeHtml(name) + '</b>의 지점 <span class="n">' + names.length + '개</span>(' + escapeHtml(names.join(', ')) + ')를 덮어요.';
+      show(list, false);
+      text($('#step1Summary'), step1SummaryText(state.scene || {}));
+      if (state.stations && state.stationsRegion === regionId) fillStations();
+    }
+    text($('#mapNote'), '지점 ' + stations.length + '곳 · 예전 영상 ' + (geo.scenes || []).filter(function (s) { return s.scene_id !== sceneId; }).length + '장 · 물 구역 ' + (geo.aois || []).length + '곳');
+    var c = res.newScene ? centroid(res.newScene.footprint_lonlat) : [(geo.bbox_wgs84[0] + geo.bbox_wgs84[2]) / 2, (geo.bbox_wgs84[1] + geo.bbox_wgs84[3]) / 2];
+    osm.href = 'https://www.openstreetmap.org/#map=12/' + c[1].toFixed(5) + '/' + c[0].toFixed(5);
+    show(osm, true);
+  }
+  function renderMapFallback(regionId, msg) {
+    show($('#mapPanel'), true);
+    var svg = $('#mapSvg');
+    while (svg.lastChild) svg.removeChild(svg.lastChild);
+    svg.setAttribute('viewBox', '0 0 800 240');
+    svg.appendChild(svgEl('rect', { x: 0, y: 0, width: 800, height: 240, fill: '#eef3f8' }));
+    svg.appendChild(svgEl('text', { x: 400, y: 126, 'text-anchor': 'middle', 'font-size': 18, fill: '#6b7684', text: '이 지역의 지도 자료가 없어요' }));
+    var r = regionById(regionId);
+    $('#mapSentence').innerHTML = '<b>' + escapeHtml(regionName(regionId)) + '</b> 지역의 영상이에요.' + (r && r.has_gauge ? ' 수위 지점 정보는 탐지가 끝나면 아래에 나와요.' : ' 이 지역에는 수위계가 없어요.');
+    text($('#mapFallback'), msg || '');
+    show($('#mapFallback'), !!msg);
+    text($('#mapNote'), '');
+    show($('#osmLink'), false);
+    state.coverage = null;
+    state.footprintTries = 99;
+  }
+  function refreshMapForScene(scene, force) {
+    var regionId = scene.region_id;
+    loadGeometry(regionId, force).then(function (geo) {
+      renderMapPanel(geo, scene.scene_id || state.sceneId, regionId);
+    }).catch(function (err) {
+      renderMapFallback(regionId, err.status === 404 ? '' : err.message);
+    });
+  }
+
+  // ---------- ② 진행 ----------
+  function stopPolling() { if (state.pollTimer) clearInterval(state.pollTimer); state.pollTimer = null; state.polling = false; }
+  function stopTicking() { if (state.tickTimer) clearInterval(state.tickTimer); state.tickTimer = null; }
+  function tick() {
+    var s = state.scene;
+    var created = s ? parseDate(s.created_at) : null;
+    var finished = s ? parseDate(s.finished_at) : null;
+    var elapsed = (finished && created) ? (finished - created) / 1000 : (Date.now() - (state.startedAt || Date.now())) / 1000;
+    text($('#elapsed'), '걸린 시간 ' + formatDuration(elapsed));
+    if (s && (s.status === 'done' || s.status === 'failed')) stopTicking();
+  }
+  function startTicking() { stopTicking(); tick(); state.tickTimer = setInterval(tick, 1000); }
+
+  function beginScene(sceneId, initial, startedAt) {
+    stopPolling();
+    state.sceneId = sceneId;
+    state.scene = initial;
+    state.startedAt = startedAt || Date.now();
+    state.coverage = null;
+    state.footprintTries = 0;
+    state.vizLoadedFor = null;
+    resetResultUi();
+    renderInputsSummary(initial);
+    text($('#step1Summary'), step1SummaryText(initial));
+    refreshMapForScene(initial, true);
+    renderProgress(null);
+    startTicking();
+    setStage(1, { noScroll: true, unlockUpTo: 2 });
+    $('#mapPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    poll();
+    state.pollTimer = setInterval(poll, POLL_MS);
+  }
+  function poll() {
+    if (state.polling || !state.sceneId) return;
+    state.polling = true;
+    var id = state.sceneId;
+    getJSON(API + '/scenes/' + encodeURIComponent(id)).then(function (scene) {
+      if (id !== state.sceneId) return;
+      show($('#pollNote'), false);
+      handleScene(scene);
+    }).catch(function (err) {
+      if (id !== state.sceneId) return;
+      text($('#pollNote'), err.message + ' 계속 확인하고 있어요.');
+      show($('#pollNote'), true);
+    }).then(function () { state.polling = false; });
+  }
+  function stepByKey(scene, key) {
+    var steps = (scene && scene.steps) || [];
+    for (var i = 0; i < steps.length; i++) if (steps[i].key === key) return steps[i];
+    return null;
+  }
+  function handleScene(scene) {
+    var prev = state.scene || {};
+    scene.file_name = prev.file_name;
+    state.scene = scene;
+    renderProgress(scene);
+    var reg = stepByKey(scene, 'register');
+    var registered = reg && (reg.status === 'done' || reg.status === 'skipped');
+    if (registered && !state.coverage && state.footprintTries < 6) {
+      state.footprintTries += 1;
+      refreshMapForScene(scene, true);
+    }
+    // 촬영 범위를 확인한 뒤 잠깐(4초) 지도를 보여 주고 나서 ②로 넘어간다. 지도 자료가 없으면 바로 넘어간다.
+    var mapSettled = state.coverage ? (Date.now() - (state.coverageAt || 0) >= 4000) : state.footprintTries >= 3;
+    if (registered && state.stage < 2 && scene.status !== 'failed' && (mapSettled || scene.status === 'done')) setStage(2);
+    if (scene.status === 'done') {
+      stopPolling();
+      renderDetectResult(scene);
+      loadRecent();
+    } else if (scene.status === 'failed') {
+      stopPolling();
+      renderFailed(scene);
+      loadRecent();
+    }
+    text($('#step1Summary'), step1SummaryText(scene));
+    tick();
+  }
+  function stepLabel(step) { return STEP_COPY[step.key] || step.label || step.key; }
+  function renderProgress(scene) {
+    var steps = scene && Array.isArray(scene.steps) && scene.steps.length ? scene.steps : DETECT_KEYS.map(function (k) { return { key: k, status: 'pending' }; });
+    var list = $('#checklist');
+    list.innerHTML = '';
+    var running = null, later = [];
+    steps.forEach(function (st) {
+      var status = st.status || 'pending';
+      if (!ICONS[status]) status = 'pending';
+      if (DETECT_KEYS.indexOf(st.key) < 0) { later.push(st); return; }
+      if (status === 'running' && !running) running = st;
+      var li = document.createElement('li');
+      li.className = 'step is-' + status;
+      var detail = '';
+      if (status === 'skipped') detail = '이 단계는 건너뜀' + (st.detail ? ': ' + st.detail : '');
+      else if (status === 'failed') detail = st.detail || (scene && scene.error) || '문제가 생겨 멈췄어요';
+      else if (status === 'running') detail = st.detail || '진행하고 있어요…';
+      else if (status === 'done') detail = friendlyStepDetail(st.key, st.detail) || '끝났어요';
+      else detail = st.detail || '기다리는 중';
+      var time = '';
+      if (status === 'done' || status === 'failed' || status === 'skipped') {
+        if (st.elapsed_s != null && isFinite(Number(st.elapsed_s))) time = formatDuration(Number(st.elapsed_s));
+      }
+      li.innerHTML =
+        '<span class="step__icon">' + ICONS[status] + '</span>' +
+        '<span><span class="step__name">' + escapeHtml(stepLabel(st)) + '</span><div class="step__detail">' + escapeHtml(detail) + '</div></span>' +
+        '<span class="step__time">' + escapeHtml(time) + '</span>';
+      list.appendChild(li);
+    });
+    var laterRunning = later.filter(function (s) { return s.status === 'running'; });
+    var after = $('#afterNote');
+    if (scene && scene.status !== 'done' && scene.status !== 'failed' && laterRunning.length) {
+      text(after, '탐지는 끝났고, 이어서 ' + stepLabel(laterRunning[0]) + '을(를) 하고 있어요. 곧 결과가 나와요.');
+      show(after, true);
+    } else show(after, false);
+
+    var status = scene ? scene.status : 'queued';
+    var frac = scene && scene.progress != null ? Number(scene.progress) : 0;
+    if (!isFinite(frac)) frac = 0;
+    if (status === 'done') frac = 1;
+    var bar = $('#overallBar');
+    bar.style.width = Math.round(frac * 100) + '%';
+    bar.classList.toggle('is-active', status === 'queued' || status === 'running');
+    bar.classList.toggle('is-done', status === 'done');
+    bar.classList.toggle('is-failed', status === 'failed');
+    $('#overallBarWrap').setAttribute('aria-valuenow', String(Math.round(frac * 100)));
+
+    var label;
+    if (!scene || !scene.steps || !scene.steps.length) label = '작업을 준비하고 있어요…';
+    else if (status === 'queued') label = '순서를 기다리고 있어요…';
+    else if (status === 'running') label = (running ? stepLabel(running) : (laterRunning[0] ? stepLabel(laterRunning[0]) : '작업')) + ' 진행 중… ' + Math.round(frac * 100) + '%';
+    else if (status === 'done') label = '탐지가 모두 끝났어요';
+    else if (status === 'failed') label = '작업이 중간에 멈췄어요';
+    else label = STATUS_COPY[status] || status;
+    text($('#progressStatus'), label);
+    if (status === 'running') text($('#step2Summary'), label);
+  }
+
+  // ---------- ② 결과 ----------
+  function resetResultUi() {
+    show($('#detectResult'), false);
+    show($('#skipNote'), false);
+    show($('#warnings'), false);
+    show($('#failedBox'), false);
+    show($('#step2Actions'), false);
+    show($('#afterNote'), false);
+    show($('#fcResult'), false);
+    show($('#apResult'), false);
+    show($('#fcError'), false);
+    show($('#apError'), false);
+    text($('#step2Summary'), '진행 중…');
+    text($('#step3Summary'), '탐지가 끝나면 볼 수 있어요');
+    text($('#step4Summary'), '탐지가 끝나면 할 수 있어요');
+    cardEl(2).classList.remove('is-failed');
+  }
+  function locName(locId) {
+    var geo = state.geometry;
+    if (geo && geo.aois) for (var i = 0; i < geo.aois.length; i++) if (geo.aois[i].loc_id === locId && geo.aois[i].station_id) return geo.aois[i].station_id + ' (' + locId + ')';
+    return '물 구역 ' + locId;
+  }
+  function renderDetectResult(scene) {
+    var o = scene.outputs || {};
+    var area = formatArea(o.water_area_km2);
+    $('#areaValue').innerHTML = area != null ? escapeHtml(area) + '<small>km²</small>' : '<span class="muted" style="font-size:1.1rem">면적 정보가 없어요</span>';
+    text($('#areaSub'), area != null ? fmtDateKo(scene.image_date) + ' · ' + sensorTitle(scene.sensor) : '');
+    show($('#detectResult'), true);
+
+    var ul = $('#levelList'), note = $('#levelsNote');
+    ul.innerHTML = '';
+    text(note, '');
+    var lv = stepByKey(scene, 'levels');
+    if (lv && lv.status === 'skipped') text(note, '이 영상에서는 수위를 계산하지 않았어요' + (lv.detail ? ' — ' + lv.detail : '') + '.');
+    else if (!o.levels_url) text(note, '수위 자료가 없어요.');
+    else {
+      text(note, '불러오는 중…');
+      loadGeometry(scene.region_id).catch(function () { return null; }).then(function () { return getJSON(o.levels_url); }).then(function (data) {
+        var recs = (data && (data.records || data.items)) || [];
+        var sameDay = recs.filter(function (r) { return !scene.image_date || !r.date || r.date === scene.image_date; });
+        if (!sameDay.length) sameDay = recs;
+        if (!sameDay.length) { text(note, '이 날짜의 수위 값이 없어요.'); return; }
+        text(note, '');
+        sameDay.forEach(function (r) {
+          var li = document.createElement('li');
+          var v = num(r.water_level_m, 2), g = num(r.gauge_level_m, 2);
+          li.innerHTML = '<span>' + escapeHtml(locName(r.loc_id)) + '</span><span class="val">' + (v != null ? escapeHtml(v) + ' m' : '—') + (g != null ? '<small>실측 ' + escapeHtml(g) + ' m</small>' : '') + '</span>';
+          ul.appendChild(li);
+        });
+        text($('#step2Summary'), '물 면적 ' + (area != null ? area + ' km²' : '—') + ' · 지점 ' + sameDay.length + '곳 수위');
+      }).catch(function (err) { text(note, '수위 자료를 불러오지 못했어요. ' + err.message); });
+    }
+    var skipped = (scene.steps || []).filter(function (s) { return s.status === 'skipped' && DETECT_KEYS.indexOf(s.key) >= 0; });
+    if (skipped.length) {
+      $('#skipNote').innerHTML = skipped.map(function (s) { return '<b>' + escapeHtml(stepLabel(s)) + '</b>은(는) 건너뛰었어요' + (s.detail ? ' — ' + escapeHtml(s.detail) : '') + '.'; }).join('<br>');
+      show($('#skipNote'), true);
+    }
+    var warnings = Array.isArray(scene.warnings) ? scene.warnings.filter(Boolean) : [];
+    var wl = $('#warningList');
+    wl.innerHTML = '';
+    warnings.forEach(function (w) { wl.appendChild(el('li', { text: friendlyWarning(String(w)) })); });
+    show($('#warnings'), warnings.length > 0);
+    text($('#step2Summary'), '물 면적 ' + (area != null ? area + ' km²' : '—'));
+    show($('#step2Actions'), true);
+    cardEl(2).classList.add('is-done');
+
+    renderViz(scene);
+    prepareForecast(scene);
+    setStage(3);
+  }
+  function renderFailed(scene) {
+    text($('#failedText'), scene.error || '원인을 알 수 없는 문제가 생겼어요.');
+    show($('#failedBox'), true);
+    cardEl(2).classList.add('is-failed');
+    text($('#step2Summary'), '작업이 멈췄어요');
+    setStage(2);
+  }
+  function retry() {
+    stopPolling(); stopTicking();
+    state.sceneId = null; state.scene = null; state.coverage = null;
+    resetResultUi();
+    show($('#formArea'), true);
+    show($('#inputsSummary'), false);
+    show($('#mapPanel'), false);
+    show($('#step1Actions'), false);
+    text($('#step1Summary'), '');
+    text($('#step2Summary'), '①을 끝내면 자동으로 시작돼요');
+    resetUploadUi();
+    updateStart();
+    setStage(1);
+    $('#startBtn').focus();
+  }
+
+  // ---------- 차트 ----------
+  function niceTicks(lo, hi, count) {
+    if (!(hi > lo)) { hi = lo + 1; lo = lo - 1; }
+    var span = hi - lo, step = Math.pow(10, Math.floor(Math.log10(span / count)));
+    var err = span / count / step;
+    if (err >= 7.5) step *= 10; else if (err >= 3.5) step *= 5; else if (err >= 1.5) step *= 2;
+    var ticks = [], v = Math.ceil(lo / step) * step;
+    for (; v <= hi + step * 1e-6; v += step) ticks.push(Number(v.toFixed(10)));
+    return ticks;
+  }
+  function fmtTick(v) { var a = Math.abs(v); return a >= 100 ? v.toFixed(0) : a >= 10 ? v.toFixed(1) : v.toFixed(2); }
+  /* series: [{id,label,color,points:[{x(ms),y,label}],dashed,noDots,ring}], bands: [{color,points:[{x,lo,hi}]}], markers: [{x,label}] */
+  function lineChart(box, opts) {
+    box.innerHTML = '';
+    var W = opts.width || 960, H = opts.height || 330, m = { l: 66, r: 24, t: 18, b: 44 };
+    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': opts.aria || '꺾은선 그래프' });
+    var all = [];
+    (opts.series || []).forEach(function (s) { s.points.forEach(function (p) { if (p.y != null && isFinite(p.y)) all.push(p); }); });
+    var bandVals = [];
+    (opts.bands || []).forEach(function (b) { b.points.forEach(function (p) { bandVals.push(p.lo, p.hi); }); });
+    if (!all.length) {
+      svg.appendChild(svgEl('text', { x: W / 2, y: H / 2, 'text-anchor': 'middle', 'class': 'empty', text: opts.emptyText || '보여 줄 자료가 아직 없어요' }));
+      box.appendChild(svg);
+      return;
+    }
+    var xs = all.map(function (p) { return p.x; }).concat((opts.markers || []).map(function (mk) { return mk.x; })).concat(bandVals.length ? (opts.bands[0].points.map(function (p) { return p.x; })) : []);
+    var ys = all.map(function (p) { return p.y; }).concat(bandVals);
+    var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+    if (x1 === x0) { x0 -= 86400000 * 3; x1 += 86400000 * 3; }
+    var padX = (x1 - x0) * 0.03; x0 -= padX; x1 += padX;
+    var y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+    var padY = (y1 - y0) * 0.15 || Math.abs(y0) * 0.05 || 1; y0 -= padY; y1 += padY;
+    if (opts.zeroBase && y0 > 0) y0 = 0;
+    var yt = niceTicks(y0, y1, 5);
+    y0 = Math.min(y0, yt[0]); y1 = Math.max(y1, yt[yt.length - 1]);
+    var iw = W - m.l - m.r, ih = H - m.t - m.b;
+    function X(x) { return m.l + (x - x0) / (x1 - x0) * iw; }
+    function Y(y) { return m.t + (y1 - y) / (y1 - y0) * ih; }
+
+    var grid = svgEl('g', { 'class': 'grid' });
+    yt.forEach(function (v) { grid.appendChild(svgEl('line', { x1: m.l, x2: W - m.r, y1: Y(v).toFixed(1), y2: Y(v).toFixed(1) })); });
+    svg.appendChild(grid);
+    var axis = svgEl('g', { 'class': 'axis' });
+    axis.appendChild(svgEl('line', { x1: m.l, x2: W - m.r, y1: (m.t + ih).toFixed(1), y2: (m.t + ih).toFixed(1) }));
+    axis.appendChild(svgEl('line', { x1: m.l, x2: m.l, y1: m.t, y2: m.t + ih }));
+    svg.appendChild(axis);
+    var ticks = svgEl('g', { 'class': 'tick' });
+    yt.forEach(function (v) { ticks.appendChild(svgEl('text', { x: m.l - 10, y: (Y(v) + 4.5).toFixed(1), 'text-anchor': 'end', text: fmtTick(v) })); });
+    var spanDays = (x1 - x0) / 86400000, nx = Math.min(8, Math.max(3, Math.round(iw / 130)));
+    var withYear = spanDays > 300;
+    var seen = {};
+    for (var i = 0; i <= nx; i++) {
+      var tx = x0 + (x1 - x0) * i / nx;
+      var d = new Date(tx); d = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+      if (seen[d]) continue; seen[d] = 1;
+      ticks.appendChild(svgEl('text', { x: X(d).toFixed(1), y: m.t + ih + 24, 'text-anchor': 'middle', text: fmtDay(d, withYear) }));
+      ticks.appendChild(svgEl('line', { x1: X(d).toFixed(1), x2: X(d).toFixed(1), y1: m.t + ih, y2: m.t + ih + 6, stroke: '#c3c8d0' }));
+    }
+    svg.appendChild(ticks);
+    if (opts.yLabel) svg.appendChild(svgEl('text', { x: m.l - 10, y: m.t - 4, 'text-anchor': 'end', 'class': 'ylabel', text: opts.yLabel }));
+
+    (opts.bands || []).forEach(function (b) {
+      var ptsArr = b.points.filter(function (p) { return p.lo != null && p.hi != null; });
+      if (ptsArr.length < 2) return;
+      var up = ptsArr.map(function (p) { return X(p.x).toFixed(1) + ',' + Y(p.hi).toFixed(1); });
+      var dn = ptsArr.slice().reverse().map(function (p) { return X(p.x).toFixed(1) + ',' + Y(p.lo).toFixed(1); });
+      svg.appendChild(svgEl('polygon', { points: up.concat(dn).join(' '), fill: b.color, 'class': 'band' }));
+    });
+    (opts.markers || []).forEach(function (mk) {
+      var g = svgEl('g', { 'class': 'marker' });
+      g.appendChild(svgEl('line', { x1: X(mk.x).toFixed(1), x2: X(mk.x).toFixed(1), y1: m.t, y2: m.t + ih }));
+      if (mk.label) g.appendChild(svgEl('text', { x: (X(mk.x) + 6).toFixed(1), y: m.t + 14, text: mk.label }));
+      svg.appendChild(g);
+    });
+    var dots = [];
+    (opts.series || []).forEach(function (s) {
+      var g = svgEl('g', { 'class': 'series' + (s.dashed ? ' is-dashed' : '') });
+      var valid = s.points.filter(function (p) { return p.y != null && isFinite(p.y); }).sort(function (a, b) { return a.x - b.x; });
+      if (valid.length > 1 && !s.noLine) {
+        var d = valid.map(function (p, i) { return (i ? 'L' : 'M') + X(p.x).toFixed(1) + ' ' + Y(p.y).toFixed(1); }).join(' ');
+        g.appendChild(svgEl('path', { d: d, stroke: s.color }));
+      }
+      if (!s.noDots) valid.forEach(function (p) {
+        var c = svgEl('circle', { cx: X(p.x).toFixed(1), cy: Y(p.y).toFixed(1), r: p.big ? 7 : 4.5, fill: s.ring ? '#fff' : s.color, stroke: s.ring ? s.color : '#fff', 'class': s.ring ? 'pt gauge' : 'pt' });
+        if (s.ring) c.setAttribute('stroke-width', '2.4');
+        c.appendChild(svgEl('title', { text: (s.label ? s.label + ' · ' : '') + fmtDay(p.x, true) + ' · ' + (p.label || fmtTick(p.y) + (opts.unit ? ' ' + opts.unit : '')) }));
+        g.appendChild(c);
+        dots.push({ x: X(p.x), y: Y(p.y), text: (s.label ? s.label + ' · ' : '') + fmtDay(p.x, true) + ' · ' + (p.label || fmtTick(p.y) + (opts.unit ? ' ' + opts.unit : '')) });
+      });
+      svg.appendChild(g);
+    });
+    // 선 끝 직접 라벨 (계열이 4개 이하일 때만, 겹치면 생략)
+    var ends = [];
+    if ((opts.series || []).length <= 4 && opts.endLabels !== false) {
+      (opts.series || []).forEach(function (s) {
+        var valid = s.points.filter(function (p) { return p.y != null && isFinite(p.y); });
+        if (!valid.length || !s.label) return;
+        var last = valid.reduce(function (a, b) { return a.x > b.x ? a : b; });
+        var yy = Y(last.y);
+        if (ends.some(function (e) { return Math.abs(e - yy) < 16; })) return;
+        if (X(last.x) + 8 + s.label.length * 8 > W) return;
+        ends.push(yy);
+        svg.appendChild(svgEl('text', { x: (X(last.x) + 9).toFixed(1), y: (yy + 4).toFixed(1), 'font-size': 12, 'font-weight': 700, fill: '#52514e', text: s.label }));
+      });
+    }
+    box.appendChild(svg);
+
+    // 가까운 점 툴팁
+    var tip = el('div', { 'class': 'tooltip' }); tip.hidden = true; box.appendChild(tip);
+    svg.addEventListener('mousemove', function (e) {
+      var rect = svg.getBoundingClientRect();
+      var sx = (e.clientX - rect.left) * W / rect.width, sy = (e.clientY - rect.top) * H / rect.height;
+      var best = null, bd = 1e9;
+      dots.forEach(function (d) { var dd = (d.x - sx) * (d.x - sx) + (d.y - sy) * (d.y - sy); if (dd < bd) { bd = dd; best = d; } });
+      if (!best || bd > 40 * 40) { tip.hidden = true; return; }
+      tip.textContent = best.text;
+      tip.style.left = (best.x * rect.width / W + (box.clientLeft || 0) + (svg.offsetLeft || 0)) + 'px';
+      tip.style.top = (best.y * rect.height / H + (svg.offsetTop || 0)) + 'px';
+      tip.hidden = false;
+    });
+    svg.addEventListener('mouseleave', function () { tip.hidden = true; });
+
+    if (opts.legend && opts.legend.length) {
+      var lg = el('ul', { 'class': 'chart-legend', 'aria-label': '범례' });
+      opts.legend.forEach(function (it) {
+        var key = el('span', { 'class': 'key' + (it.kind ? ' key--' + it.kind : '') });
+        if (it.kind === 'dot') key.style.borderColor = it.color; else if (it.kind === 'dash') key.style.color = it.color; else key.style.background = it.color;
+        lg.appendChild(el('li', {}, [key, el('span', { text: it.label })]));
+      });
+      box.appendChild(lg);
+    }
+  }
+
+  // ---------- ③ 시각화 ----------
+  function setImage(img, missing, url) {
+    show(missing, false);
+    if (!url) { img.hidden = true; show(missing, true); return; }
+    img.hidden = false;
+    img.onerror = function () { img.hidden = true; show(missing, true); };
+    img.src = url;
+  }
+  function setLink(a, url, download) {
+    if (!url) { a.hidden = true; a.removeAttribute('href'); return; }
+    a.hidden = false; a.href = url;
+    if (download) a.setAttribute('download', ''); else a.removeAttribute('download');
+  }
+  function renderViz(scene) {
+    var o = scene.outputs || {};
+    setImage($('#overlayImg'), $('#overlayMissing'), o.overlay_url);
+    setImage($('#quicklookImg'), $('#quicklookMissing'), o.quicklook_url);
+    setLink($('#btnProduct'), o.product_url, true);
+    setLink($('#btnMask'), o.mask_url, true);
+    var meta = $('#vizMeta');
+    meta.innerHTML = '';
+    [['지역', regionName(scene.region_id)], ['영상', sensorTitle(scene.sensor)], ['날짜', fmtDateKo(scene.image_date)], ['결과 파일', o.product_name]].forEach(function (r) {
+      if (r[1]) meta.appendChild(el('span', { html: escapeHtml(r[0]) + ' <b>' + escapeHtml(r[1]) + '</b>' }));
+    });
+    text($('#step3Summary'), '물 영역 그림 · 면적/수위 시계열');
+    if (state.vizLoadedFor === scene.scene_id) return;
+    state.vizLoadedFor = scene.scene_id;
+    var areaBox = $('#areaChart'), levelBox = $('#levelChart');
+    areaBox.innerHTML = '<p class="muted" style="margin:30px 0;text-align:center">그래프를 그리는 중…</p>';
+    levelBox.innerHTML = '<p class="muted" style="margin:30px 0;text-align:center">그래프를 그리는 중…</p>';
+    var cur = dayMs(scene.image_date);
+    var region = encodeURIComponent(scene.region_id);
+
+    getJSON(o.area_series_url || (API + '/regions/' + region + '/satellite/area-series')).then(function (data) {
+      var sensors = (data && data.sensors) || {};
+      var series = [], legend = [];
+      Object.keys(sensors).sort().forEach(function (sid, i) {
+        var rows = (sensors[sid] && sensors[sid].rows) || [];
+        var color = SENSOR_COLOR[sid] || SERIES[i % SERIES.length];
+        var pts = rows.map(function (r) {
+          var v = r.area_km2_common_frame != null ? r.area_km2_common_frame : r.area_km2_scene_footprint;
+          return { x: dayMs(r.date), y: v != null ? Number(v) : null, big: cur != null && dayMs(r.date) === cur, label: formatArea(v) + ' km²' + (r.scene_id === scene.scene_id ? ' (이 영상)' : '') };
+        }).filter(function (p) { return p.x != null; });
+        series.push({ id: sid, label: sensorTitle(sid), color: color, points: pts });
+        legend.push({ color: color, label: sensorTitle(sid) });
+      });
+      if (series.length < 2) legend = [];
+      lineChart(areaBox, { series: series, markers: cur != null ? [{ x: cur, label: '이 영상' }] : [], yLabel: 'km²', unit: 'km²', legend: legend, aria: '영상 종류별 물 면적 변화', emptyText: '아직 면적 시계열이 없어요. 영상이 더 들어오면 그려져요.' });
+    }).catch(function (err) {
+      areaBox.innerHTML = '<p class="muted" style="margin:30px 0;text-align:center">면적 시계열을 불러오지 못했어요. ' + escapeHtml(err.message) + '</p>';
+    });
+
+    loadGeometry(scene.region_id).catch(function () { return null; }).then(function () { return getJSON(API + '/regions/' + region + '/satellite/levels'); }).then(function (data) {
+      var recs = (data && data.records) || [];
+      var byLoc = {}, locs = [];
+      recs.forEach(function (r) { if (!byLoc[r.loc_id]) { byLoc[r.loc_id] = []; locs.push(r.loc_id); } byLoc[r.loc_id].push(r); });
+      locs.sort();
+      var series = [], legend = [];
+      locs.forEach(function (loc, i) {
+        var color = SERIES[i % SERIES.length];
+        var name = locName(loc);
+        var pts = byLoc[loc].map(function (r) { return { x: dayMs(r.date), y: r.water_level_m != null ? Number(r.water_level_m) : null, big: cur != null && dayMs(r.date) === cur, label: num(r.water_level_m, 2) + ' m' }; }).filter(function (p) { return p.x != null; });
+        series.push({ id: loc, label: name, color: color, points: pts });
+        var gpts = byLoc[loc].filter(function (r) { return r.gauge_level_m != null; }).map(function (r) { return { x: dayMs(r.date), y: Number(r.gauge_level_m), label: '실측 ' + num(r.gauge_level_m, 2) + ' m' }; });
+        if (gpts.length) series.push({ id: loc + ':gauge', label: name + ' 실측', color: color, points: gpts, ring: true, noLine: true });
+        legend.push({ color: color, label: name });
+      });
+      if (locs.length) legend.push({ color: '#16202c', label: '테두리 동그라미 = 같은 날 지상 수위계 실측', kind: 'dot' });
+      lineChart(levelBox, { series: series, markers: cur != null ? [{ x: cur, label: '이 영상' }] : [], yLabel: 'm', unit: 'm', legend: legend, aria: '지점별 위성 수위 변화', endLabels: false, emptyText: '아직 위성 수위 시계열이 없어요.' });
+    }).catch(function (err) {
+      levelBox.innerHTML = '<p class="muted" style="margin:30px 0;text-align:center">수위 시계열을 불러오지 못했어요. ' + escapeHtml(err.message) + '</p>';
+    });
+  }
+
+  // ---------- ④ 예측 ----------
+  function fillHorizons(sel, def) {
+    sel.innerHTML = '';
+    HORIZONS.forEach(function (h) { var o = el('option', { value: String(h), text: h + '일 뒤까지' }); if (h === def) o.selected = true; sel.appendChild(o); });
+  }
+  function loadForecasters() {
+    return getJSON(API + '/gauge/forecasters').then(function (items) {
+      state.forecasters = Array.isArray(items) ? items : (items && items.items) || [];
+      var sel = $('#fcModel');
+      sel.innerHTML = '';
+      sel.appendChild(el('option', { value: '', text: '검증에서 고른 모델 (기본)' }));
+      state.forecasters.forEach(function (f) { sel.appendChild(el('option', { value: f.id, text: (f.name || f.id) + (f.is_baseline ? ' · 기준선' : f.is_reference ? ' · 참고용' : '') })); });
+    }).catch(function () { /* 기본 선택만 남는다 */ });
+  }
+  function loadModels() {
+    return getJSON(API + '/models').then(function (items) {
+      state.models = Array.isArray(items) ? items : (items && items.items) || [];
+      var sel = $('#apModel');
+      sel.innerHTML = '';
+      var copy = MODEL_COPY;
+      state.models.forEach(function (mo) { sel.appendChild(el('option', { value: mo.id, text: (copy[mo.id] || mo.name || mo.id) })); });
+      if (state.models.some(function (mo) { return mo.id === 'irregular-area-trend'; })) sel.value = 'irregular-area-trend';
+      if (!state.models.length) sel.appendChild(el('option', { value: '', text: '쓸 수 있는 모델이 없어요' }));
+    }).catch(function () { $('#apModel').innerHTML = '<option value="">모델 목록을 불러오지 못했어요</option>'; });
+  }
+  function prepareForecast(scene) {
+    var regionId = scene.region_id;
+    var region = regionById(regionId);
+    text($('#step4Summary'), '지점 수위 전망 · 면적 전망');
+    text($('#fcHint'), '');
+    text($('#apHint'), '이 영상(' + fmtDateKo(scene.image_date) + ')의 물 영역에서 출발해요.');
+    loadScenarios(scene);
+    var sel = $('#fcStation');
+    if (region && region.has_gauge === false) {
+      sel.innerHTML = '<option value="">이 지역에는 수위 지점이 없어요</option>';
+      $('#fcBtn').disabled = true;
+      return;
+    }
+    $('#fcBtn').disabled = false;
+    if (state.stationsRegion === regionId && state.stations) { fillStations(); return; }
+    sel.innerHTML = '<option value="">불러오는 중…</option>';
+    getJSON(API + '/regions/' + encodeURIComponent(regionId) + '/gauge/stations').then(function (items) {
+      state.stations = Array.isArray(items) ? items : (items && (items.stations || items.items)) || [];
+      state.stationsRegion = regionId;
+      fillStations();
+    }).catch(function (err) { sel.innerHTML = '<option value="">지점 목록을 불러오지 못했어요</option>'; text($('#fcHint'), err.message); });
+  }
+  function fillStations() {
+    var sel = $('#fcStation');
+    var keep = sel.value;
+    sel.innerHTML = '';
+    var covered = state.coverage ? state.coverage.inside.map(function (s) { return s.id; }) : [];
+    var first = null;
+    state.stations.forEach(function (st) {
+      var trained = st.model_trained !== false;
+      var o = el('option', { value: st.id, text: (st.name || st.id) + (covered.indexOf(st.id) >= 0 ? ' · 이 영상 안' : '') + (trained ? '' : ' · 학습 안 됨') });
+      if (!trained) o.disabled = true;
+      else if (first == null || (covered.indexOf(st.id) >= 0 && covered.indexOf(first) < 0)) first = st.id;
+      sel.appendChild(o);
+    });
+    if (!state.stations.length) sel.appendChild(el('option', { value: '', text: '지점이 없어요' }));
+    if (keep && state.stations.some(function (st) { return st.id === keep && st.model_trained !== false; })) sel.value = keep;
+    else if (first != null) sel.value = first;
+  }
+  // ---------- ④ 자료가 있는 기간 · 시나리오 ----------
+  function horizonMax() { var w = state.scenarios && state.scenarios.forecast_window; return (w && w.horizon_max) || 30; }
+  function addDays(iso, n) { var ms = dayMs(iso); if (ms == null) return ''; var d = new Date(ms + n * 86400000); return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate()); }
+  function diffDays(a, b) { var x = dayMs(a), y = dayMs(b); if (x == null || y == null) return null; return Math.round((y - x) / 86400000); }
+  function sameSensor(a, b) { return String(a || '').toLowerCase() === String(b || '').toLowerCase(); }
+  function loadScenarios(scene) {
+    var regionId = scene.region_id;
+    text($('#availNote'), '불러오는 중…');
+    $('#availList').innerHTML = '';
+    $('#availTimeline').innerHTML = '';
+    $('#fcScenario').innerHTML = '<option value="">불러오는 중…</option>';
+    show($('#fcPlan'), false);
+    var q = scene.image_date ? '?as_of=' + encodeURIComponent(scene.image_date) + '&horizon=' + encodeURIComponent($('#fcHorizon').value || 7) : '';
+    return getJSON(API + '/regions/' + encodeURIComponent(regionId) + '/scenarios' + q).then(function (sc) {
+      state.scenarios = sc; state.scenariosRegion = regionId;
+      fillHorizonOptions();
+      renderAvailability(sc);
+      fillScenarioSelect(sc, scene);
+      fillAreaOrigins(sc, scene);
+      updatePlan();
+    }).catch(function (err) {
+      state.scenarios = null;
+      text($('#availNote'), '자료 기간을 불러오지 못했어요. ' + err.message);
+      $('#fcScenario').innerHTML = '<option value="custom">직접 고르기</option>';
+      if (scene.image_date && !$('#fcDate').value) $('#fcDate').value = scene.image_date;
+      syncUntilFromHorizon();
+      updatePlan();
+    });
+  }
+  function periodText(p) { return p ? fmtDateKo(p[0]) + ' ~ ' + fmtDateKo(p[1]) : '없음'; }
+  function renderAvailability(sc) {
+    var list = $('#availList');
+    list.innerHTML = '';
+    var g = sc.gauge || {}, w = sc.weather || {}, s = sc.satellite || {}, m = sc.models || {};
+    var items = [];
+    items.push(['지상 수위계', g.available ? escapeHtml(periodText(g.period)) + ' <span class="muted">(' + escapeHtml(num(g.n_days, 0) || '0') + '일 · 지점 ' + escapeHtml(String(g.n_stations || 0)) + '곳)</span>' : '자료 없음']);
+    items.push(['기상' + (w.station_name ? ' (' + escapeHtml(w.station_name) + ')' : ''), w.available ? escapeHtml(periodText(w.period)) : '자료 없음']);
+    items.push(['위성 영상', s.available ? escapeHtml(String(s.n_scenes)) + '장 · ' + escapeHtml(periodText(s.period)) + ' <span class="muted">(' + escapeHtml((s.sensors || []).join(', ')) + ')</span>' : '없음']);
+    if (sc.expansion && sc.expansion.label_ko) items.push(['확장 경로', escapeHtml(sc.expansion.label_ko) + ' <span class="muted">(' + escapeHtml((sc.expansion.reasons_ko || []).join(' · ')) + ')</span>']);
+    function years(a, b) { a = String(a).slice(0, 4); b = String(b).slice(0, 4); return a === b ? a : a + '~' + b; }
+    if (m.split) items.push(['학습 · 검증 · 시험', escapeHtml('~' + String(m.split.train_end).slice(0, 4) + ' · ' + years(m.split.val_start, m.split.val_end) + ' · ' + years(m.split.test_start, m.split.test_end))]);
+    else items.push(['학습', m.trained ? '학습됨' : '학습 안 됨']);
+    items.forEach(function (r) { list.appendChild(el('li', { html: '<b>' + r[0] + '</b>' + r[1] })); });
+    text($('#availNote'), sc.note_ko || '');
+    renderTimeline(sc);
+  }
+  function renderTimeline(sc) {
+    var host = $('#availTimeline');
+    host.innerHTML = '';
+    host._scale = null;
+    var g = sc.gauge || {}, w = sc.weather || {}, s = sc.satellite || {}, m = sc.models || {};
+    var dates = [];
+    [g.period, w.period, s.period].forEach(function (p) { if (p) { dates.push(dayMs(p[0])); dates.push(dayMs(p[1])); } });
+    dates = dates.filter(function (v) { return v != null; });
+    if (!dates.length) return;
+    var lo = Math.min.apply(null, dates), hi = Math.max.apply(null, dates);
+    var today = dayMs(todayLocal());
+    if (today != null && today > hi) hi = today;
+    var margin = Math.max((hi - lo) * 0.02, 86400000 * 30);
+    lo -= margin; hi += margin;
+    var W = 800, L = 104, R = 16, rowH = 22, top = 24;
+    var rows = [['수위계', 'gauge'], ['기상', 'weather'], ['위성 영상', 'scenes'], ['학습·검증·시험', 'split']];
+    var axisY = top + rows.length * rowH;
+    var H = axisY + 22;
+    var svg = svgEl('svg', { viewBox: '0 0 ' + W + ' ' + H, 'aria-hidden': 'true' });
+    function x(ms) { return L + (ms - lo) / (hi - lo) * (W - L - R); }
+    function bar(y, p, color, opacity) {
+      var a = dayMs(p[0]), b = dayMs(p[1]) + 86400000;
+      svg.appendChild(svgEl('rect', { x: x(a), y: y + 5, width: Math.max(2, x(b) - x(a)), height: rowH - 10, rx: 3, fill: color, opacity: opacity }));
+    }
+    rows.forEach(function (r, i) {
+      var y = top + i * rowH;
+      svg.appendChild(svgEl('text', { x: L - 8, y: y + rowH / 2 + 4, 'text-anchor': 'end', 'class': 'tl-label', text: r[0] }));
+      svg.appendChild(svgEl('line', { x1: L, x2: W - R, y1: y + rowH, y2: y + rowH, 'class': 'tl-axis', opacity: '.5' }));
+      if (r[1] === 'gauge' && g.period) bar(y, g.period, SERIES[0], '.8');
+      if (r[1] === 'weather' && w.period) bar(y, w.period, SERIES[2], '.7');
+      if (r[1] === 'scenes') (s.scenes || []).forEach(function (sn) {
+        var ms = dayMs(sn.date); if (ms == null) return;
+        var ci = Math.max(0, (s.sensors || []).indexOf(sn.sensor));
+        svg.appendChild(svgEl('rect', { x: x(ms) - 1.5, y: y + 3, width: 3, height: rowH - 6, rx: 1, fill: SERIES[(ci + 3) % SERIES.length] }));
+      });
+      if (r[1] === 'split' && m.split) {
+        var segs = [['학습', null, m.split.train_end, '#c6cfd9'], ['검증', m.split.val_start, m.split.val_end, '#f0dc93'], ['시험', m.split.test_start, m.split.test_end, '#b9e4c9']];
+        segs.forEach(function (sg) {
+          var a = sg[1] ? dayMs(sg[1]) : (g.period ? dayMs(g.period[0]) : lo), b = dayMs(sg[2]);
+          if (a == null || b == null) return;
+          b += 86400000;
+          a = Math.max(a, lo); b = Math.min(b, hi);
+          if (b <= a) return;
+          svg.appendChild(svgEl('rect', { x: x(a), y: y + 4, width: x(b) - x(a), height: rowH - 8, fill: sg[3] }));
+          if (x(b) - x(a) > 34) svg.appendChild(svgEl('text', { x: (x(a) + x(b)) / 2, y: y + rowH / 2 + 4, 'text-anchor': 'middle', 'class': 'tl-tick', text: sg[0] }));
+        });
+      }
+    });
+    var y0 = new Date(lo).getUTCFullYear() + 1, y1 = new Date(hi).getUTCFullYear();
+    var every = (y1 - y0 > 14) ? 2 : 1;
+    for (var yr = y0; yr <= y1; yr += every) {
+      var ms = Date.UTC(yr, 0, 1);
+      if (ms < lo || ms > hi) continue;
+      svg.appendChild(svgEl('line', { x1: x(ms), x2: x(ms), y1: top, y2: axisY, stroke: '#c6cfd9', 'stroke-dasharray': '2 3' }));
+      svg.appendChild(svgEl('text', { x: x(ms), y: axisY + 16, 'text-anchor': 'middle', 'class': 'tl-tick', text: String(yr) }));
+    }
+    if (today != null && today >= lo && today <= hi) {
+      svg.appendChild(svgEl('line', { x1: x(today), x2: x(today), y1: top - 10, y2: axisY, stroke: '#5e6b7a' }));
+      svg.appendChild(svgEl('text', { x: x(today), y: top - 12, 'text-anchor': 'middle', 'class': 'tl-tick', text: '오늘' }));
+    }
+    svg.appendChild(svgEl('g', { id: 'tlMark' }));
+    host.appendChild(svg);
+    host._scale = { x: x, lo: lo, hi: hi, top: top, axisY: axisY };
+    updateTimelineMark();
+  }
+  function updateTimelineMark() {
+    var host = $('#availTimeline'), sc = host._scale, mark = $('#tlMark');
+    if (!sc || !mark) return;
+    while (mark.firstChild) mark.removeChild(mark.firstChild);
+    var a = dayMs($('#fcDate').value), b = dayMs($('#fcUntil').value);
+    if (a == null) return;
+    if (b != null && b > a) {
+      var x0 = sc.x(Math.max(a, sc.lo)), x1 = sc.x(Math.min(b, sc.hi));
+      if (x1 > x0) mark.appendChild(svgEl('rect', { x: x0, y: sc.top, width: Math.max(2, x1 - x0), height: sc.axisY - sc.top, fill: SERIES[1], opacity: '.28' }));
+    }
+    if (a >= sc.lo && a <= sc.hi) {
+      var xa = sc.x(a), today = dayMs(todayLocal()), xt = today != null ? sc.x(today) : null;
+      // '오늘' 글자(마커 위, 가운데 정렬)와 겹치지 않게 — 오늘과 가까우면 왼쪽으로 끝맞춤
+      var nearToday = xt != null && Math.abs(xa - xt) < 90;
+      var anchor = (xa > 700 || (nearToday && xa <= xt)) ? 'end' : 'start';
+      var dx = anchor === 'end' ? -(nearToday ? 30 : 4) : (nearToday ? 30 : 4);
+      mark.appendChild(svgEl('line', { x1: xa, x2: xa, y1: sc.top - 10, y2: sc.axisY, stroke: SERIES[1], 'stroke-width': 2 }));
+      mark.appendChild(svgEl('text', { x: xa + dx, y: sc.top - 12, 'text-anchor': anchor, 'class': 'tl-mark', text: '출발일 ' + fmtDay(a, true) }));
+    }
+  }
+  function fillHorizonOptions() {
+    var sel = $('#fcHorizon'), keep = parseInt(sel.value, 10) || 7, hmax = horizonMax();
+    sel.innerHTML = '';
+    HORIZONS.filter(function (h) { return h <= hmax; }).forEach(function (h) { sel.appendChild(el('option', { value: String(h), text: h + '일 뒤까지' })); });
+    if (keep > hmax) keep = hmax;
+    if (!HORIZONS.some(function (h) { return h === keep && h <= hmax; })) sel.appendChild(el('option', { value: String(keep), text: keep + '일 뒤까지', 'data-custom': '1' }));
+    sel.value = String(keep);
+  }
+  function fillScenarioSelect(sc, scene) {
+    var sel = $('#fcScenario');
+    sel.innerHTML = '';
+    var req = sc.requested, win = sc.forecast_window;
+    var picked = null;
+    if (scene.image_date) {
+      var mine = el('option', { value: 'scene_date', text: '이 영상 날짜 ' + scene.image_date + (req && !req.available ? ' — 수위 자료 없음' : '') });
+      if (req && !req.available) mine.disabled = true; else picked = 'scene_date';
+      sel.appendChild(mine);
+    }
+    (sc.scenarios || []).forEach(function (s) {
+      if (s.kind === 'scene_no_gauge') return;
+      if (scene.image_date && s.kind === 'scene' && s.as_of === scene.image_date) return;
+      var o = el('option', { value: s.id, text: s.label_ko + (s.observed_days_after ? ' · 이후 실측 ' + s.observed_days_after + '일' : (s.kind === 'latest' ? ' · 실측 없음' : '')) });
+      if (!s.available) o.disabled = true;
+      sel.appendChild(o);
+    });
+    sel.appendChild(el('option', { value: 'custom', text: '직접 고르기 (출발일을 입력)' }));
+    if (!picked) {
+      // 영상 날짜에 자료가 없으면 서버가 맞춰 준 출발일(자료 끝 H일 전 = 전망 전부 비교 가능)과 같은 시나리오를 고른다
+      var avail = (sc.scenarios || []).filter(function (s) { return s.available; });
+      var resolved = req && req.resolved_as_of;
+      var pref = (resolved ? avail.filter(function (s) { return s.as_of === resolved; })[0] : null) || avail.filter(function (s) { return s.kind === 'verify'; })[0] || avail[avail.length - 1];
+      picked = pref ? pref.id : 'custom';
+      if (!pref && resolved) $('#fcDate').value = resolved;
+    }
+    sel.value = picked;
+    var d = $('#fcDate'), u = $('#fcUntil');
+    if (win && sc.gauge && sc.gauge.period) { d.min = sc.gauge.period[0]; d.max = win.origin_max; u.min = sc.gauge.period[0]; }
+    else { d.removeAttribute('min'); d.removeAttribute('max'); u.removeAttribute('min'); }
+    applyScenarioSelection();
+  }
+  function currentScenario() {
+    var v = $('#fcScenario').value;
+    if (!v || v === 'custom' || v === 'scene_date') return null;
+    return ((state.scenarios && state.scenarios.scenarios) || []).filter(function (s) { return s.id === v; })[0] || null;
+  }
+  function applyScenarioSelection() {
+    var v = $('#fcScenario').value, scene = state.scene || {}, s = currentScenario();
+    if (v === 'scene_date' && scene.image_date) $('#fcDate').value = scene.image_date;
+    else if (s && s.as_of) $('#fcDate').value = s.as_of;
+    else if (v === 'custom' && !$('#fcDate').value && scene.image_date) $('#fcDate').value = scene.image_date;
+    syncUntilFromHorizon();
+    updatePlan();
+  }
+  function syncUntilFromHorizon() {
+    var d = $('#fcDate').value, h = parseInt($('#fcHorizon').value, 10) || 7;
+    $('#fcUntil').value = d ? addDays(d, h) : '';
+  }
+  function syncHorizonFromUntil() {
+    var d = $('#fcDate').value, u = $('#fcUntil').value, n = diffDays(d, u);
+    if (n == null) return;
+    var hmax = horizonMax();
+    if (n < 1) n = 1;
+    if (n > hmax) n = hmax;
+    var sel = $('#fcHorizon');
+    var custom = sel.querySelector('option[data-custom]');
+    if (custom && parseInt(custom.value, 10) !== n) custom.remove();
+    if (!Array.prototype.some.call(sel.options, function (o) { return parseInt(o.value, 10) === n; })) sel.appendChild(el('option', { value: String(n), text: n + '일 뒤까지', 'data-custom': '1' }));
+    sel.value = String(n);
+    $('#fcUntil').value = addDays(d, n);
+  }
+  function updatePlan() {
+    var box = $('#fcPlan');
+    var sc = state.scenarios, win = sc && sc.forecast_window;
+    var d = $('#fcDate').value, h = parseInt($('#fcHorizon').value, 10) || 7, u = $('#fcUntil').value;
+    updateTimelineMark();
+    if (!d) { show(box, false); return; }
+    var lines = [], warn = false;
+    var req = sc && sc.requested;
+    if (req && !req.available && req.note_ko && $('#fcScenario').value !== 'scene_date') { lines.push(escapeHtml(req.note_ko)); warn = true; }
+    lines.push('<b>출발 ' + escapeHtml(fmtDateKo(d)) + '</b> → ' + escapeHtml(fmtDateKo(u)) + ' 까지 (' + h + '일 전망)');
+    if (win) {
+      var first = sc.gauge && sc.gauge.period ? sc.gauge.period[0] : null;
+      if (first && d < first) { lines.push('출발일이 자료 시작(' + escapeHtml(fmtDateKo(first)) + ') 전이에요 — 자료 기간 안에서 골라 주세요.'); warn = true; }
+      else if (d > win.origin_max) { lines.push('이 출발일에는 수위 자료가 없어요 — 자료 마지막 날(' + escapeHtml(fmtDateKo(win.origin_max)) + ')을 출발일로 계산해요.'); warn = true; }
+      else {
+        var obs = Math.max(0, Math.min(h, diffDays(d, win.verifiable_until) || 0));
+        lines.push(obs > 0 ? '실제 수위와 비교할 수 있는 날 <b>' + obs + '일</b>' + (obs < h ? ' (나머지 ' + (h - obs) + '일은 실측 없음)' : '') : '그 뒤 실측이 없어 순수한 미래 전망이에요 (비교 불가).');
+        var split = sc.models && sc.models.split;
+        if (split && d <= split.val_end) lines.push('학습·검증 구간 안(표본 내)이라 성능 근거로는 쓰지 마세요 — 성능은 모델 평가 화면의 시험 결과로.');
+        else if (split && d >= split.test_start && d <= split.test_end) lines.push('시험 연도 — 모델이 학습 때 보지 않은 구간(공정한 비교).');
+        if (win.origin_min && d < win.origin_min) { lines.push('출발일 이전 관측이 적어 전망이 비어 있을 수 있어요 (' + escapeHtml(fmtDateKo(win.origin_min)) + ' 이후 권장).'); warn = true; }
+      }
+    }
+    box.innerHTML = lines.map(function (l) { return '<div>' + l + '</div>'; }).join('');
+    box.classList.toggle('plan--warn', warn);
+    show(box, true);
+  }
+  function fillAreaOrigins(sc, scene) {
+    var sel = $('#apOrigin');
+    sel.innerHTML = '';
+    sel.appendChild(el('option', { value: '', text: '전부 (마지막 영상까지)' }));
+    var frames = ((sc.satellite && sc.satellite.scenes) || []).filter(function (s) { return s.has_frame && sameSensor(s.sensor, scene.sensor); });
+    frames.forEach(function (s, i) {
+      var after = frames.length - 1 - i;
+      sel.appendChild(el('option', { value: s.date, text: s.date + (s.scene_id === state.sceneId ? ' (이 영상)' : '') + (after ? ' · 이후 영상 ' + after + '장' : ' · 마지막 영상') }));
+    });
+    var mine = frames.filter(function (s) { return s.scene_id === state.sceneId; })[0];
+    sel.value = (mine && frames.indexOf(mine) < frames.length - 1) ? mine.date : '';
+    text($('#apHint'), frames.length
+      ? '같은 종류 영상의 물 영역 그림 ' + frames.length + '장 (' + frames[0].date + ' ~ ' + frames[frames.length - 1].date + '). 출발 영상 뒤에 영상이 있으면 실제 면적과 나란히 비교해요. 예측에는 최소 3장이 필요해요.'
+      : '이 영상 종류의 물 영역 그림이 아직 없어요. 영상이 3장 이상 쌓이면 면적 전망을 볼 수 있어요.');
+  }
+
+  function runForecast() {
+    var scene = state.scene || {};
+    var station = $('#fcStation').value, model = $('#fcModel').value, horizon = $('#fcHorizon').value;
+    var err = $('#fcError');
+    show(err, false);
+    if (!station) { text(err, '지점을 골라 주세요.'); show(err, true); return; }
+    var btn = $('#fcBtn');
+    btn.disabled = true; text(btn, '계산 중…');
+    var asOf = $('#fcDate').value || scene.image_date;
+    var q = '?horizon=' + encodeURIComponent(horizon) + (model ? '&forecaster=' + encodeURIComponent(model) : '') + (asOf ? '&as_of=' + encodeURIComponent(asOf) : '');
+    getJSON(API + '/regions/' + encodeURIComponent(scene.region_id) + '/gauge/' + encodeURIComponent(station) + '/forecast' + q).then(function (f) {
+      renderForecast(f, station);
+    }).catch(function (e) {
+      text(err, '수위 전망을 가져오지 못했어요. ' + e.message); show(err, true);
+    }).then(function () { btn.disabled = false; text(btn, '수위 전망 보기'); });
+  }
+  function forecasterName(id) {
+    var f = (state.forecasters || []).filter(function (x) { return x.id === id; })[0];
+    return f ? (f.name || f.id) : (id || '');
+  }
+  function renderForecast(f, station) {
+    var hist = (f.history || f.observed_history || []).map(function (h) { return { x: dayMs(h.date), y: h.water_level_m != null ? Number(h.water_level_m) : (h.level_m != null ? Number(h.level_m) : null), label: num(h.water_level_m != null ? h.water_level_m : h.level_m, 2) + ' m' }; }).filter(function (p) { return p.x != null && p.y != null; });
+    var steps = f.steps || f.forecast || [];
+    var asOf = dayMs(f.as_of);
+    var fpts = steps.map(function (s) { return { x: dayMs(s.target_date), y: s.forecast_m != null ? Number(s.forecast_m) : null, label: '전망 ' + num(s.forecast_m, 2) + ' m (D+' + s.horizon + ')' }; });
+    if (asOf != null && f.origin_level_m != null) fpts.unshift({ x: asOf, y: Number(f.origin_level_m), label: '출발 ' + num(f.origin_level_m, 2) + ' m' });
+    var band = steps.filter(function (s) { return s.lower_1sigma_m != null && s.upper_1sigma_m != null; }).map(function (s) { return { x: dayMs(s.target_date), lo: Number(s.lower_1sigma_m), hi: Number(s.upper_1sigma_m) }; });
+    if (band.length && asOf != null && f.origin_level_m != null) band.unshift({ x: asOf, lo: Number(f.origin_level_m), hi: Number(f.origin_level_m) });
+    var obs = steps.filter(function (s) { return s.observed_m != null; }).map(function (s) { return { x: dayMs(s.target_date), y: Number(s.observed_m), label: '실제 ' + num(s.observed_m, 2) + ' m' }; });
+    var histDays = Math.max(21, Math.min(hist.length, (Number(f.horizon) || steps.length || 7) * 3));
+    var series = [{ id: 'hist', label: '지난 수위 (실측)', color: '#6b7684', points: hist.slice(-histDays), noDots: true }, { id: 'fc', label: '전망', color: SERIES[0], points: fpts }];
+    var legend = [{ color: '#6b7684', label: '지난 수위 (실측)' }, { color: SERIES[0], label: '전망' }];
+    if (band.length) legend.push({ color: SERIES[0], label: '전망 범위 (±1σ)', kind: 'band' });
+    if (obs.length) { series.push({ id: 'obs', label: '이후 실제 수위', color: SERIES[1], points: obs, ring: true }); legend.push({ color: SERIES[1], label: '이후 실제 수위', kind: 'dot' }); }
+    lineChart($('#fcChart'), { series: series, bands: band.length ? [{ color: SERIES[0], points: band }] : [], markers: asOf != null ? [{ x: asOf, label: '출발일 ' + fmtDay(asOf) }] : [], yLabel: 'm', unit: 'm', legend: legend, aria: station + ' 수위 전망', endLabels: false, height: 360 });
+
+    var body = $('#fcBody');
+    body.innerHTML = '';
+    steps.forEach(function (s) {
+      var tr = document.createElement('tr');
+      var rng = (s.lower_1sigma_m != null && s.upper_1sigma_m != null) ? num(s.lower_1sigma_m, 2) + ' ~ ' + num(s.upper_1sigma_m, 2) : '—';
+      tr.innerHTML = '<td>' + escapeHtml(s.target_date || '') + '</td><td>D+' + escapeHtml(s.horizon) + '</td><td class="num">' + escapeHtml(num(s.forecast_m, 2) || '—') + ' m</td><td class="num">' + escapeHtml(rng) + '</td><td class="num">' + (s.observed_m != null ? escapeHtml(num(s.observed_m, 2)) + ' m' : '<span class="muted">아직 없음</span>') + '</td><td>' + escapeHtml(forecasterName(s.forecaster_id)) + '</td>';
+      body.appendChild(tr);
+    });
+    var meta = $('#fcMeta');
+    meta.innerHTML = '';
+    var st = f.station || {};
+    var lastStep = steps.length ? steps[steps.length - 1] : null;
+    [['지점', st.name || station], ['출발일', fmtDateKo(f.as_of)], ['끝 날짜', lastStep ? fmtDateKo(lastStep.target_date) + ' (' + lastStep.horizon + '일)' : null],
+     ['출발 수위', f.origin_level_m != null ? num(f.origin_level_m, 2) + ' m' : null],
+     ['실제와 비교한 날', f.observed_days_after != null ? (f.observed_days_after > 0 ? f.observed_days_after + '일' : '없음 (순수 미래 전망)') : null],
+     ['검증', f.verification && f.verification.rmse_m != null ? '실제와 평균 ' + num(f.verification.rmse_m, 3) + ' m 차이 (' + f.verification.n + '일)' : null],
+     ['자료 기간', f.data_period ? f.data_period[0] + ' ~ ' + f.data_period[1] : null]].forEach(function (r) {
+      if (r[1]) meta.appendChild(el('span', { html: escapeHtml(r[0]) + ' <b>' + escapeHtml(r[1]) + '</b>' }));
+    });
+    var notes = [];
+    if (f.as_of_clamped && f.origin_note_ko) notes.push(f.origin_note_ko);
+    if (f.in_sample) notes.push('출발일이 모델 학습 기간 안에 있어요. 이 그래프는 성능 근거로 쓰지 말고, 성능은 모델 평가 화면의 시험 결과를 보세요.');
+    if (f.forecaster_note_ko) notes.push(f.forecaster_note_ko);
+    if (f.band_note_ko) notes.push('띠(범위)는 예전 검증에서 본 흔들림의 폭이에요. 보증 구간이 아니에요.');
+    if (f.coverage_note_ko) notes.push(f.coverage_note_ko);
+    $('#fcNote').innerHTML = notes.map(function (n) { return '<div>' + escapeHtml(n) + '</div>'; }).join('');
+    show($('#fcNote'), notes.length > 0);
+    show($('#fcResult'), true);
+  }
+  function runAreaPredict() {
+    var scene = state.scene || {};
+    var model = $('#apModel').value, horizon = parseInt($('#apHorizon').value, 10);
+    var err = $('#apError');
+    show(err, false);
+    if (!model) { text(err, '모델을 골라 주세요.'); show(err, true); return; }
+    if (!state.sceneId) { text(err, '먼저 영상을 넣고 탐지를 끝내 주세요.'); show(err, true); return; }
+    var btn = $('#apBtn');
+    btn.disabled = true; text(btn, '계산 중…');
+    var asOf = $('#apOrigin').value;
+    var body = { model_id: model, horizon: horizon };
+    if (asOf) body.as_of = asOf;
+    postJSON(API + '/scenes/' + encodeURIComponent(state.sceneId) + '/predict', body).then(function (p) {
+      var rows = (p.summary && p.summary.steps) || (Array.isArray(p.steps) && p.steps.length && p.steps[0].target_date ? p.steps : null);
+      if (rows || !p.prediction_url) return p;
+      // 응답에 전망 행이 없고 예측 결과 주소만 있으면 그 결과를 읽어 온다 (기존 예측 API 모양)
+      return getJSON(p.prediction_url).then(function (pred) {
+        return { prediction_id: p.prediction_id || pred.id, prediction_url: p.prediction_url, summary: { steps: pred.steps || [] }, warnings: pred.warnings || p.warnings };
+      });
+    }).then(function (p) {
+      renderAreaPredict(p, scene, model);
+    }).catch(function (e) {
+      text(err, '면적 전망을 가져오지 못했어요. ' + e.message); show(err, true);
+    }).then(function () { btn.disabled = false; text(btn, '면적 전망 보기'); });
+  }
+  function renderAreaPredict(p, scene, model) {
+    var steps = (p.summary && p.summary.steps) || (Array.isArray(p.steps) && p.steps.length && p.steps[0].target_date ? p.steps : []) || [];
+    var originIso = p.as_of || scene.image_date;
+    var origin = dayMs(originIso);
+    // 출발 면적: 시나리오 응답에 있는 공통 격자 면적(전망과 같은 틀) → 없으면 이 영상의 탐지 면적
+    var frames = ((state.scenarios && state.scenarios.satellite && state.scenarios.satellite.scenes) || []).filter(function (s) { return s.has_frame && sameSensor(s.sensor, scene.sensor); });
+    var frameAt = frames.filter(function (s) { return s.date === originIso; })[0];
+    var base = (p.summary && p.summary.origin_area_km2 != null) ? Number(p.summary.origin_area_km2)
+      : (frameAt && frameAt.area_km2_common_frame != null) ? Number(frameAt.area_km2_common_frame)
+      : (!p.as_of && scene.outputs && scene.outputs.water_area_km2 != null ? Number(scene.outputs.water_area_km2) : null);
+    var pts = steps.map(function (s) { return { x: dayMs(s.target_date), y: s.water_area_km2 != null ? Number(s.water_area_km2) : null, label: formatArea(s.water_area_km2) + ' km² (D+' + s.horizon + ')' }; });
+    if (origin != null && base != null) pts.unshift({ x: origin, y: base, label: '출발 ' + formatArea(base) + ' km²', big: true });
+    var later = (p.summary && p.summary.later_frames) || [];
+    var lpts = later.filter(function (f) { return f.water_area_km2 != null && dayMs(f.date) != null; }).map(function (f) { return { x: dayMs(f.date), y: Number(f.water_area_km2), label: '실제 ' + formatArea(f.water_area_km2) + ' km² (' + f.date + ')' }; });
+    var series = [{ id: 'area', label: '물 면적 전망', color: SERIES[0], points: pts }];
+    var legend = [{ color: SERIES[0], label: '전망' }];
+    if (lpts.length) { series.push({ id: 'actual', label: '이후 실제 영상', color: SERIES[1], points: lpts, ring: true }); legend.push({ color: SERIES[1], label: '이후 실제 영상', kind: 'dot' }); }
+    lineChart($('#apChart'), { series: series, markers: origin != null ? [{ x: origin, label: p.as_of ? '출발 영상' : '이 영상' }] : [], legend: lpts.length ? legend : undefined, yLabel: 'km²', unit: 'km²', aria: '물 면적 전망', width: 560, height: 330, endLabels: false, emptyText: '전망 값이 없어요' });
+    var cmp = $('#apCompare');
+    if (lpts.length) {
+      var rows = later.filter(function (f) { return f.water_area_km2 != null; }).map(function (f) {
+        var best = null, bestGap = null;
+        steps.forEach(function (s) { var gap = Math.abs((dayMs(s.target_date) || 0) - (dayMs(f.date) || 0)); if (s.water_area_km2 != null && (bestGap == null || gap < bestGap)) { best = s; bestGap = gap; } });
+        var diff = best ? Number(f.water_area_km2) - Number(best.water_area_km2) : null;
+        return '<div>' + escapeHtml(f.date) + ' 실제 <b>' + escapeHtml(formatArea(f.water_area_km2)) + ' km²</b>' +
+          (best ? ' · 가장 가까운 전망 ' + escapeHtml(formatArea(best.water_area_km2)) + ' km² (' + escapeHtml(best.target_date) + ', D+' + escapeHtml(best.horizon) + ') · 차이 ' + (diff >= 0 ? '+' : '') + escapeHtml(formatArea(diff)) + ' km²' : ' · 같은 시기 전망 없음') + '</div>';
+      });
+      cmp.innerHTML = '<div class="note__title">출발 영상 뒤에 실제 영상 ' + later.length + '장</div>' + rows.join('');
+      show(cmp, true);
+    } else {
+      cmp.innerHTML = '';
+      show(cmp, false);
+    }
+    var body = $('#apBody');
+    body.innerHTML = '';
+    steps.forEach(function (s) {
+      var tr = document.createElement('tr');
+      var pct = s.area_change_pct != null ? Number(s.area_change_pct) : (base ? (Number(s.water_area_km2) / base - 1) * 100 : null);
+      var risk = String(s.risk || 'normal').toLowerCase();
+      tr.innerHTML = '<td>' + escapeHtml(s.target_date || '') + '</td><td>D+' + escapeHtml(s.horizon) + '</td><td class="num">' + escapeHtml(formatArea(s.water_area_km2) || '—') + ' km²</td><td class="num">' + (pct != null ? (pct >= 0 ? '+' : '') + escapeHtml(pct.toFixed(1)) + '%' : '—') + '</td><td><span class="badge badge--' + escapeHtml(RISK_COPY[risk] ? risk : 'normal') + '">' + escapeHtml(RISK_COPY[risk] || risk) + '</span></td>';
+      body.appendChild(tr);
+    });
+    var meta = $('#apMeta');
+    meta.innerHTML = '';
+    var mo = (state.models || []).filter(function (m) { return m.id === model; })[0];
+    var am = (p.summary && p.summary.adapter_metadata) || {};
+    var bridgeInfo = am.model === 'level-area-bridge' && am.slope_km2_per_m != null
+      ? '기울기 ' + num(am.slope_km2_per_m, 2) + ' km²/m' + (am.origin_level_m != null ? ' · 원점 수위 ' + num(am.origin_level_m, 2) + ' m' : '') + (am.gauge_station_id ? ' (' + am.gauge_station_id + ')' : '')
+      : null;
+    [['모델', MODEL_COPY[model] || (mo ? (mo.name || mo.id) : model)], ['수위-면적 다리', bridgeInfo], ['출발 영상', originIso ? fmtDateKo(originIso) : null], ['출발 면적', base != null ? formatArea(base) + ' km²' : null],
+     ['쓴 영상', p.summary && p.summary.frame_count != null ? p.summary.frame_count + '장' : null], ['이후 실제 영상', later.length ? later.length + '장' : null], ['예측 번호', p.prediction_id]].forEach(function (r) {
+      if (r[1]) meta.appendChild(el('span', { html: escapeHtml(r[0]) + ' <b>' + escapeHtml(r[1]) + '</b>' }));
+    });
+    var warns = Array.isArray(p.warnings) ? p.warnings : [];
+    $('#apWarn').innerHTML = warns.map(function (w) { return '<div>' + escapeHtml(friendlyWarning(String(w))) + '</div>'; }).join('');
+    show($('#apWarn'), warns.length > 0);
+    show($('#apResult'), true);
+  }
+
+  // ---------- 최근 결과 ----------
+  function badge(status) {
+    var cls = STATUS_COPY[status] ? status : 'queued';
+    return '<span class="badge badge--' + cls + '">' + escapeHtml(STATUS_COPY[status] || status || '') + '</span>';
+  }
+  function fmtStamp(iso) { var t = parseDate(iso); if (t == null) return ''; var d = new Date(t); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+  function renderRecent(items) {
+    var body = $('#recentBody');
+    body.innerHTML = '';
+    show($('#recentTableWrap'), items.length > 0);
+    show($('#recentEmpty'), items.length === 0);
+    items.slice(0, 40).forEach(function (it) {
+      var tr = document.createElement('tr');
+      tr.className = 'scene-row' + (it.scene_id === state.sceneId ? ' is-selected' : '');
+      tr.tabIndex = 0;
+      tr.setAttribute('role', 'button');
+      tr.setAttribute('aria-label', (it.image_date || '') + ' ' + sensorTitle(it.sensor) + ' 결과 보기');
+      var area = formatArea(it.water_area_km2);
+      tr.innerHTML =
+        '<td>' + escapeHtml(it.image_date || '') + '</td>' +
+        '<td>' + escapeHtml(regionName(it.region_id)) + '</td>' +
+        '<td>' + escapeHtml(sensorTitle(it.sensor)) + '</td>' +
+        '<td class="num">' + (area != null ? escapeHtml(area) + ' km²' : '<span class="muted">—</span>') + '</td>' +
+        '<td>' + badge(it.status) + '</td>' +
+        '<td class="muted">' + escapeHtml(fmtStamp(it.created_at)) + '</td>';
+      function open() { openScene(it.scene_id); }
+      tr.addEventListener('click', open);
+      tr.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+      body.appendChild(tr);
+    });
+  }
+  function loadRecent() {
+    return getJSON(API + '/scenes').then(function (data) {
+      show($('#recentNote'), false);
+      renderRecent((data && data.items) || []);
+    }).catch(function (err) {
+      text($('#recentNote'), '최근 결과를 불러오지 못했어요. ' + err.message);
+      show($('#recentNote'), true);
+    });
+  }
+  function openScene(id) {
+    if (!id) return;
+    getJSON(API + '/scenes/' + encodeURIComponent(id)).then(function (scene) {
+      stopPolling();
+      state.sceneId = id;
+      state.scene = scene;
+      state.startedAt = parseDate(scene.created_at) || Date.now();
+      state.coverage = null;
+      state.footprintTries = 0;
+      state.vizLoadedFor = null;
+      resetResultUi();
+      renderInputsSummary(scene);
+      text($('#step1Summary'), step1SummaryText(scene));
+      refreshMapForScene(scene, true);
+      renderProgress(scene);
+      startTicking();
+      if (scene.status === 'done') { renderDetectResult(scene); }
+      else if (scene.status === 'failed') { renderFailed(scene); }
+      else {
+        setStage(2);
+        state.pollTimer = setInterval(poll, POLL_MS);
+      }
+      $all('#recentBody tr').forEach(function (tr) { tr.classList.toggle('is-selected', false); });
+      loadRecent();
+    }).catch(function (err) {
+      text($('#recentNote'), err.message);
+      show($('#recentNote'), true);
+    });
+  }
+
+  // ---------- 이벤트 연결 ----------
+  function bind() {
+    $('#imageDate').value = todayLocal();
+    $('#imageDate').max = todayLocal();
+    $('#region').addEventListener('change', function () { savePrefs({ region: $('#region').value }); applyRegionRules(); updateStart(); if (!$('#recentScenes').hidden) loadRecentScenes(); });
+    $('#imageDate').addEventListener('change', function () { updateStart(); updateDateHint(); });
+    $('#imageDate').addEventListener('input', function () { updateStart(); updateDateHint(); });
+
+    var dz = $('#dropzone'), input = $('#preFile');
+    dz.addEventListener('click', function () { input.click(); });
+    dz.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
+    input.addEventListener('change', function () { if (input.files && input.files[0]) setFile(input.files[0]); input.value = ''; });
+    ['dragenter', 'dragover'].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); dz.classList.add('is-over'); }); });
+    ['dragleave', 'dragend'].forEach(function (ev) { dz.addEventListener(ev, function (e) { e.preventDefault(); e.stopPropagation(); dz.classList.remove('is-over'); }); });
+    dz.addEventListener('drop', function (e) {
+      e.preventDefault(); e.stopPropagation();
+      dz.classList.remove('is-over');
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) setFile(f);
+    });
+    document.addEventListener('dragover', function (e) { e.preventDefault(); });
+    document.addEventListener('drop', function (e) { e.preventDefault(); });
+
+    $('#maskFile').addEventListener('change', function (e) {
+      var f = e.target.files && e.target.files[0];
+      state.maskFile = f || null;
+      text($('#maskFileName'), f ? f.name + ' (' + formatBytes(f.size) + ')' : '선택 안 함');
+    });
+    $('#mask3File').addEventListener('change', function (e) {
+      var f = e.target.files && e.target.files[0];
+      state.mask3File = f || null;
+      text($('#mask3FileName'), f ? f.name + ' (' + formatBytes(f.size) + ')' : '선택 안 함');
+    });
+    $('#recentScenesBtn').addEventListener('click', function () {
+      var list = $('#recentScenes'), btn = $('#recentScenesBtn');
+      var open = list.hidden;
+      if (open) { loadRecentScenes(); } else { show(list, false); show($('#recentScenesEmpty'), false); }
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      text(btn, open ? '목록 닫기' : '목록 보기');
+    });
+
+    $('#startBtn').addEventListener('click', startRun);
+    $('#retryBtn').addEventListener('click', retry);
+    $('#newRunBtn').addEventListener('click', retry);
+    $('#toVizBtn').addEventListener('click', function () { setStage(3); });
+    $('#toPredictBtn').addEventListener('click', function () { setStage(4); });
+    $('#recentRefresh').addEventListener('click', function () { loadRecent(); });
+    $('#fcBtn').addEventListener('click', runForecast);
+    $('#apBtn').addEventListener('click', runAreaPredict);
+    fillHorizons($('#fcHorizon'), 7);
+    fillHorizons($('#apHorizon'), 7);
+    // ④ 시나리오: 시나리오 ↔ 출발일 ↔ 며칠 뒤까지 ↔ 끝 날짜를 서로 맞춘다
+    $('#fcScenario').addEventListener('change', applyScenarioSelection);
+    $('#fcDate').addEventListener('change', function () { $('#fcScenario').value = 'custom'; syncUntilFromHorizon(); updatePlan(); });
+    $('#fcHorizon').addEventListener('change', function () { syncUntilFromHorizon(); updatePlan(); });
+    $('#fcUntil').addEventListener('change', function () { syncHorizonFromUntil(); updatePlan(); });
+  }
+
+  bindMenu();
+  bindCards();
+  bind();
+  updateStart();
+  checkHealth();
+  setInterval(checkHealth, 30000);
+  loadOptions();
+  loadForecasters();
+  loadModels();
+})();
+</script>
+</body>
+</html>
