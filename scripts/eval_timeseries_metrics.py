@@ -303,9 +303,17 @@ def eval_indicator(joined, area_rows):
         "목표": 0.38,
         "달성": bool(combined < 0.38),
         "면적_예측_쌍": detail,
-        "주의": "면적 정규화 MSE 의 대부분은 광학 3/25 씬의 실제 면적 급증(65 km²) "
-               "1건을 persistence 가 못 맞춘 것 — 이벤트 예측이 ConvLSTM+기상 융합의 "
-               "존재 이유. n 이 작아 단일 이벤트가 지배함을 명시할 것.",
+        "주의": "면적 정규화 MSE 의 96 % 는 광학 3/25 씬 1건에서 나오는데, 그 급증(33→65 km²)은 "
+               "홍수가 아니라 촬영범위가 남쪽으로 8.6 km 옮겨가 하구를 담은 결과다. 같은 공통 격자로 "
+               "세면 28.870→30.148 km²(+4.4 %)이고 그 씬 GT 라벨도 공통 격자에서 29.993 km² 로 "
+               "일치한다 — 탐지가 아니라 계열이 비교 불가능했던 것. 정정 계열 종합값 0.02137 은 "
+               "data/eval/timeseries_metrics_common_frame.json 참고"
+               "(scripts/eval_timeseries_common_frame.py). n=6 이라 단일 씬이 계열을 지배함도 병기할 것.",
+        "정정_참고": {
+            "계열": "이 값은 씬 footprint 계열(씬마다 자기 촬영범위에서 센 면적)이다 — 공표값이므로 그대로 둔다.",
+            "공통격자_종합_정규화MSE": 0.02137,
+            "근거": "data/eval/timeseries_metrics_common_frame.json · docs/presentation/면적계열_공통격자_정정.md",
+        },
     }
 
 

@@ -141,6 +141,28 @@ def rolling_origin(
     return out
 
 
+def latest_wamis_file(data_dir: Path) -> Path:
+    """수집 범위(fetched_range)가 가장 긴 파일을 고른다.
+
+    파일명 사전순으로 고르면 `…20190101_20201231`(2년)이 `…20150101_20241231`(10년)
+    뒤에 와서 짧은 파일이 선택되고, --json-out 이 10개년 결과를 조용히 덮어썼다.
+    """
+
+    candidates = sorted(data_dir.glob("wamis_daily_*.json"))
+    if not candidates:
+        raise SystemExit(f"{data_dir} 에 wamis_daily_*.json 이 없습니다 — fetch_wamis_levels.py 를 먼저 실행하세요")
+
+    def span(path: Path) -> tuple[int, str]:
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+            start, end = payload.get("fetched_range", ["0", "0"])
+            return int(end) - int(start), path.name
+        except (OSError, ValueError, TypeError):
+            return -1, path.name
+
+    return max(candidates, key=span)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--file", default=None)
@@ -150,7 +172,7 @@ def main() -> int:
     parser.add_argument("--json-out", default=None)
     args = parser.parse_args()
 
-    path = Path(args.file) if args.file else sorted(DATA_DIR.glob("wamis_daily_*.json"))[-1]
+    path = Path(args.file) if args.file else latest_wamis_file(DATA_DIR)
     payload = json.loads(path.read_text(encoding="utf-8"))
     horizons = [int(h) for h in args.horizons.split(",")]
 
