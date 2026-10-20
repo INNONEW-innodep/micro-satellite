@@ -92,7 +92,7 @@ curl -s http://localhost:18000/api/v1/weather/status   # asos_available: true Ïù
 tar --exclude='.git' --exclude='.venv' --exclude='*/.venv' \
     --exclude='__pycache__' --exclude='*/__pycache__' \
     --exclude='.pytest_cache' --exclude='.ruff_cache' \
-    --exclude='*.pptx' --exclude='.claude' --exclude='backend/data' \
+    --exclude='*.pptx' --exclude='backend/data' \
     --exclude='./data' --exclude='*.h5' --exclude='*.zip' --exclude='*.tar' \
     --exclude='pipeline_ui/screens' --exclude='pipeline_ui/charts' \
     -czf /tmp/watercast_code.tar.gz .
