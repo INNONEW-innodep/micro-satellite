@@ -9,7 +9,10 @@ import json
 import os
 
 url = 'http://apis.data.go.kr/1360000/AsosDalyInfoService/getWthrDataList'
-service_key = "wxNwEyNlM6t7jjFvLcRWRwIPiAs1eFTxPHagk7NP7zZNnDv8FJ6Pj27I4fOh9RNL6AqloMBfGwCHNZn779qViw==" # innodep api service key
+# 인증키는 코드에 적지 않는다. 과거 커밋에 평문으로 들어간 키는 폐기·재발급 대상이다.
+service_key = os.environ.get("KMA_API_KEY", "")
+if not service_key:
+    raise SystemExit("환경변수 KMA_API_KEY 에 공공데이터포털 일반 인증키를 설정하세요 (예: export KMA_API_KEY=...)")
 
 # YYYYMMDD format (D-1까지 제공)
 start_date="20250730"

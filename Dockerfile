@@ -1,3 +1,18 @@
+# ── 1단계: docker CLI 정적 바이너리만 꺼낸다 ──────────────────────────────────────
+# API 컨테이너가 호스트 /var/run/docker.sock 으로 wbms:0.13 을 직접 띄우려면 클라이언트
+# 바이너리가 필요하다(데몬은 호스트 것). curl·tgz 는 이 단계에만 남고 런타임 이미지에는
+# /usr/local/bin/docker 하나만 복사된다. 버전은 호스트 데몬과 같을 필요가 없다(API 버전 협상).
+# https://download.docker.com/linux/static/stable/x86_64/ 에 있는 버전만 가능.
+FROM python:3.11-slim AS docker-cli
+ARG DOCKER_CLI_VERSION=28.3.3
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl ca-certificates \
+    && curl -fsSL "https://download.docker.com/linux/static/stable/x86_64/docker-${DOCKER_CLI_VERSION}.tgz" \
+       | tar -xz -C /usr/local/bin --strip-components=1 docker/docker \
+    && /usr/local/bin/docker --version \
+    && rm -rf /var/lib/apt/lists/*
+
+# ── 2단계: 런타임 이미지 ────────────────────────────────────────────────────────────
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -18,9 +33,14 @@ COPY ui_next/requirements.txt ./ui_next/requirements.txt
 COPY scripts/requirements.txt ./scripts/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# docker CLI (클라이언트만). compose 가 /var/run/docker.sock 을 마운트하면 백엔드가 호스트
+# 데몬으로 wbms 컨테이너를 띄운다(backend/app/wbms/runner.py). pip 레이어 뒤에 두어
+# 의존성 캐시를 깨지 않는다.
+COPY --from=docker-cli /usr/local/bin/docker /usr/local/bin/docker
+
 COPY . .
 
-RUN chmod +x docker/entrypoint.sh
+RUN chmod +x docker/*.sh
 
 EXPOSE 8000 8501
 

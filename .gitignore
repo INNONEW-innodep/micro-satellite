@@ -7,13 +7,32 @@
 # 대용량 전송 파일(인수 zip·도커 이미지 tar·발표자료)은 저장소에 넣지 않는다
 *.zip
 *.tar
+*.tar.gz
+*.tgz
 *.pptx
+*.pkl
+*.pt
+*.pth
+*.onnx
+*.ckpt
+*.log
+.streamlit/secrets.toml
+.DS_Store
+.idea/
+.vscode/
 
 # Small, provenance-tracked browser/demo manifests derived from the delivered NAS.
 !ui_next/assets/nas/**/*.json
 
 # ICEYE SLC ingest가 만든 데모용 메타데이터 (scripts/iceye_slc_ingest.py)
 !pipeline_ui/assets/iceye_meta.json
+# pipeline_ui 실모델 패널이 읽는 크롭 메타 (scripts/make_pipeline_ui_wbms_assets.py)
+!pipeline_ui/assets/wbms_*_meta.json
+
+# 지역 레지스트리(플랫폼 입력 규약)와 학습 산출물 — 전부 작은 JSON이라 추적한다
+!regions/**/*.json
+# backend/app 안의 설정 JSON(WBMS 카탈로그 등)
+!backend/app/**/*.json
 
 __pycache__/
 .pytest_cache/
@@ -31,3 +50,10 @@ inference_results/
 eval_results/
 test_results/
 su-data/
+
+# 배포 패키지 산출물 (scripts/package/build_release.sh)
+dist/
+
+# 발표 자료 보조물(2026-10-20): 외부 기관이 준 원본(incoming/)과 재생성 가능한 화면 캡처(screens/, 76 MB)는 올리지 않는다
+docs/presentation/incoming/
+docs/presentation/screens/

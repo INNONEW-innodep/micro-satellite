@@ -10,10 +10,38 @@ services:
       - "8501:8501"
     environment:
       - KMA_API_KEY=${KMA_API_KEY:-}
+      # /app/data 는 읽기전용이라 잡 상태·융합 작업공간·사용자 지역은 쓰기 가능한
+      # backend/data(호스트 바인드) 아래에 둔다. 마스크 캐시(data/wbms_runs/wb)만 아래 중첩
+      # 바인드로 쓰기 가능하게 열어 새 장면 탐지 산출이 거기 떨어진다.
+      - BACKEND_WBMS_JOBS_DIR=/app/backend/data/wbms_jobs
+      - BACKEND_WBMS_FUSION_DIR=/app/backend/data/wbms_fusion
+      - REGIONS_USER_DIR=/app/backend/data/regions
+      # 딥러닝·Prophet 예측기: 학습은 GPU 환경(torch)에서, 서버는 numpy 추론만 한다.
+      - GAUGE_FORECASTER_PLUGINS=backend.app.gauge.plugins.neural:NeuralMLP,backend.app.gauge.plugins.neural:NeuralLSTM,backend.app.gauge.plugins.neural:NeuralGRU,backend.app.gauge.plugins.neural:NeuralTCN,backend.app.gauge.plugins.prophet_hybrid:ProphetHybrid
+      # 과제 통합 플랫폼 연계 — 규약 파일명 산출물은 쓰기 가능한 backend/data 아래에 둔다(/app/data 는 읽기전용).
+      # 로그 API 주소·코드는 통합 측이 배정하면 .env 에 넣는다. 비어 있으면 로그를 보내지 않는다.
+      - BACKEND_WBMS_PRODUCT_DIR=/app/backend/data/wbms_products
+      - BACKEND_LIAISON_LOG_URL=${BACKEND_LIAISON_LOG_URL:-}
+      - BACKEND_LIAISON_SYSTEM_CODE=${BACKEND_LIAISON_SYSTEM_CODE:-SC000000}
+      - BACKEND_LIAISON_ALGM_ID=${BACKEND_LIAISON_ALGM_ID:-AG000000}
+      # ── 컨테이너 안에서 탐지 실행 (docker 소켓) — DEPLOY.md "컨테이너 안에서 탐지 실행" 참고 ──
+      # docker run 은 호스트 데몬이 수행하므로 -v 의 호스트 경로를 /app → 호스트 경로로 바꿔야
+      # 한다. HOST_ROOT 는 이 저장소의 호스트 절대경로(기본: compose 를 실행한 디렉터리 ${PWD}).
+      - BACKEND_HOST_ROOT=${HOST_ROOT:-${PWD}}
+      - BACKEND_CONTAINER_ROOT=/app
+      # wbms 컨테이너를 돌릴 uid:gid — 산출물이 호스트 사용자 소유가 되게 한다(API 컨테이너 안은 root).
+      # data/wbms_runs 소유자와 같아야 쓸 수 있다.
+      - BACKEND_RUN_AS=${RUN_AS:-1000:1000}
+      # cpu | gpu | auto — auto 는 여유 VRAM 3000 MiB 이상이면 GPU(30~60초), 아니면 CPU 폴백(10분 내외).
+      - BACKEND_WBMS_GPU=${WBMS_GPU:-auto}
     volumes:
       - ./backend/data:/app/backend/data
       # SAR 원본·ingest 산출물은 이미지에 굽지 않고(수 GB) 읽기전용으로 붙인다.
       - ./data:/app/data:ro
+      # 탐지 마스크 캐시만 쓰기 가능 — 중첩 바인드가 상위 :ro 를 덮는다(새 장면 탐지 산출 위치).
+      - ./data/wbms_runs:/app/data/wbms_runs
+      # 호스트 docker 데몬 — 이 컨테이너에 호스트 docker 권한을 주는 것과 같다(이 과제 범위에서는 허용).
+      - /var/run/docker.sock:/var/run/docker.sock
     healthcheck:
       test:
         - CMD

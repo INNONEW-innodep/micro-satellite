@@ -14,3 +14,30 @@ node_modules
 # SAR 원본과 ingest 중간 산출물 (수 GB) — UI는 assets/만 읽는다.
 *.h5
 /data
+
+# 비밀값·대용량 전송 파일·작업 기록은 이미지에 넣지 않는다
+.env
+.env.*
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.pkl
+작업로그*.md
+pipeline_ui/screens
+pipeline_ui/charts
+pipeline_ui/.venv
+1_water_body_detection
+backend/data
+
+# 배포 패키지 산출물과 발표 화면 캡처는 이미지에 넣지 않는다
+dist
+docs/presentation/screens
+
+# 내부 운영 문서·패키징 소스·개발용 파일은 배포 이미지에 넣지 않는다 (코드가 읽지 않음)
+DEPLOY.md
+docs
+packaging
+requirements-dev.txt
+backend/requirements-dev.txt
+run.sh

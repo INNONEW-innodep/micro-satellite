@@ -6,3 +6,7 @@ secondaryBackgroundColor = "#0b1324"
 textColor = "#e2e8f0"
 linkColor = "#38bdf8"
 
+
+[server]
+# 위성 전처리 GeoTIFF 업로드(쉬운 화면 3단계·위성 파이프라인 등록 폼)용. 백엔드 한도는 SCENE_UPLOAD_MAX_BYTES(기본 2 GiB).
+maxUploadSize = 2048
