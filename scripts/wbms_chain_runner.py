@@ -49,7 +49,8 @@ import time
 
 # ── 고정 경로 ────────────────────────────────────────────────────────────────
 REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-H = os.path.join(REPO, "data", "incoming", "handover")          # 인수 패키지
+# 인수 패키지 위치 — 설치 패키지에서는 WBMS_HANDOVER_DIR 로 바깥 data/ 를 가리킨다
+H = os.environ.get("WBMS_HANDOVER_DIR") or os.path.join(REPO, "data", "incoming", "handover")
 IMAGE = "wbms:0.13"
 TB_CODE = "Busan"
 
@@ -319,6 +320,57 @@ def wb_complete_any(out_root: str, sensor: str) -> bool:
     return False
 
 
+def export_liaison_product(a, scene: dict, host_out: str, task_id: str, rec: dict,
+                           man: dict, man_path: str) -> None:
+    """② 성공 태스크의 마스크를 규약 파일명 {product_type}_{product_id}.tif 로 복사하고,
+    로그 API 가 지정돼 있으면 완료 이벤트를 보낸다. 실패해도 체인은 계속 간다."""
+
+    sys.path.insert(0, REPO)
+    try:
+        from backend.app.wbms.liaison import derive_product_id, export_product
+        from backend.app.wbms.liaison_log import LiaisonLogger, build_log
+    except Exception as exc:  # noqa: BLE001
+        print(f"[liaison] 모듈 로드 실패 — 건너뜀: {exc}")
+        return
+    product_id = a.product_id if (a.product_id and len(scenes_selected(a)) == 1) else None
+    product_id = product_id or derive_product_id(scene.get("input_host"))
+    if not product_id:
+        print(f"[liaison] {task_id} product_id 파생 실패 — 규약 파일 생략")
+        return
+    masks = sorted(glob.glob(os.path.join(host_out, "**", "WB_*.tif"), recursive=True),
+                   key=os.path.getmtime)
+    if not masks:
+        return
+    product_dir = a.product_dir or os.path.join(os.path.abspath(a.out_root), "products")
+    try:
+        target = export_product(masks[-1], product_dir, product_type=a.product_type, product_id=product_id)
+    except Exception as exc:  # noqa: BLE001
+        print(f"[liaison] {task_id} 규약 파일 생성 실패: {exc}")
+        return
+    rec["product_tif"] = str(target)
+    rec["product_id"] = product_id
+    man[task_id] = rec
+    with open(man_path, "w", encoding="utf-8") as fh:
+        json.dump(man, fh, ensure_ascii=False, indent=2)
+    print(f"[liaison] {task_id} → {target}")
+    if a.liaison_log_url:
+        logger = LiaisonLogger(a.liaison_log_url,
+                               system_code=os.environ.get("BACKEND_LIAISON_SYSTEM_CODE", "SC000000"),
+                               algm_id=a.algm_id or os.environ.get("BACKEND_LIAISON_ALGM_ID", "AG000000"))
+        params = {"order_id": a.order_id, "scene_id": a.scene_id, "work_id": a.work_id or task_id,
+                  "algm_id": a.algm_id, "product_type": a.product_type}
+        payload = build_log(status="succeeded", msg=f"{os.path.basename(str(target))} 산출물이 생성되었습니다.",
+                            params=params, system_code=logger.system_code, algm_id=logger.algm_id,
+                            comp_time=rec.get("ts"), proc_time_s=rec.get("elapsed_s"))
+        warning = logger.emit(payload)
+        if warning:
+            print(f"[liaison] {task_id} 로그 전송 경고: {warning}")
+
+
+def scenes_selected(a) -> list[str]:
+    return [s.strip() for s in (a.scenes or "").split(",") if s.strip()]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="WBMS ②③④⑤ CPU 체인 러너 (docker wbms:0.13)")
@@ -338,6 +390,18 @@ def main() -> int:
     ap.add_argument("--gpu-min-free-mib", type=int, default=3000,
                     help="GPU 사용에 필요한 최소 여유 VRAM (기본 3000 MiB)")
     ap.add_argument("--dry-run", action="store_true", help="커맨드만 출력")
+    # ── 과제 통합 플랫폼 연계 파라미터(선택) — 규약 파일명 산출물·알고리즘 로그에 쓴다
+    ap.add_argument("--order-id", default=None, help="통합 플랫폼 주문 ID")
+    ap.add_argument("--scene-id", default=None, help="통합 플랫폼 Scene ID")
+    ap.add_argument("--work-id", default=None, help="통합 플랫폼 작업 ID (비우면 태스크 ID)")
+    ap.add_argument("--algm-id", default=None, help="알고리즘 ID. 예: AG000003")
+    ap.add_argument("--product-type", default="PT000003", help="산출물 타입 코드 (기본 PT000003 수체탐지)")
+    ap.add_argument("--product-id", default=None,
+                    help="원본 영상 제품 ID (비우면 전처리 사이드카에서 파생). 씬이 여러 개면 파생만 쓴다")
+    ap.add_argument("--product-dir", default=None,
+                    help="규약 파일명 {product_type}_{product_id}.tif 를 둘 디렉터리 (기본 <out-root>/products)")
+    ap.add_argument("--liaison-log-url", default=os.environ.get("BACKEND_LIAISON_LOG_URL"),
+                    help="알고리즘 로그 API 주소 (비면 전송 안 함)")
     a = ap.parse_args()
 
     global RUN_DEVICE
@@ -437,6 +501,8 @@ def main() -> int:
                                dry=a.dry_run)
             if rec.get("status") in ("failed", "timeout", "success_no_output"):
                 failed.append(task_id)
+            elif not a.dry_run:
+                export_liaison_product(a, scene, host_out, task_id, rec, man, man_path)
 
     # ── ③ calc_wlwa — 센서×지점 (③ 은 --gpu 인자가 없다) ─────────────────
     if "wlwa" in steps:

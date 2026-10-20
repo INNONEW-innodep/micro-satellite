@@ -8,7 +8,7 @@ Two adapters are exposed:
   (~3 s once TensorFlow is warm inside the container).
 
 Execution boundary is a host-side ``docker run --rm`` subprocess. The backend
-never mounts docker.sock and never imports TensorFlow itself.
+never imports TensorFlow itself. docker.sock 은 compose 가 마운트하면 쓰고(컨테이너 안 탐지 실행, 2026-10-03), 없으면 호스트 CLI 로 돈다.
 """
 
 from .config import WbmsSettings

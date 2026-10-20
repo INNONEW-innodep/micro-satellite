@@ -1,0 +1,311 @@
+# 초소형위성 과제 연구결과 연계 정리 — 이노뎁(2세부) 작성본
+
+작성일 2026-09-23 · 작성 기관 이노뎁 · 2세부 · 시스템 WATERCAST v0.2.0
+
+이 문서는 연계 정리 엑셀 여섯 탭에 붙여 넣을 **우리 기관 행**과, 그 값을 **어디서 어떻게 뽑았는지**,
+그리고 **알고리즘 로그 포맷·산출물 명명규칙**에 우리 시스템을 맞추는 방안을 담는다.
+값은 전부 저장소·배포 서버·작업로그에서 확인한 것만 적었고, 확인 안 된 것은 **미정**으로 두고 §8에 질문으로 모았다.
+
+---
+
+## 0. 채우는 방법 요약
+
+| 탭 | 우리 행 수 | 값의 출처 | 주의 |
+|---|---|---|---|
+| 기본정보 · 기관 구성·자산 | 1 | 발표자료 역할표, docker compose 서비스명 | 컨테이너는 ' · '로 이어 쓴다 |
+| 기본정보 · 구동 서버 | 4 | 서버 실측(2026-09-23 ssh) | 세명소프트와 **같은 호스트**다. 값이 같아도 우리 행을 따로 쓴다 |
+| 컨테이너·포트 | 3 | docker compose, docker ps 실측 | 포트는 호스트:컨테이너. 배치 실행 이미지도 한 행 |
+| API 목록 | 36 | OpenAPI 46개 중 연계 대상만. 내부·운영용 13개는 §3 하단에 따로 | 프록시 경로는 호스트명 라우팅이라 경로 그대로 |
+| 프록시 경로 | 3 | 회사 프록시가 호스트명으로 나눔. 우리 nginx 없음 | 세명소프트 뷰어의 /watercast/ 경로는 그쪽 행이라 안 씀 |
+| 결과물 연계 | 12 | 작업로그·인수 패키지·API 명세 | 기관 내부 흐름은 안 씀. 시립대→이노뎁 WBMS 인수는 같은 2세부라 제외 |
+| **요소기술 연계 · 신규 양식 09-23** | 연계 7건 · 31행 | 위 결과물 연계를 10열로 재구성. 세명소프트가 쓴 우리 관련 5건과 거울 대응 | 연계 1건이 입력·출력·API 여러 행에 걸침. 첫 행에만 연계 정보를 쓰고 이어지는 행은 비워 병합 모양을 맞춤 |
+| 이슈&요청사항 | 14 | 서버 실측·작업로그 미결 사항 | 상태는 협의 필요 / 미정 / 제안 / 완료 중 하나 |
+
+시트 규칙 준수: 괄호 없음, IP·계정·키·서버 내부 경로 없음, 포트는 호스트:컨테이너, 상대는 세부 번호. 이 문서 §1~§6의 코드 블록은 탭 문자로 구분돼 있어 엑셀에 그대로 붙여 넣으면 열이 맞는다.
+
+---
+
+## 1. 기본정보 탭
+
+### 1-1. 기관 구성·자산 — 열: 작성 기관 | 담당 역할 | 컨테이너 | 비고
+
+```
+이노뎁	수체·수위 탐지, 시계열 예측, 재난 위험 태그 산출	watercast · watercast-pipeline · wbms	2세부. wbms 는 상시 컨테이너가 아니라 탐지 시 배치 실행하는 이미지
+```
+
+### 1-2. 구동 서버 기본 정보 — 열: 작성 기관 | 항목 | 값 | 비고
+
+```
+이노뎁	OS / 커널	Rocky Linux 9.6, 커널 5.14	세명소프트와 동일 호스트에 배포됨
+이노뎁	CPU / RAM / GPU	8 core / 31 GB / RTX 4090 24 GB	가상머신. GPU 는 세명소프트·타 컨테이너와 공유. 드라이버 575.57.08
+이노뎁	외부 공개	https://wc-ui.semyeongsoft.com · https://wc-api.semyeongsoft.com · https://wc-pipe.semyeongsoft.com	회사 프록시가 HTTPS 종단. 인증 없음
+이노뎁	기동 방식	docker compose	compose 프로젝트 watercast. 이미지는 서버에서 로컬 빌드
+```
+
+---
+
+## 2. 컨테이너·포트 탭 — 열: 작성 기관 | 컨테이너 | 이미지 | 호스트 포트 → 컨테이너 포트 | 역할 | 비고
+
+```
+이노뎁	watercast	watercast:latest	18000:8000 · 8501:8501	FastAPI 시계열 예측 API 와 Streamlit 업무 UI	python:3.11-slim 기반, CPU 전용. 호스트 8000 은 타 컨테이너가 점유해 18000 사용. 상태 점검 GET /api/v1/health
+이노뎁	watercast-pipeline	watercast:latest	8502:8501	발표용 파이프라인 데모 UI	API 미사용 독립 화면. 미리 만든 산출 자산만 표시
+이노뎁	wbms	wbms:0.13	—	WBMS 수체 탐지·수위 산출 모듈 배치 실행	상시 컨테이너 아님. docker run 으로 씬 단위 실행, GPU 사용 시 씬당 30초 내외, CPU 폴백 시 10분 내외. 이미지 11 GB
+```
+
+---
+
+## 3. API 목록 탭 — 열: 작성 기관 | 서비스 · 포트 | 메서드 | 경로 | 설명 | 프록시 Path 경로 | 비고
+
+공개 주소 https://wc-api.semyeongsoft.com 뒤에 경로를 그대로 붙이면 된다. 인증 없음, JSON 응답. 문서 /docs.
+
+```
+이노뎁	watercast · 18000	GET	/api/v1/health	기동 상태·로드 모델 수·버전	/api/v1/health	compose healthcheck 도 이 경로 사용
+이노뎁	watercast · 18000	GET	/api/v1/regions	지역 목록, 위성·수위계 보유 여부	/api/v1/regions	
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}	지역 정의·지점·학습 상태	/api/v1/regions/{region_id}	region_id 예 nakdong_busan, geum_daecheong
+이노뎁	watercast · 18000	POST	/api/v1/regions	새 지역 정의 생성	/api/v1/regions	JSON 본문
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/gauge/stations	수위계 지점 목록, 위경도, 자료 기간	/api/v1/regions/{region_id}/gauge/stations	
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/gauge/{station_id}/series	지점 일 수위 시계열 조회	/api/v1/regions/{region_id}/gauge/{station_id}/series	start, end 로 기간 필터
+이노뎁	watercast · 18000	POST	/api/v1/regions/{region_id}/gauge/{station_id}/series	지점 수위 시계열 JSON 입력·병합	/api/v1/regions/{region_id}/gauge/{station_id}/series	rows 배열 date, water_level_m
+이노뎁	watercast · 18000	POST	/api/v1/regions/{region_id}/gauge/{station_id}/series/file	수위 시계열 CSV·JSON 파일 업로드	/api/v1/regions/{region_id}/gauge/{station_id}/series/file	multipart, 50 MB 한도
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/gauge/{station_id}/forecast	원점 as_of 기준 D+1~D+30 수위 전망	/api/v1/regions/{region_id}/gauge/{station_id}/forecast	as_of, horizon. 실측 있으면 검증치 포함
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/gauge/{station_id}/forecast/compare	모델 계열 전체 전망 비교	/api/v1/regions/{region_id}/gauge/{station_id}/forecast/compare	
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/gauge/{station_id}/backtest	시험 구간 실측 대 예측 궤적	/api/v1/regions/{region_id}/gauge/{station_id}/backtest	horizon
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/gauge/{station_id}/model	지점의 선택 모델·검증 오차	/api/v1/regions/{region_id}/gauge/{station_id}/model	
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/gauge/evaluation	지점×예측일수 MSE·RMSE·개선율 표	/api/v1/regions/{region_id}/gauge/evaluation	
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/satellite/scenes	위성 장면 목록, 퀵룩·오버레이·마스크 URL	/api/v1/regions/{region_id}/satellite/scenes	
+이노뎁	watercast · 18000	POST	/api/v1/regions/{region_id}/satellite/scenes	위성 장면 등록, 전처리 GeoTIFF 업로드, 탐지 실행 선택	/api/v1/regions/{region_id}/satellite/scenes	multipart. 1세부 입력 지점. 파일 2 GB 한도
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/satellite/files/{relative_path}	퀵룩·마스크 프레임 PNG, JSON 파일	/api/v1/regions/{region_id}/satellite/files/{relative_path}	image/png
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/satellite/scenes/{scene_id}/mask	장면의 원본 해상도 탐지 마스크 GeoTIFF 다운로드	/api/v1/regions/{region_id}/satellite/scenes/{scene_id}/mask	image/tiff. scene_id 예 20200302_ICEYE
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/satellite/timeseries	위성 기반 수위·면적 시계열 지표	/api/v1/regions/{region_id}/satellite/timeseries	
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/satellite/area-series	센서별 공통 격자 수체 면적 시계열	/api/v1/regions/{region_id}/satellite/area-series	start, end 기간 필터. YYYY-MM-DD 또는 YYYYMMDD
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/satellite/levels	위성 산출 수위와 수위계 실측 대조	/api/v1/regions/{region_id}/satellite/levels	station_id, start, end 선택
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/satellite/detection	씬별 수체 탐지 IoU	/api/v1/regions/{region_id}/satellite/detection	정답 라벨 있는 지역만
+이노뎁	watercast · 18000	GET	/api/v1/regions/{region_id}/weather	지역 기상청 ASOS 일 관측	/api/v1/regions/{region_id}/weather	start, end
+이노뎁	watercast · 18000	POST	/api/v1/predictions	수체 마스크 시계열 입력, 미래 마스크·면적·위험 태그 산출	/api/v1/predictions	multipart files NPY·PNG·TIF, 동기 실행, 201
+이노뎁	watercast · 18000	GET	/api/v1/predictions	예측 결과 목록	/api/v1/predictions	offset, limit
+이노뎁	watercast · 18000	GET	/api/v1/predictions/{prediction_id}	예측 결과 전체 JSON, 면적·수위·위험 태그	/api/v1/predictions/{prediction_id}	
+이노뎁	watercast · 18000	GET	/api/v1/predictions/{prediction_id}/files	산출 파일 목록	/api/v1/predictions/{prediction_id}/files	mask_NNN.tif · npy · png, results.csv
+이노뎁	watercast · 18000	GET	/api/v1/predictions/{prediction_id}/files/{filename}	산출 파일 하나 다운로드	/api/v1/predictions/{prediction_id}/files/{filename}	download=true
+이노뎁	watercast · 18000	GET	/api/v1/predictions/{prediction_id}/bundle	산출물 전체 ZIP	/api/v1/predictions/{prediction_id}/bundle	application/zip
+이노뎁	watercast · 18000	POST	/api/v1/wbms/segmentation/jobs	WBMS 수체 탐지 잡 접수	/api/v1/wbms/segmentation/jobs	JSON sensor, testbed, image_date. 캐시 있으면 즉시 완료
+이노뎁	watercast · 18000	GET	/api/v1/wbms/segmentation/jobs	탐지 잡 목록	/api/v1/wbms/segmentation/jobs	
+이노뎁	watercast · 18000	GET	/api/v1/wbms/segmentation/jobs/{job_id}	탐지 잡 상태·산출물 경로	/api/v1/wbms/segmentation/jobs/{job_id}	상태 queued·running·succeeded·failed. 결과에 규약 파일명 product_tif 포함
+이노뎁	watercast · 18000	GET	/api/v1/wbms/segmentation/jobs/{job_id}/mask	탐지 마스크 GeoTIFF 다운로드	/api/v1/wbms/segmentation/jobs/{job_id}/mask	image/tiff, EPSG:32652, 3 m, uint8, nodata 255. 규약 파일명 사본 우선
+이노뎁	watercast · 18000	GET	/api/v1/wbms/segmentation/jobs/{job_id}/files/{name}	잡 산출 파일 하나 다운로드	/api/v1/wbms/segmentation/jobs/{job_id}/files/{name}	마스크·_meta.json·_qc.json. 산출 목록에 있는 이름만
+이노뎁	watercast · 18000	POST	/api/v1/wbms/fusion/corrections	융합 LSTM 위성 수위 보정	/api/v1/wbms/fusion/corrections	부산 번들만
+이노뎁	watercast · 18000	GET	/api/v1/segmenters	수체 탐지 어댑터 목록·입력 규약	/api/v1/segmenters	1세부가 입력 규약 확인용
+이노뎁	watercast · 18000	GET	/api/v1/models	시계열 예측 어댑터 목록	/api/v1/models	기준선 3종과 수위 예측 어댑터
+```
+
+**시트에 안 쓴 내부·운영용 13개** — 학습 실행 POST …/gauge/train 과 잡 조회, 학습 산출물 초기화 DELETE …/gauge/models, 예측기 목록 /api/v1/gauge/forecasters, 안내문 /api/v1/gauge/model-guide, 실험 조회 …/gauge/experiments, 기상 상태·지점·관측 /api/v1/weather/*, 준비 상태 /api/v1/wbms/status, artifacts 별칭 2개, 루트 리다이렉트. 타 기관이 쓸 일이 없고 일부는 서버 경로를 노출해 뺐다.
+
+---
+
+## 4. 프록시 경로 탭 — 열: 작성 기관 | 요청 경로 prefix | 업스트림 | prefix 처리 | 용도 | 예시 | 비고
+
+우리는 리버스 프록시 컨테이너를 두지 않는다. 회사 프록시가 **호스트명**으로 나눠 호스트 포트에 평문 전달한다. 다른 기관이 우리를 어떻게 부르는지 알 수 있게 세 줄 적는다.
+
+```
+이노뎁	wc-api.semyeongsoft.com/*	watercast:8000	유지	시계열 예측 API	https://wc-api.semyeongsoft.com/api/v1/health	회사 프록시 호스트명 라우팅. 호스트 포트 18000
+이노뎁	wc-ui.semyeongsoft.com/*	watercast:8501	유지	업무 UI	https://wc-ui.semyeongsoft.com/	Streamlit, 경로 라우트 없음
+이노뎁	wc-pipe.semyeongsoft.com/*	watercast-pipeline:8501	유지	파이프라인 데모 UI	https://wc-pipe.semyeongsoft.com/	호스트 포트 8502
+```
+
+참고: 세명소프트 뷰어 nginx 가 `/watercast/*` 를 prefix 제거 후 wc-api 로 넘기는 경로가 이미 열려 있다. 그 행은 세명소프트 것이라 우리 탭에 쓰지 않는다. 도커 통합 후에는 공개 도메인을 거치지 않고 `watercast:8000` 으로 내부망 직결하는 편이 낫다.
+
+---
+
+## 5. 결과물 연계 탭 — 열: 작성 기관 | 방향 | 연계 내용 | docker 통합 후 목표안 | 필요 데이터 / API 기능 | 필요 사항
+
+```
+이노뎁	수신 ← 1세부	ICEYE SAR 원본 장면 — 수체 탐지 입력	공유 스토리지 RO 마운트 또는 1세부 카탈로그에서 자산 URL 수신	데이터: SLC h5 또는 전처리 GeoTIFF, 메타 XML, 퀵룩 / API: 장면 등록 POST /api/v1/regions/{region_id}/satellite/scenes	전달 방식 확정. 전처리를 1세부가 GeoTIFF 까지 할지 합의. 현재는 NAS 수동 전달
+이노뎁	수신 ← 1세부	PlanetScope 광학 원본 — 수체 탐지 입력	상동	데이터: SR harmonized 정사 4밴드 GeoTIFF, UDM2 마스크, 메타 / API: 상동	제품 레벨 확정. 1B 제품은 정사보정 선행 필요
+이노뎁	수신 ← 1세부	수체 정답 라벨 — 탐지 정확도 검증	장면 등록 시 gt_file 로 업로드	데이터: GeoTIFF uint8 0·1, EPSG:32652, 3 m	라벨 제작 주체 확인. 현재 부산 8장만 보유, 대청 없음
+이노뎁	수신 ← 1세부	수위 산출 AOI — 지점별 위성 수위 산출	지역 정의와 함께 수신	데이터: GeoJSON EPSG:32652 폴리곤, 지점 loc_id	신규 지역 AOI 작성 주체 확인
+이노뎁	수신 ← 1세부	알고리즘 구동 파라미터 — 산출물 명명·처리 로그	탐지 잡 요청 본문에 포함	데이터: order_id, scene_id, work_id, algm_id, product_type, product_id / API: POST /api/v1/wbms/segmentation/jobs 에 필드 추가 예정	수체탐지 algm_id·system_code 배정, product_id 규칙 확정, 로그 수신 API 명세 수령
+이노뎁	제공 → 1세부	탐지 입력 규약 — 센서·테스트베드·파일 규격	REST 유지	API: GET /api/v1/segmenters	연계 완료
+이노뎁	제공 → 3세부	수체 탐지 마스크 GeoTIFF — 3D 표출·침수 시뮬 입력	규약 파일명 PT000003_{product_id}.tif 로 공유 볼륨 제공 또는 다운로드 API 신설	데이터: uint8 0 육지 1 물 255 nodata, EPSG:32652, 3 m / API: GET /api/v1/wbms/segmentation/jobs/{job_id} 는 경로만 반환	3세부 기재 연계 완료. 원본 해상도 GeoTIFF 는 공유 볼륨 경로 또는 다운로드 API 중 택일. nodata 255 처리 확인
+이노뎁	제공 → 3세부	예측 수체 마스크·면적 시계열 — 재난 시뮬 입력	REST 유지, 컨테이너 내부망 주소 합의	데이터: mask_NNN.tif·npy·png, results.csv, result.json / API: POST·GET /api/v1/predictions, files, bundle	3세부 기재 연계 완료. XML 미제공, JSON·CSV·GeoTIFF 만
+이노뎁	제공 → 3세부	홍수·가뭄 위험 태그 — 시뮬 트리거	예측 응답에 포함 유지	데이터: steps[].risk 값 normal·caution·flood_risk·drought_risk / API: POST /api/v1/predictions	임계값 ±15 % 는 가설값, 지역·계절별 합의. 강우·침수 2종 담당 미정
+이노뎁	제공 → 3세부	위성 산출 수위·면적·융합 보정 수위	REST 유지	API: GET …/satellite/levels, …/satellite/area-series, …/satellite/timeseries, POST /api/v1/wbms/fusion/corrections	3세부 기재 연계 완료. 지점·기간 지정 조회를 위해 기간 필터 추가 예정
+이노뎁	제공 → 3세부	지점별 수위 예측 전망 D+1~D+30 — 시뮬 경계조건	REST 유지	API: GET …/gauge/{station_id}/forecast, forecast/compare, backtest, evaluation	3세부 기재 연계 완료. smss-net 생성 후 서비스명 직결
+이노뎁	제공 → 3세부	퀵룩·탐지 오버레이·마스크 프레임 PNG — 뷰어 표출	REST 유지	API: GET …/satellite/scenes, …/satellite/files/{relative_path}	세명소프트 뷰어가 /watercast/ 경유로 호출 중. 연계 완료
+```
+
+같은 2세부 안의 서울시립대→이노뎁 WBMS 모델 인수는 기관 내부 흐름으로 보고 쓰지 않았다. 기상청 ASOS 와 WAMIS 수위계 자료는 공공 API 를 우리가 직접 수집하므로 세부 간 연계가 아니다.
+
+---
+
+## 5-B. 요소기술 연계 탭 — 2026-09-23 신규 양식
+열: 작성 기관 | 방향 | 연계 내용 | 요소기술 | docker 통합 후 목표안 | 구분 | 항목 | 형식 · 설명 | 필요 사항 | 비고
+
+연계 1건이 여러 행에 걸친다. 세명소프트 양식처럼 첫 행에 연계 정보와 필요 사항·비고를 쓰고, 이어지는 행은 구분·항목·형식만 채운다. 엑셀에 붙인 뒤 첫 열~다섯째 열과 아홉·열째 열을 연계 단위로 병합하면 세명소프트 행과 같은 모양이 된다.
+
+세명소프트가 우리 쪽 5건을 이미 적었다. 수체 분류 마스크·보정 수위·수위계 예측·수체 시계열 예측 4건은 **연계 완료**, DEM 은 우리에게 **제공**. 아래는 그 거울상이다. 방향만 뒤집고 형식은 우리 실제 산출값으로 맞췄다.
+
+```
+이노뎁	제공 → 3세부	수체 분류 마스크 — 지도 오버레이·A-H 의 A	WBMS 수체 탐지 detect_water, 씬 단위 배치 실행	산출 디렉터리 RO 공유 볼륨에 규약 파일명 PT000003_{product_id}.tif 로 적재, 또는 마스크 다운로드 API 신설 후 3세부가 STAC 등록	출력	수체 분류 마스크, 씬별 촬영일	GeoTIFF uint8 0 육지 · 1 물 · 255 nodata, EPSG:32652, 3 m	3세부 기재 연계 완료. 원본 해상도 GeoTIFF 다운로드 API 신설 완료 09-29. 규약 파일명 사본도 생성. nodata 255 처리 확인	3세부 형식란은 0·1 이나 우리 마스크는 255 nodata 포함
+					출력	마스크 메타·품질 JSON	_meta.json 좌표·촬영시각·출처, _qc.json 상태·소요시간		
+					API	신규 씬 목록 조회	GET /api/v1/regions/{region_id}/satellite/scenes		
+					API	마스크 프레임·퀵룩 내려받기	GET /api/v1/regions/{region_id}/satellite/files/{relative_path}, PNG 축소본		
+					API	탐지 잡 접수·상태·마스크 다운로드	POST · GET /api/v1/wbms/segmentation/jobs/{job_id}, GET …/{job_id}/mask		
+이노뎁	제공 → 3세부	보정 수위 H · 지점 수면적 A — A-H 수량 카드	WBMS 수위·면적 산출 calc_wlwa, 융합 LSTM 보정, 수위계 실측 대조	실시간 보정 API 유지, 지점·기간 조회 파라미터 보강, smss-net 직결	출력	지점별 위성 수위·수면적	JSON, 수위 EL m, 면적 km², 품질 플래그	3세부 기재 연계 완료. start·end 기간 필터 추가 완료 09-29. 대청 융합 번들 없음	
+					출력	보정 수위	JSON, 융합 LSTM 보정값과 원값 병기		
+					API	실시간 보정	POST /api/v1/wbms/fusion/corrections, 동기, 부산 번들만		
+					API	위성 수위와 실측 대조	GET /api/v1/regions/{region_id}/satellite/levels, station_id 선택		
+					API	공통 격자 면적 시계열	GET /api/v1/regions/{region_id}/satellite/area-series		
+이노뎁	제공 → 3세부	수위계 예측 — 부산 구포대교·대청호 카드	지상 수위계 10개년 학습, 예측기 13종 중 지점·예측일수별 선택, 기준선 대비 검증	smss-net 합류 후 watercast:8000 서비스명 직결, 공개 도메인·프록시 의존 제거	출력	지점별 수위 예측 시계열	JSON, 일 단위, 수위 EL m, D+1~D+30, ±1σ·2σ 밴드	3세부 기재 연계 완료. smss-net 은 서버에 아직 없음 → 네트워크명·생성 주체 확정 후 우리 compose 에 external 네트워크 추가	7개 유역 26지점 보유
+					출력	모델 비교·검증표	JSON, 모델별 MSE·RMSE·개선율		
+					API	수위 전망	GET /api/v1/regions/{region_id}/gauge/{station_id}/forecast		
+					API	모델 비교·백테스트·평가표	GET …/forecast/compare, …/backtest, …/gauge/evaluation		
+이노뎁	제공→수신 왕복 ↔ 3세부	수체 시계열 예측 — 새 예측 실행	수체 마스크 시계열 예측 어댑터, 면적 추세·기상 형태 모델, 홍수·가뭄 위험 태그	smss-sim-api → watercast:8000 서버 간 직접 호출, 브라우저 왕복·CORS 제거	입력	관측 마스크 시퀀스 + manifest, 3세부 전달	GeoTIFF uint8 또는 PNG·NPY, frames.csv 날짜·파일명·수위	3세부 기재 연계 완료. 내장 면적 예측 3종은 기준선이라 정확도 주장 불가, 수위는 gauge-level-forecast 사용 권장	입력 GeoTIFF 에 좌표가 있어야 출력도 GeoTIFF
+					출력	예측 마스크·면적·위험 태그	mask_NNN.tif uint8, results.csv, result.json, steps[].risk		
+					API	예측 실행	POST /api/v1/predictions, multipart, 동기, 201		
+					API	결과 파일	GET /api/v1/predictions/{prediction_id}/files, files/{filename}, bundle		
+이노뎁	수신 ← 3세부	DEM — 위성 수위 산출·침수 위험 입력	WBMS 수위 산출 calc_wlwa 의 DEM 입력, 침수 위험 태그 계획	STAC 검색으로 DEM 조회 후 공유 스토리지 RO 마운트로 읽기	입력	DEM	GeoTIFF float32, EPSG:32652, WGS84 타원체고, 대청호 4 m · 회동 1 m · 기흥	우리 현재 DEM 은 국토지리정보원 3 m 정표고. 타원체고→정표고 변환, 해상도 4 m 와 3 m 차이, 부산 DEM 없음 → 공급 여부 확인	3세부 필요 사항 칸이 비어 있어 우리가 채워 협의
+					입력	STAC Item	컬렉션 {site}_dem		
+					API	STAC 검색	GET /stac/search, 3세부 제공		
+이노뎁	수신 ← 1세부	원본 위성 영상 — 수체 탐지 입력	SAR 전처리, 광학 정사·대기보정, WBMS 탐지 입력 생성	공유 스토리지 RO 마운트 또는 1세부 카탈로그 자산 URL 수신 → 장면 등록 자동화	입력	ICEYE SAR 장면	SLC h5 또는 GRD GeoTIFF, 메타 XML, 퀵룩	전달 방식·전처리 주체·제품 레벨 합의. 파라미터 수신·규약 파일명·로그 전송은 구현 완료 09-29, 수체탐지 algm_id·system_code 배정과 로그 API 주소만 대기	현재 NAS 수동 전달
+					입력	PlanetScope 광학 장면	SR harmonized 정사 4밴드 GeoTIFF, UDM2 마스크, 메타		
+					입력	알고리즘 구동 파라미터	order_id, scene_id, work_id, algm_id, product_type, product_id		
+					API	장면 등록	POST /api/v1/regions/{region_id}/satellite/scenes, 2세부 제공		
+					API	탐지 입력 규약 조회	GET /api/v1/segmenters, 2세부 제공		
+이노뎁	수신 ← 1세부	정답 라벨·AOI — 탐지 검증·지점 수위 산출	탐지 정확도 IoU 평가, 지점별 AOI 수위 산출	장면 등록 시 gt_file 업로드, 지역 정의와 함께 AOI 수신	입력	수체 정답 라벨	GeoTIFF uint8 0·1, EPSG:32652, 3 m	제작 주체 확인. 부산 8장만 보유, 대청 없음	
+					입력	수위 산출 AOI	GeoJSON EPSG:32652 폴리곤, 지점 loc_id		
+```
+
+**세명소프트 행과 맞춰 본 차이 4가지** — 그대로 두면 통합 때 걸린다.
+1. 마스크 형식: 3세부는 `uint8 0·1` 로 적었는데 우리 마스크는 `255 nodata` 가 있다. 오버레이에서 255 가 물로 칠해지지 않게 처리 방식을 맞춰야 한다.
+2. 마스크 전달: 3세부는 "신규 씬 목록 조회, 마스크 파일 내려받기" 를 연계 완료로 적었지만 우리 API 가 주는 건 PNG 축소본이다. 원본 해상도 GeoTIFF 는 공유 볼륨이나 새 다운로드 API 가 있어야 한다. 3세부 목표안 ①②와 같다.
+3. 보정 수위 조회: 3세부는 "지점·기간을 지정한 조회" 를 원하는데 우리 levels 는 지점만, area-series 는 필터가 없다. start·end 파라미터를 붙이면 된다.
+4. smss-net: 3세부 목표안이 "smss-net 공유 후 서비스명 직결" 인데 서버에 그 네트워크가 아직 없다. 생성되면 우리 compose 에 external 네트워크로 붙인다.
+
+---
+
+## 6. 이슈&요청사항 탭 — 열: 작성 기관 | 구분 | 항목 | 내용 | 영향 | 필요 조치 | 요청 대상 | 상태
+
+```
+이노뎁	협의	수체탐지 알고리즘 코드 미배정	로그 포맷의 algm_id 는 AG000001·AG000002 만, system_code 도 SC000000~3 만 정의됨. 수체탐지·수위예측 코드 없음	처리 로그 전송과 산출물 명명 불가	수체탐지·수위예측 AG 코드와 SC 코드 배정	1세부	협의 필요
+이노뎁	데이터	product_id 규칙	ICEYE 는 원본 h5 이름, PlanetScope 는 장면 ID 등 후보가 여럿. 예시 S1A_IW_GRDH_20260905 는 Sentinel-1 형식	파일명 불일치로 카탈로그 자동 수집 실패	영상과 함께 product_id 를 전달하거나 파생 규칙 확정	1세부	협의 필요
+이노뎁	API	알고리즘 로그 수신 API 명세	URL, 인증, 시간대, algm_proc_time 단위, 캐시 완료 시 대기·진행 로그 생략 가능 여부 미정	전송기는 구현 완료. 주소·코드가 오면 환경변수만 넣으면 됨	명세와 접속 정보 전달	1세부	협의 필요
+이노뎁	데이터	원본 영상 전달 방식	현재 NAS 수동 전달. 공유 볼륨인지 카탈로그인지 미정	자동 파이프라인 불가	전달 방식과 전처리 주체 확정	1세부	미정
+이노뎁	데이터	탐지 마스크 GeoTIFF 전달 경로	다운로드 API 신설 완료. 잡·장면 단위로 원본 해상도 GeoTIFF 를 받을 수 있음	—	공유 볼륨이 더 편하면 산출 디렉터리 RO 마운트도 가능	3세부	완료
+이노뎁	협의	재난 4종 중 강우·침수 담당	홍수·가뭄 태그만 산출. 강우는 기상청 특보, 침수는 DEM 통계로 계획만 있음. XML 산출 없음	시뮬 입력 2종 공백	담당 기관과 포맷 확정	3세부	협의 필요
+이노뎁	데이터	DEM 수직 기준·해상도·지역	3세부 제공 DEM 은 WGS84 타원체고 4 m, 대청호·회동·기흥. 우리 수위 산출 DEM 은 국토지리정보원 정표고 3 m, 부산 포함	수위 EL m 산출에 수십 m 오프셋 생길 수 있음	지오이드 변환 기준 합의, 부산 DEM 공급 여부 확인	3세부	협의 필요
+이노뎁	협의	smss-net 공유 네트워크	3세부 목표안은 smss-net 서비스명 직결. 서버에 해당 네트워크 없고 현재 smss-dev_default 와 watercast_default 로 분리	서비스명 직결 불가, 공개 도메인 경유 지속	네트워크명·생성 주체 확정 후 양측 compose 에 external 네트워크 추가	3세부	협의 필요
+이노뎁	데이터	마스크 nodata 값	우리 마스크는 255 nodata 포함. 3세부 형식란은 0·1	오버레이에서 nodata 가 물로 표시될 수 있음	255 처리 방식 합의 또는 0 으로 채운 사본 제공	3세부	협의 필요
+이노뎁	API	보정 수위·면적 조회 기간 필터	levels·area-series 에 start·end 추가 완료	—	—	2세부	완료
+이노뎁	협의	GPU 공유	RTX 4090 1장을 타 컨테이너와 공유. 우리 탐지는 여유 VRAM 3 GB 미만이면 CPU 폴백돼 씬당 10분	동시 실행 시 지연 또는 상대 OOM	사용 시간대 또는 VRAM 상한 합의	전체	협의 필요
+이노뎁	협의	호스트 8000 포트 점유 컨테이너	sat-water-seg-api 가 8000, sat-collect-system 이 동거. 소유 기관 미확인	통합 compose 포트 계획	소유 기관과 유지 여부 확인	전체	미정
+이노뎁	협의	무인증 공개 API	공개 도메인 3개 인증 없음, CORS 전체 허용	통합 후 무인증 노출	프록시 Basic Auth 또는 API 키 도입 여부 결정	3세부	협의 필요
+이노뎁	API	컨테이너 안에서 실시간 탐지 불가	백엔드 컨테이너에 docker CLI 없어 탐지 잡은 캐시만 응답. 실탐지는 호스트 배치	새 장면 요청 시 즉시 탐지 안 됨	탐지 러너 컨테이너 분리 또는 docker 소켓 마운트	2세부	제안
+```
+
+---
+
+## 7. 알고리즘 로그 포맷·산출물 명명규칙 대응 방안
+
+**구현 상태 2026-09-29** — 아래 7-4 의 1·2·4·5단계는 구현·배포 완료다. 남은 것은 통합 측이 줘야 하는 값 셋:
+수체탐지 `system_code`·`algm_id`, `product_id` 규칙 확정, 로그 API 주소. 값이 오면 서버 `.env` 에
+`BACKEND_LIAISON_LOG_URL`·`BACKEND_LIAISON_SYSTEM_CODE`·`BACKEND_LIAISON_ALGM_ID` 를 넣고 재기동하면 끝난다.
+지금은 자리표시 `SC000000`·`AG000000` 으로 페이로드가 만들어지고, URL 이 비어 있어 전송은 하지 않는다.
+
+### 7-1. 지금 우리 시스템과 규격의 대응
+
+| 규격 키 | 우리 현재 값 | 간극 |
+|---|---|---|
+| order_id | 없음 | 요청 본문에 받아 잡 JSON 에 보관하면 됨. 발급 주체 미정 |
+| scene_id | 탐지 잡은 sensor·testbed·image_date 3튜플, 지역 등록은 `yyyymmdd_sensor` | 외부 scene_id 를 받는 필드 없음. 추가 필요 |
+| work_id | 잡 ID `seg_<UTC시각>_<hex8>` 를 우리가 발급 | 외부 work_id 를 받아 보관하고 로그에 그대로 실어 보내면 됨 |
+| algm_id | model_id `wbms-detect-water` | AG 코드 미배정. 배정 요청 |
+| product_type | 없음. 파일 접두 WB_ 로만 구분 | 수체탐지는 PT000003 고정. 수위 JSON·예측 마스크 코드는 미정 |
+| product_id | 없음. 전처리 사이드카의 원본 파일명에서 파생 가능 | 예 `ICEYE_X5_SLC_SM_23467_20200302T183857`. 규칙 확정 필요 |
+| work_status | queued · running · succeeded · failed | 1:1 매핑 가능 → WS000000 · WS000001 · WS000002 · WS000003 |
+| log_time, algm_exec_time, algm_comp_time | created_at · started_at · finished_at, UTC ISO 8601 | `yyyymmddHHMMSS` 로 재포맷. 시간대 KST·UTC 미정 |
+| algm_proc_time | result.elapsed_s 실수 | 초 단위 정수 여부 미정 |
+| log_level | 없음 | 이벤트별 고정값. 시작·진행·완료 LL000002 info, 에러 LL000004 |
+| system_code | 없음 | 수체탐지 SC 코드 미배정 |
+| 파일명 | `WB_<TB>_<센서>_<yyyymmddThhmmss>.tif`, EPSG:32652, 3 m, uint8, nodata 255 | 이미 GeoTIFF 라 재인코딩 없이 규약 이름으로 복사본만 추가하면 됨 |
+
+산출 GeoTIFF 자체는 규격에 맞다. 좌표계·nodata 요구가 EPSG:32652·255 와 다르면 그때 변환한다.
+
+### 7-2. 규약 파일명 예시
+
+```
+product_type = PT000003
+product_id   = ICEYE_X5_SLC_SM_23467_20200302T183857
+→ PT000003_ICEYE_X5_SLC_SM_23467_20200302T183857.tif
+```
+
+PlanetScope 는 `20220516_014353_84_2233` 같은 장면 ID 를 쓸지 ACOLITE 파일명을 쓸지 1세부와 정해야 한다.
+
+### 7-3. 로그 JSON 예시 — 우리 값으로 채운 4종
+
+```json
+{"log_time":"20260923151200","log_level":"LL000002","system_code":"SC00000X",
+ "contents":{"order_id":"1","scene_id":"20200302_ICEYE","work_id":"seg_20260923T061200Z_23be2750",
+  "algm_id":"AG00000X","product_type":"PT000003","msg":"수체탐지 작업이 접수되었습니다.","work_status":"WS000000"}}
+
+{"log_time":"20260923151205","log_level":"LL000002","system_code":"SC00000X",
+ "contents":{"order_id":"1","scene_id":"20200302_ICEYE","work_id":"seg_20260923T061200Z_23be2750",
+  "algm_id":"AG00000X","product_type":"PT000003","msg":"ICEYE 20200302 장면에 대해 수체탐지 알고리즘을 구동하였습니다.",
+  "work_status":"WS000001","algm_exec_time":"20260923151205"}}
+
+{"log_time":"20260923151240","log_level":"LL000002","system_code":"SC00000X",
+ "contents":{"order_id":"1","scene_id":"20200302_ICEYE","work_id":"seg_20260923T061200Z_23be2750",
+  "algm_id":"AG00000X","product_type":"PT000003","msg":"PT000003_ICEYE_X5_SLC_SM_23467_20200302T183857.tif 산출물이 생성되었습니다.",
+  "work_status":"WS000002","algm_comp_time":"20260923151240","algm_proc_time":"35"}}
+
+{"log_time":"20260923151240","log_level":"LL000004","system_code":"SC00000X",
+ "contents":{"order_id":"1","scene_id":"20200302_ICEYE","work_id":"seg_20260923T061200Z_23be2750",
+  "algm_id":"AG00000X","product_type":"PT000003","msg":"수체탐지 처리 중 에러가 발생하였습니다. 컨테이너 종료 코드 1","work_status":"WS000003"}}
+```
+
+`SC00000X`·`AG00000X` 는 배정 전 자리표시다. 캐시된 장면을 다시 요청하면 대기·진행 없이 완료 1건만 나가는데, 이게 허용되는지 확인이 필요하다.
+
+### 7-4. 구현 설계 — 실제 파일 기준, 5단계
+
+| 단계 | 손댈 곳 | 내용 |
+|---|---|---|
+| 1. 파라미터 6종 수신 | `backend/app/wbms/schemas.py` 요청 모델, `backend/app/gauge/router.py` 장면 등록 Form, `scripts/wbms_chain_runner.py` argparse, 새 `backend/app/wbms/liaison.py` | 선택 필드 order_id, scene_id, work_id, algm_id, product_type, product_id 추가. 잡 JSON 은 요청을 그대로 저장하므로 자동 보관됨. product_id 가 비면 2단계로 파생 |
+| 2. 규약 파일명·산출물 복사 | `backend/app/wbms/liaison.py` 에 product_filename, derive_product_id, export_product. `backend/app/wbms/config.py` 에 산출 디렉터리 설정. `backend/app/adapters/wbms_segmentation.py` 실행·캐시 분기 | 마스크가 이미 EPSG:32652 GeoTIFF 라 복사만. 기존 WB_ 이름은 컨테이너 규약이라 유지하고 규약 파일을 덧붙임. 결과에 product_tif 경로 추가 |
+| 3. PNG 프레임→GeoTIFF 변환기 | `backend/app/gauge/scene_assets.py` 에 frame_geo_reference, write_frame_geotiff. 기존 `backend/app/services/artifacts.py` 의 `_write_tiff` 재사용 | 공통 격자 마스크 PNG 와 예측 마스크에 좌표를 붙여 규약 GeoTIFF 로 낼 때만 필요. scenes.json 의 frame 경계로 Affine 생성 |
+| 4. 로그 발신기 | 새 `backend/app/wbms/liaison_log.py`, 설정 `BACKEND_LIAISON_LOG_URL`·`BACKEND_LIAISON_SYSTEM_CODE`, `backend/app/adapters/wbms_segmentation.py` 의 상태 전이 4곳 | 표준 라이브러리 urllib 로 POST, 의존성 추가 없음. URL 비면 무동작, 전송 실패는 잡 warnings 에만 기록해 잡 상태에 영향 없음. 워커 스레드라 API 응답 지연 없음 |
+| 5. 테스트 | `backend/tests/test_wbms.py` 기존 4개 확장, 새 `backend/tests/test_liaison.py` | 파일명·파생 ID·로그 4종 순서 WS000000→1→2 와 실패 시 WS000003·LL000004 단언. 가짜 수신 서버로 검증 |
+
+명세 3가지(코드 배정, product_id 규칙, 로그 API 주소)가 오면 1~2일 작업이다. 1·2·5단계는 명세 없이도 자리표시 코드로 먼저 만들어 둘 수 있다.
+
+---
+
+## 8. 비워 둔 칸과 확인할 질문
+
+**우리가 정해야 할 것**
+1. 컨테이너·포트 탭에 배치 실행 이미지 wbms 를 한 행으로 넣는 게 맞는지, 아니면 비고로만 둘지.
+2. API 목록에 내부·운영용 13개를 뺀 것이 맞는지.
+3. 서버에 남은 우리 잔여 컨테이너 friendly_swanson 과 미사용 이미지 약 40개를 지울지. 디스크 82 % 사용 중.
+4. 탐지 러너를 컨테이너로 분리할지, docker 소켓을 마운트할지.
+
+**1세부에 물을 것**
+5. 수체탐지·수위예측의 algm_id AG 코드와 system_code SC 코드는 누가 언제 배정하는가.
+6. product_id 는 1세부가 영상과 함께 주는가, 우리가 원본 파일명에서 파생하는가. ICEYE 와 PlanetScope 각각의 규칙은.
+7. order_id·scene_id·work_id 는 어느 시스템이 발급해 우리 API 호출 때 넘기는가. 우리 잡 ID 를 work_id 로 돌려써도 되는가.
+8. 로그 수신 API 의 URL·인증·응답 규격. log_time 시간대는 KST 인가 UTC 인가. algm_proc_time 은 정수 초인가.
+9. 캐시된 장면 재요청 때 완료 로그 1건만 보내도 되는가.
+10. PT000004 산출물 이름은 무엇인가. 원문 파일 인코딩이 깨져 읽을 수 없었다. 수위 JSON·예측 마스크에도 product_type 코드가 필요한가.
+11. 원본 영상은 공유 볼륨으로 주는가, 카탈로그로 주는가. 전처리 GeoTIFF 까지 1세부가 만드는가. 정답 라벨과 AOI 는 누가 만드는가.
+12. 규약 GeoTIFF 의 좌표계·nodata 요구가 있는가. 현재 EPSG:32652, 3 m, uint8, nodata 255.
+
+**3세부에 물을 것**
+13. 탐지 마스크 GeoTIFF 를 공유 볼륨으로 가져갈지 HTTP 다운로드로 가져갈지.
+14. XML 이 꼭 필요한지. 세명소프트 행은 JSON·GeoTIFF 로 연계 완료라 불필요해 보임.
+15. 강우·침수 재난 데이터는 누가 만드는지. 홍수·가뭄 임계값 ±15 % 합의.
+16. DEM 수직 기준. 3세부 DEM 은 WGS84 타원체고, 우리는 정표고. 지오이드 모델을 무엇으로 맞출지. 부산 DEM 도 만들어 줄 수 있는지.
+17. 통합 후 인증 방식과 GPU 사용 시간대.
+17-1. smss-net 네트워크는 누가 언제 만드는지. 이름이 확정이면 우리 compose 에 external 로 붙이겠다.
+17-2. 마스크 nodata 255 를 오버레이에서 어떻게 처리하는지. 0 으로 채운 사본이 필요한지.
+17-3. 원본 해상도 마스크 GeoTIFF 는 공유 볼륨으로 읽을지 다운로드 API 로 받을지. 볼륨이면 어느 디렉터리를 RO 마운트할지.
+
+**전체에 물을 것**
+18. 호스트 8000 을 쓰는 sat-water-seg-api 와 sat-collect-system 은 어느 기관 것인가.
+
+**시트에 못 채운 칸** — 클라이언트 쪽 값은 이 시트에 없음. 프록시 소프트웨어 이름은 회사 프록시라 미확인. 알고리즘 코드·product_id 규칙·로그 API 주소는 위 질문 답을 받아야 채워진다.

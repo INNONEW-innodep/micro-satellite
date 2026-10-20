@@ -10,8 +10,8 @@ JobStatus = Literal["queued", "running", "succeeded", "failed"]
 class WbmsSegmentationJobRequest(BaseModel):
     """② detect_water scene request (asynchronous job)."""
 
-    sensor: Literal["iceye", "planet"] = "iceye"
-    testbed: Literal["busan", "dcd"] = "busan"
+    sensor: str = Field(default="iceye", description="카탈로그 센서 키 (GET /segmenters 참조). 예: iceye, planet, umbra(ICEYE 모델을 빌려 컨테이너에는 iceye 로 전달)")
+    testbed: str = Field(default="busan", description="카탈로그 테스트베드 키. 예: busan, dcd")
     image_date: str = Field(pattern=r"^\d{8}$", description="Scene date, YYYYMMDD")
     input_tif: str | None = Field(
         default=None,
@@ -23,6 +23,16 @@ class WbmsSegmentationJobRequest(BaseModel):
     force: bool = Field(
         default=False,
         description="Skip the cached-mask fast path and rerun the container.",
+    )
+    # ── 과제 통합 플랫폼 연계 파라미터(선택). 잡 문서에 보관되고 알고리즘 로그·규약 파일명에 쓰인다.
+    order_id: str | None = Field(default=None, description="통합 플랫폼 주문 ID")
+    scene_id: str | None = Field(default=None, description="통합 플랫폼 Scene ID (알고리즘 전주기 순번)")
+    work_id: str | None = Field(default=None, description="통합 플랫폼 작업 ID. 비우면 우리 job_id 를 로그에 쓴다")
+    algm_id: str | None = Field(default=None, description="알고리즘 ID. 예: AG000003 (배정 전이면 비움)")
+    product_type: str | None = Field(default=None, pattern=r"^PT\d{6}$", description="산출물 타입 코드. 수체탐지 PT000003")
+    product_id: str | None = Field(
+        default=None, pattern=r"^[A-Za-z0-9][A-Za-z0-9_.\-]{0,199}$",
+        description="원본 영상 제품 ID. 비우면 전처리 사이드카의 원본 파일명에서 파생한다",
     )
 
 
@@ -37,6 +47,8 @@ class WbmsSegmentationResult(BaseModel):
     qc_json: str
     products: list[str] = Field(default_factory=list)
     elapsed_s: float | None = None
+    product_tif: str | None = Field(default=None, description="규약 파일명 {product_type}_{product_id}.tif 복사본 경로")
+    product_id: str | None = None
 
 
 class WbmsSegmentationJob(BaseModel):
@@ -97,7 +109,7 @@ class WbmsFusionRequest(BaseModel):
     """
 
     loc_id: str = Field(min_length=1, description="Gauge id from the bundle loc_index")
-    testbed: Literal["busan"] = "busan"
+    testbed: str = Field(default="busan", description="카탈로그 테스트베드 키. 융합 번들은 테스트베드별로 인도되며 현재 busan 번들만 있다.")
     observations: list[WbmsObservation] = Field(min_length=1, max_length=64)
     persistence_horizon_days: int = Field(
         default=0,

@@ -1,0 +1,66 @@
+{
+  "schema": "watercast.wbms.catalog/1",
+  "note_ko": "WBMS 컨테이너가 받는 센서·테스트베드 목록. 새 항목은 여기(또는 BACKEND_WBMS_CATALOG_JSON)에 추가하되, 컨테이너 쪽 wbms_common.py(SENSOR_KEYS/TESTBEDS)와 run.yaml, 테스트베드 보조자료(DEM·3-class 마스크·lsmap·AOI)도 함께 갖춰야 실제로 돈다. module_sensor(기본=센서 키)는 컨테이너 --sensor 에 넘기는 값으로, 전용 모델이 없는 센서(umbra)는 다른 센서의 모델·프로파일을 빌려 쓴다 — 그때 산출물 이름(WB_<TB>_<표기>_*)과 qc.params.sensor_name 은 빌린 센서 표기(ICEYE)로 나온다. file_label(기본=name)은 ① 파일명 Pre_<TB>_<라벨>_* 의 라벨이다.",
+  "sensors": {
+    "iceye": {
+      "name": "ICEYE",
+      "type": "SAR",
+      "weights": "WBMS_SAR_ICEYE.h5",
+      "pre_dirs": {
+        "busan": "iceye_pre"
+      },
+      "needs_mask": true,
+      "description_ko": "ICEYE X-band SAR (γ⁰ dB 1밴드, 3 m). 바다와 내륙 수체를 나누는 3-class 마스크가 필수."
+    },
+    "umbra": {
+      "name": "Umbra",
+      "file_label": "UMBRA",
+      "type": "SAR",
+      "weights": "WBMS_SAR_ICEYE.h5",
+      "module_sensor": "iceye",
+      "pre_dirs": {
+        "dcd": "umbra_pre"
+      },
+      "needs_mask": true,
+      "description_ko": "Umbra-10 X-band SAR 스포트라이트(SICD → γ⁰ dB 1밴드 VV, 3 m, EPSG:32652, nodata -9999). 전용 모델이 없어 ICEYE SAR 모델(WBMS_SAR_ICEYE.h5)을 그대로 쓰며, 컨테이너 모듈은 --sensor {iceye,planet} 만 알아 iceye 로 넘긴다(산출물 이름은 WB_<TB>_ICEYE_*). 내륙(대청댐)이라 3-class 마스크에 바다(2)는 없고, 인수 마스크가 없으면 영상 유효 범위로 생성한다."
+    },
+    "planet": {
+      "name": "PlanetScope",
+      "type": "OPTIC",
+      "weights": "WBMS_Optic_PlanetScope.h5",
+      "pre_dirs": {
+        "busan": "planet_pre",
+        "dcd": "dcd_pre"
+      },
+      "needs_mask": false,
+      "description_ko": "PlanetScope 광학 4밴드 (3 m). 마스크 불필요."
+    }
+  },
+  "testbeds": {
+    "busan": {
+      "code": "Busan",
+      "name_ko": "부산 낙동강 하구",
+      "region_id": "nakdong_busan",
+      "crs": "EPSG:32652",
+      "mask_template": "Masks/Img_DEM_3class_utm/{testbed}_{image_date}_mask3_utm.tif",
+      "stations": [
+        "jeongcheon",
+        "hupo",
+        "gimhae",
+        "gupo"
+      ]
+    },
+    "dcd": {
+      "code": "DCD",
+      "name_ko": "대청댐",
+      "region_id": "geum_daecheong",
+      "crs": "EPSG:32652",
+      "mask_template": "Masks/Img_DEM_3class_utm/{testbed}_{image_date}_mask3_utm.tif",
+      "stations": [
+        "daecheong",
+        "jojeongji",
+        "bangsuro"
+      ]
+    }
+  }
+}

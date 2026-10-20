@@ -4,6 +4,7 @@ import json
 import time
 from datetime import date as Date
 from datetime import timedelta
+from itertools import pairwise
 from pathlib import Path
 
 import pytest
@@ -46,7 +47,8 @@ def make_wbms_settings(tmp_path: Path) -> WbmsSettings:
     scene.mkdir(parents=True)
     (scene / f"Pre_Busan_ICEYE_{SCENE_STAMP}.tif").write_bytes(b"not-a-real-tif")
     (scene / f"Pre_Busan_ICEYE_{SCENE_STAMP}_meta.json").write_text(
-        json.dumps({"Entry": {"AcquisitionDateTime": "2020-04-16T18:36:30Z"}}),
+        json.dumps({"Entry": {"AcquisitionDateTime": "2020-04-16T18:36:30Z"},
+                    "Provenance": {"stage": "preprocess", "input_file": f"ICEYE_X5_SLC_SM_23467_{SCENE_STAMP}.h5"}}),
         encoding="utf-8",
     )
 
@@ -612,3 +614,380 @@ def test_docker_prefix_gpu_flag_adds_gpus_and_growth(tmp_path):
     assert "TF_FORCE_GPU_ALLOW_GROWTH=true" in argv
     cpu_argv = docker_prefix("docker", "wbms:0.13", [(tmp_path, "/x", True)])
     assert "--gpus" not in cpu_argv
+
+
+# ── 컨테이너 안에서 호스트 docker 로 실행 (경로 변환·BACKEND_RUN_AS·docker 경유 GPU 프리플라이트) ──
+# docker-compose.yml 이 /var/run/docker.sock 을 API 컨테이너에 넣으면 argv 는 컨테이너 안에서
+# 조립되고 실행은 호스트 데몬이 한다. 그래서 -v 호스트 경로는 /app → HOST_ROOT 로 바꿔야 하고,
+# --user 는 호스트 사용자여야 하며, nvidia-smi 는 docker 경유로 묻는다.
+
+
+@pytest.fixture
+def clean_runner(monkeypatch):
+    """runner 모듈 전역(경로 변환표·GPU 프로브)과 관련 환경변수를 테스트 뒤 원상복구한다."""
+    from backend.app.wbms import runner as r
+
+    monkeypatch.setattr(r, "_PATH_MAP", None)
+    monkeypatch.setattr(r, "_GPU_PROBE", ("docker", "wbms:0.13"))
+    for key in ("BACKEND_RUN_AS", "BACKEND_HOST_ROOT", "BACKEND_CONTAINER_ROOT",
+                "BACKEND_WBMS_DOCKER_BIN", "BACKEND_WBMS_IMAGE"):
+        monkeypatch.delenv(key, raising=False)
+    return r
+
+
+def _volumes(argv: list[str]) -> list[str]:
+    return [value for flag, value in pairwise(argv) if flag == "-v"]
+
+
+def test_docker_prefix_translates_mounts_under_container_root(tmp_path, clean_runner):
+    r = clean_runner
+    container_root = tmp_path / "app"
+    (container_root / "data" / "incoming").mkdir(parents=True)
+    outside = tmp_path / "elsewhere"
+    outside.mkdir()
+    r.set_path_map(container_root, Path("/srv/watercast"))
+    argv = r.docker_prefix("docker", "wbms:0.13", [
+        (container_root / "data" / "incoming", "/data", True),
+        (container_root / "data" / "wbms_runs" / "wb", "/out", False),  # 아직 없는 경로도 변환
+        (outside, "/scene", True),  # container_root 밖 → 그대로
+    ])
+    vols = _volumes(argv)
+    assert "/srv/watercast/data/incoming:/data:ro" in vols
+    assert "/srv/watercast/data/wbms_runs/wb:/out" in vols
+    assert f"{outside}:/scene:ro" in vols
+    # 변환표가 없으면(호스트 직접 실행) 예전과 같다
+    r.set_path_map(None, None)
+    assert f"{container_root / 'data' / 'incoming'}:/data:ro" in _volumes(
+        r.docker_prefix("docker", "wbms:0.13", [(container_root / "data" / "incoming", "/data", True)])
+    )
+
+
+def test_translate_host_path_resolves_symlinks_first(tmp_path, clean_runner):
+    r = clean_runner
+    container_root = tmp_path / "app"
+    real = container_root / "data" / "real"
+    real.mkdir(parents=True)
+    (tmp_path / "outside").mkdir()
+    shortcut = tmp_path / "shortcut"  # container_root 밖의 링크 → 안을 가리킨다
+    shortcut.symlink_to(real)
+    escape = container_root / "escape"  # container_root 안의 링크 → 밖을 가리킨다
+    escape.symlink_to(tmp_path / "outside")
+    explicit = (container_root, Path("/srv/wc"))
+
+    assert r.translate_host_path(shortcut, explicit) == Path("/srv/wc/data/real")
+    assert r.translate_host_path(escape, explicit) == escape  # 실제 위치가 밖이면 손대지 않는다
+    # 인자로 준 변환표가 모듈 기본값보다 우선하고, 기본값이 없으면 그대로
+    r.set_path_map(container_root, Path("/module"))
+    assert r.translate_host_path(real) == Path("/module/data/real")
+    assert r.translate_host_path(real, explicit) == Path("/srv/wc/data/real")
+    r.set_path_map(None, None)
+    assert r.translate_host_path(real) == real
+
+
+def test_docker_prefix_user_from_backend_run_as(tmp_path, monkeypatch, clean_runner):
+    import os
+
+    r = clean_runner
+    mounts = [(tmp_path, "/x", True)]
+    assert _arg(r.docker_prefix("docker", "wbms:0.13", mounts), "--user") == f"{os.getuid()}:{os.getgid()}"
+    monkeypatch.setenv("BACKEND_RUN_AS", "1000:1000")
+    assert _arg(r.docker_prefix("docker", "wbms:0.13", mounts), "--user") == "1000:1000"
+    monkeypatch.setenv("BACKEND_RUN_AS", "nobody")  # 형식 오류 → 프로세스 uid:gid 로 폴백
+    assert _arg(r.docker_prefix("docker", "wbms:0.13", mounts), "--user") == f"{os.getuid()}:{os.getgid()}"
+    assert _arg(r.docker_prefix("docker", "wbms:0.13", mounts, run_as="42:42"), "--user") == "42:42"
+
+
+def test_gpu_free_mib_falls_back_to_docker_when_nvidia_smi_missing(monkeypatch, clean_runner):
+    import subprocess
+
+    r = clean_runner
+    calls: list[list[str]] = []
+
+    def fake_run(argv, **kwargs):
+        calls.append(list(argv))
+        if argv[0] == "nvidia-smi":
+            raise FileNotFoundError("nvidia-smi")  # API 컨테이너 안
+        assert kwargs.get("timeout") == 60.0
+        return subprocess.CompletedProcess(argv, 0, stdout="20480\n", stderr="")
+
+    monkeypatch.setattr(r.subprocess, "run", fake_run)
+    r.set_gpu_probe("/usr/local/bin/docker", "wbms:9.9")
+    assert r.gpu_free_mib() == 20480
+    assert calls[0][0] == "nvidia-smi"
+    docker_argv = calls[1]
+    assert docker_argv[:5] == ["/usr/local/bin/docker", "run", "--rm", "--gpus", "device=0"]
+    assert _arg(docker_argv, "--entrypoint") == "nvidia-smi"
+    assert "wbms:9.9" in docker_argv and "--query-gpu=memory.free" in docker_argv
+    # 인자가 모듈 기본값보다 우선한다
+    assert r.gpu_free_mib("docker", "other:1") == 20480 and calls[-1][0] == "docker" and "other:1" in calls[-1]
+    # auto 모드는 그 값을 그대로 쓴다
+    assert r.resolve_gpu_device("auto", 3000) == ("gpu", None)
+
+
+def test_gpu_free_mib_none_when_docker_probe_fails_too(monkeypatch, clean_runner):
+    import subprocess
+
+    r = clean_runner
+
+    def no_toolkit(argv, **kwargs):
+        if argv[0] == "nvidia-smi":
+            raise FileNotFoundError("nvidia-smi")
+        return subprocess.CompletedProcess(argv, 125, stdout="", stderr="could not select device driver")
+
+    monkeypatch.setattr(r.subprocess, "run", no_toolkit)
+    assert r.gpu_free_mib() is None
+    device, warning = r.resolve_gpu_device("auto", 3000)
+    assert device == "cpu" and warning and "auto 모드라 CPU 로 폴백" in warning
+    with pytest.raises(ValueError):
+        r.resolve_gpu_device("gpu", 3000)
+
+    def no_socket(argv, **kwargs):  # docker 자체가 터지는 경우(소켓 미마운트·타임아웃)
+        if argv[0] == "nvidia-smi":
+            raise FileNotFoundError("nvidia-smi")
+        raise subprocess.TimeoutExpired(argv, 60)
+
+    monkeypatch.setattr(r.subprocess, "run", no_socket)
+    assert r.gpu_free_mib() is None
+
+
+def test_gpu_free_mib_prefers_host_nvidia_smi(monkeypatch, clean_runner):
+    import subprocess
+
+    r = clean_runner
+    calls: list[list[str]] = []
+
+    def fake_run(argv, **kwargs):
+        calls.append(list(argv))
+        return subprocess.CompletedProcess(argv, 0, stdout="512\n", stderr="")
+
+    monkeypatch.setattr(r.subprocess, "run", fake_run)
+    assert r.gpu_free_mib() == 512
+    assert len(calls) == 1 and calls[0][0] == "nvidia-smi"  # 호스트에 있으면 docker 를 부르지 않는다
+
+
+def test_settings_from_env_sets_path_map_and_gpu_probe(monkeypatch, clean_runner):
+    r = clean_runner
+    monkeypatch.setenv("BACKEND_HOST_ROOT", "/srv/watercast")
+    monkeypatch.setenv("BACKEND_CONTAINER_ROOT", "/app")
+    monkeypatch.setenv("BACKEND_WBMS_DOCKER_BIN", "/usr/local/bin/docker")
+    monkeypatch.setenv("BACKEND_WBMS_IMAGE", "wbms:0.13")
+    monkeypatch.setenv("BACKEND_RUN_AS", "1000:1000")
+    settings = WbmsSettings.from_env()
+    assert settings.host_root == Path("/srv/watercast")
+    assert settings.container_root == Path("/app")
+    assert r.get_path_map() == (Path("/app"), Path("/srv/watercast"))
+    assert r._GPU_PROBE == ("/usr/local/bin/docker", "wbms:0.13")
+    # 어댑터가 부르는 형태(설정 객체 없이)로도 변환과 --user 가 적용된다
+    argv = r.docker_prefix(settings.docker_bin, settings.docker_image,
+                           [(Path("/app/data/wbms_runs/wb"), "/out", False)])
+    assert "/srv/watercast/data/wbms_runs/wb:/out" in _volumes(argv)
+    assert _arg(argv, "--user") == "1000:1000"
+    # BACKEND_HOST_ROOT 가 비면 변환표도 비고(호스트 직접 실행), container_root 기본은 /app
+    monkeypatch.delenv("BACKEND_HOST_ROOT")
+    monkeypatch.delenv("BACKEND_CONTAINER_ROOT")
+    settings = WbmsSettings.from_env()
+    assert settings.host_root is None and settings.container_root == Path("/app")
+    assert r.get_path_map() is None
+
+
+def test_segmentation_job_command_uses_host_paths_when_path_map_set(tmp_path, clean_runner):
+    """어댑터를 고치지 않고도 잡 command 의 -v 가 호스트 경로로 나가는지 — 끝단 통합 확인.
+
+    호스트 쪽 경로를 tmp_path 를 가리키는 링크로 만들어, FakeRunner 가 '호스트 경로'에 쓴
+    산출물이 실제로는 같은 디렉터리에 떨어지게 한다(변환이 안 됐다면 링크 경로가 안 보인다).
+    """
+    r = clean_runner
+    host_alias = tmp_path.parent / f"{tmp_path.name}-host"
+    host_alias.symlink_to(tmp_path, target_is_directory=True)
+    r.set_path_map(tmp_path, host_alias)
+    client, _runner, _settings = make_client(tmp_path)
+    created = client.post(
+        "/api/v1/wbms/segmentation/jobs",
+        json={"sensor": "iceye", "testbed": "busan", "image_date": SCENE_DATE, "force": True},
+    ).json()
+    job = wait_terminal(client, created["job_id"])
+    assert job["status"] == "succeeded", job
+    assert job["result"]["source"] == "run"
+    vols = _volumes(job["command"])
+    assert vols and all(value.startswith(str(host_alias)) for value in vols), vols
+    assert f"{host_alias}/handover:/data:ro" in vols
+    assert f"{host_alias}/handover/03_model:/model:ro" in vols
+    assert any(value.endswith(":/out") for value in vols)
+    assert Path(job["result"]["mask_tif"]).is_file()
+
+
+def test_force_is_forwarded_to_detect_water(tmp_path: Path) -> None:
+    """force=true 는 백엔드 캐시 우회만이 아니라 모듈의 완료 마커도 무시해야 한다 — argv 에 --force."""
+    client, runner, _ = make_client(tmp_path)
+    first = client.post("/api/v1/wbms/segmentation/jobs", json={"sensor": "iceye", "testbed": "busan", "image_date": SCENE_DATE}).json()
+    wait_terminal(client, first["job_id"])
+    assert "--force" not in runner.calls[0]
+    forced = client.post("/api/v1/wbms/segmentation/jobs",
+                         json={"sensor": "iceye", "testbed": "busan", "image_date": SCENE_DATE, "force": True}).json()
+    job = wait_terminal(client, forced["job_id"])
+    assert job["cached"] is False and job["status"] == "succeeded"
+    assert runner.calls[-1][-1] == "--force" and "--output_dir" in runner.calls[-1]
+
+
+# ── Umbra: 전용 모델이 없어 ICEYE 모델을 빌려 쓰는 센서 — 카탈로그 module_sensor·캐시 표기 허용 ──────
+
+
+def test_catalog_module_sensor_and_labels() -> None:
+    from backend.app.wbms.catalog import default_catalog
+
+    catalog = default_catalog()
+    assert list(catalog.sensors) == ["iceye", "umbra", "planet"], "선택지 순서: ICEYE 바로 뒤에 UMBRA"
+    assert catalog.module_sensor("iceye") == "iceye" and catalog.module_sensor("planet") == "planet"
+    assert catalog.module_sensor("umbra") == "iceye" and catalog.module_name("umbra") == "ICEYE"
+    umbra = catalog.sensor("umbra")
+    assert umbra["name"] == "Umbra" and umbra["type"] == "SAR" and umbra["weights"] == "WBMS_SAR_ICEYE.h5" and umbra["needs_mask"] is True
+    assert umbra["pre_dirs"] == {"dcd": "umbra_pre"} and catalog.sensor("iceye")["pre_dirs"] == {"busan": "iceye_pre"}
+    assert "ICEYE" in umbra["description_ko"] and "iceye" in umbra["description_ko"]
+    assert catalog.supports("umbra", "dcd") and not catalog.supports("umbra", "busan") and not catalog.supports("iceye", "dcd")
+    assert catalog.file_label("umbra") == "UMBRA" and catalog.file_label("iceye") == "ICEYE" and catalog.file_label("planet") == "PlanetScope"
+    assert catalog.cache_sensor_names("umbra") == ["Umbra", "UMBRA", "ICEYE"] and catalog.cache_sensor_names("iceye") == ["ICEYE"]
+    # 빌린 표기(ICEYE)는 umbra 가 인수된 테스트베드(dcd)에서만 — busan 조회가 ICEYE 부산 산출물을 집지 않게
+    assert catalog.cache_sensor_names("umbra", "dcd") == ["Umbra", "UMBRA", "ICEYE"] and catalog.cache_sensor_names("umbra", "busan") == ["Umbra", "UMBRA"]
+    assert catalog.cache_sensor_names("iceye", "dcd") == ["ICEYE"]
+    assert catalog.resolve_key("UMBRA") == catalog.resolve_key("Umbra") == catalog.resolve_key(" umbra ") == "umbra"
+    assert catalog.resolve_key("PlanetScope") == catalog.resolve_key("planet") == "planet" and catalog.resolve_key("kompsat5") is None
+    caps = catalog.capabilities()["sensors"]["umbra"]
+    assert caps["module_sensor"] == "iceye" and caps["file_label"] == "UMBRA" and caps["testbeds"] == ["dcd"]
+    assert catalog.capabilities()["sensors"]["iceye"]["module_sensor"] == "iceye"
+
+
+def test_catalog_module_sensor_defaults_and_rejects_unknown(tmp_path: Path) -> None:
+    from backend.app.wbms.catalog import DEFAULT_CATALOG_PATH, WbmsCatalog
+
+    doc = json.loads(DEFAULT_CATALOG_PATH.read_text(encoding="utf-8"))
+    # module_sensor·file_label 을 적지 않은 항목은 자기 키·이름으로 채워진다
+    doc["sensors"]["kompsat5"] = {"name": "KOMPSAT-5", "type": "SAR", "weights": "k5.h5", "pre_dirs": {"busan": "k5_pre"}}
+    path = tmp_path / "catalog.json"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    loaded = WbmsCatalog.load(path)
+    assert loaded.module_sensor("kompsat5") == "kompsat5" and loaded.module_name("kompsat5") == "KOMPSAT-5"
+    assert loaded.file_label("kompsat5") == "KOMPSAT-5" and loaded.cache_sensor_names("kompsat5") == ["KOMPSAT-5"]
+    # 카탈로그에 없는 모듈 센서를 빌리면 로드 단계에서 거부
+    doc["sensors"]["umbra"]["module_sensor"] = "capella"
+    path.write_text(json.dumps(doc), encoding="utf-8")
+    with pytest.raises(ValueError, match="module_sensor"):
+        WbmsCatalog.load(path)
+
+
+def _seed_cached_wb(settings: WbmsSettings, *, tb: str, sensor_name: str, image_date: str, stamp: str,
+                    params_sensor: str | None, status: str = "COMPLETE") -> Path:
+    scene_dir = settings.wb_output_dir / image_date[:4] / image_date
+    scene_dir.mkdir(parents=True, exist_ok=True)
+    base = f"WB_{tb}_{sensor_name}_{stamp}"
+    (scene_dir / f"{base}.tif").write_bytes(b"mask")
+    (scene_dir / f"{base}_meta.json").write_text("{}", encoding="utf-8")
+    params = {"testbed": tb.lower(), "image_date": image_date}
+    if params_sensor is not None:
+        params["sensor_name"] = params_sensor
+    qc_path = scene_dir / f"{base}_qc.json"
+    qc_path.write_text(json.dumps({"base": base, "status": status, "products": [f"{base}.tif", f"{base}_meta.json"], "params": params}), encoding="utf-8")
+    return qc_path
+
+
+def test_find_cached_accepts_module_sensor_name_for_umbra(tmp_path: Path) -> None:
+    _client, runner, settings = make_client(tmp_path)
+    adapter = WbmsSegmentationJobAdapter(settings, runner)
+    date, stamp = "20260501", "20260501T093000"
+    # 컨테이너가 iceye 로 돌아 WB_DCD_ICEYE_* 를 썼다(qc.params.sensor_name 도 ICEYE) — umbra 조회가 이를 받아들인다
+    _seed_cached_wb(settings, tb="DCD", sensor_name="ICEYE", image_date=date, stamp=stamp, params_sensor="ICEYE")
+    found = adapter.find_cached("umbra", "dcd", date)
+    assert found is not None and found["base"] == f"WB_DCD_ICEYE_{stamp}" and found["source"] == "cache"
+    # (문서화된 모호성) 같은 날짜·테스트베드의 ICEYE 조회도 같은 파일을 본다
+    assert adapter.find_cached("iceye", "dcd", date)["base"] == found["base"]
+    # 자기 라벨(UMBRA)이 든 산출물이 함께 있으면 그것을 우선한다 — ICEYE 조회는 UMBRA 표기를 받지 않는다
+    _seed_cached_wb(settings, tb="DCD", sensor_name="UMBRA", image_date=date, stamp=stamp, params_sensor="Umbra")
+    assert adapter.find_cached("umbra", "dcd", date)["base"] == f"WB_DCD_UMBRA_{stamp}"
+    assert adapter.find_cached("iceye", "dcd", date)["base"] == f"WB_DCD_ICEYE_{stamp}"
+    # 실행 직후 판정(min_mtime): 실행 시작 이후 기록된 것만 — 미래 시각이면 없음
+    assert adapter.find_cached("umbra", "dcd", date, min_mtime=time.time() + 3600) is None
+    assert adapter.find_cached("umbra", "dcd", date, min_mtime=time.time() - 3600)["base"] == f"WB_DCD_UMBRA_{stamp}"
+    # qc.params.sensor_name 이 허용 표기 밖이면 파일명이 맞아도 거부; sensor_name 이 없으면 파일명만으로 인정
+    _seed_cached_wb(settings, tb="DCD", sensor_name="UMBRA", image_date="20260502", stamp="20260502T093000", params_sensor="PlanetScope")
+    assert adapter.find_cached("umbra", "dcd", "20260502") is None
+    _seed_cached_wb(settings, tb="DCD", sensor_name="ICEYE", image_date="20260503", stamp="20260503T093000", params_sensor=None)
+    assert adapter.find_cached("umbra", "dcd", "20260503")["base"] == "WB_DCD_ICEYE_20260503T093000"
+    # umbra 는 busan 에 인수되지 않았다 — ICEYE 부산 산출물을 umbra 것으로 집지 않는다; 기존 ICEYE/busan 캐시는 그대로
+    seed_cached_mask(settings)
+    assert adapter.find_cached("umbra", "busan", SCENE_DATE) is None
+    assert adapter.find_cached("iceye", "busan", SCENE_DATE)["base"] == f"WB_Busan_ICEYE_{SCENE_STAMP}"
+    assert {c["sensor_name"] for c in adapter.list_cached()} == {"ICEYE", "Umbra", "PlanetScope", None}
+
+
+def test_umbra_scene_runs_container_as_iceye(tmp_path: Path) -> None:
+    from backend.app.adapters.wbms_segmentation import WbmsInputError
+
+    _client, runner, settings = make_client(tmp_path)
+    adapter = WbmsSegmentationJobAdapter(settings, runner)
+    scene_dir = settings.l1_pre_dir / "umbra_pre" / "2026" / "20260501"
+    scene_dir.mkdir(parents=True)
+    (scene_dir / "Pre_DCD_UMBRA_20260501T093000.tif").write_bytes(b"tif")
+    (scene_dir / "Pre_DCD_UMBRA_20260501T093000_meta.json").write_text(
+        json.dumps({"SatelliteName": "Umbra", "Entry": {"AcquisitionDateTime": "2026-05-01T09:30:00Z"},
+                    "Provenance": {"input_file": "2026-05-01-09-30-00_UMBRA-10_SICD.nitf"}}), encoding="utf-8",
+    )
+    # SAR 인데 인수 3-class 마스크가 없으면 422 (파이프라인은 영상 유효 범위로 생성해 mask_tif 로 넘긴다)
+    with pytest.raises(WbmsInputError, match="3-class mask"):
+        adapter.resolve_scene("umbra", "dcd", "20260501")
+    mask3 = tmp_path / "gen" / "dcd_20260501_mask3_utm.tif"
+    mask3.parent.mkdir()
+    mask3.write_bytes(b"m")
+    scene = adapter.resolve_scene("umbra", "dcd", "20260501", mask_tif=str(mask3))
+    assert scene["sensor"] == "umbra" and scene["module_sensor"] == "iceye" and scene["testbed"] == "dcd"
+    assert scene["input_container"] == "/data/05_l1_pre/umbra_pre/2026/20260501/Pre_DCD_UMBRA_20260501T093000.tif"
+    assert scene["weights_container"] == "/model/WBMS_SAR_ICEYE.h5" and scene["mask_container"] == "/mask3/dcd_20260501_mask3_utm.tif"
+    argv = adapter.build_command(scene)
+    assert _arg(argv, "--sensor") == "iceye" and _arg(argv, "--testbed") == "dcd" and _arg(argv, "--image_date") == "20260501"
+    assert _arg(argv, "--weights") == "/model/WBMS_SAR_ICEYE.h5" and _arg(argv, "--mask") == "/mask3/dcd_20260501_mask3_utm.tif"
+    # 잡 요청 에코는 카탈로그 키 umbra(대소문자 무시), 컨테이너 인자만 iceye; iceye 는 여전히 busan 전용
+    job = adapter.submit({"sensor": "UMBRA", "testbed": "dcd", "image_date": "20260501", "mask_tif": str(mask3)}, start_thread=False)
+    assert job["request"]["sensor"] == "umbra" and job["request"]["testbed"] == "dcd" and _arg(job["command"], "--sensor") == "iceye"
+    assert adapter.resolve_scene("iceye", "busan", SCENE_DATE)["module_sensor"] == "iceye"
+    with pytest.raises(WbmsInputError, match="no delivered scenes"):
+        adapter.resolve_scene("umbra", "busan", "20260501")
+
+
+# ── GPU 실행 실패 → CPU 재시도 (2026-10-20, 현장 Blackwell GPU 대비) ─────────────────────────
+
+
+def test_cpu_fallback_command_strips_gpu_flags_and_switches_device():
+    from backend.app.adapters.wbms_segmentation import cpu_fallback_command
+
+    gpu_argv = ["docker", "run", "--rm", "--gpus", "device=0", "-e", "TF_FORCE_GPU_ALLOW_GROWTH=true", "-e", "TF_GPU_ALLOCATOR=cuda_malloc_async",
+                "--user", "1000:1000", "-e", "HOME=/tmp", "-v", "/a:/aux:ro", "wbms:0.13", "python3", "/WBMS/wbms_modules/detect_water.py", "--gpu", "gpu", "--output_dir", "/out"]
+    cpu_argv = cpu_fallback_command(gpu_argv)
+    assert "--gpus" not in cpu_argv and "device=0" not in cpu_argv and "TF_FORCE_GPU_ALLOW_GROWTH=true" not in cpu_argv and "TF_GPU_ALLOCATOR=cuda_malloc_async" not in cpu_argv
+    assert cpu_argv[cpu_argv.index("--gpu") + 1] == "cpu" and "--user" in cpu_argv and "HOME=/tmp" in cpu_argv and "-v" in cpu_argv
+    assert cpu_fallback_command(cpu_argv) == cpu_argv  # CPU 명령은 그대로
+
+
+def test_segmentation_retries_on_cpu_when_gpu_run_fails_in_auto_mode(tmp_path: Path, monkeypatch) -> None:
+    """현장 GPU(새 세대)에서 옛 CUDA 이미지가 런타임에 죽는 경우 — auto 모드면 CPU 로 한 번 더 돌려 결과를 낸다."""
+    import dataclasses
+
+    from backend.app.adapters import wbms_segmentation as seg
+    from backend.app.wbms.runner import CommandResult
+
+    client, runner, _settings = make_client(tmp_path)
+    adapter = client.app.state.wbms_segmentation
+    adapter.settings = dataclasses.replace(adapter.settings, gpu_mode="auto")
+    monkeypatch.setattr(seg, "resolve_gpu_device", lambda mode, min_free: ("gpu", None))
+    original = runner.run
+
+    def run(argv: list[str], timeout_s: float) -> CommandResult:
+        if "--gpus" in argv:
+            runner.calls.append(list(argv))
+            return CommandResult(returncode=1, stdout='{"type":"error","ts":"t","code":"CUDA_ERROR","param":"gpu","message":"no kernel image is available for execution on the device"}\n', stderr="cuDNN", elapsed_s=0.1)
+        return original(argv, timeout_s)
+
+    runner.run = run
+    created = client.post("/api/v1/wbms/segmentation/jobs", json={"sensor": "iceye", "testbed": "busan", "image_date": SCENE_DATE}).json()
+    job = wait_terminal(client, created["job_id"])
+    assert job["status"] == "succeeded", job
+    assert "--gpus" in runner.calls[0] and "--gpus" not in runner.calls[1] and _arg(runner.calls[1], "--gpu") == "cpu"
+    assert job["result"]["gpu_fallback"]["note_ko"].startswith("GPU 실행이 실패") and "CUDA_ERROR" in job["result"]["gpu_fallback"]["reason"]
+    assert job["command"][-1] == "/out" and "--gpus" not in job["command"]
