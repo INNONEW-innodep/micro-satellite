@@ -52,7 +52,10 @@ def resolve_sample_weather(
     """
 
     forecast_dates = sample.forecast_dates(horizon_days)
-    if sample.sample_id not in KMA_REPLAY_SAMPLE_IDS:
+    station_id = getattr(sample, "kma_station_id", None) or (
+        KMA_BUSAN_STATION_ID if sample.sample_id in KMA_REPLAY_SAMPLE_IDS else None
+    )
+    if station_id is None:
         rows = tuple(sample.forecast_weather_payload(horizon_days))
         return SampleWeatherPlan(
             rows=rows,
@@ -81,7 +84,7 @@ def resolve_sample_weather(
 
     response = observation_loader(
         source="asos",
-        station_id=KMA_BUSAN_STATION_ID,
+        station_id=station_id,
         start_date=sample.source_dates[0].isoformat(),
         end_date=forecast_dates[-1].isoformat(),
     )
@@ -89,6 +92,8 @@ def resolve_sample_weather(
         response,
         source_dates=sample.source_dates,
         target_dates=forecast_dates,
+        station_id=station_id,
+        station_name=getattr(sample, "kma_station_name", None),
     )
 
 
@@ -97,6 +102,8 @@ def build_kma_historical_replay(
     *,
     source_dates: Sequence[dt.date],
     target_dates: Sequence[dt.date],
+    station_id: str | None = None,
+    station_name: str | None = None,
 ) -> SampleWeatherPlan:
     """Select image dates and target dates from one KMA ASOS response."""
 
@@ -118,8 +125,8 @@ def build_kma_historical_replay(
     )
     rows: list[dict[str, Any]] = []
     missing: list[str] = []
-    station_id = str(response.get("station_id") or KMA_BUSAN_STATION_ID)
-    station_name = str(response.get("station_name") or "부산")
+    station_id = str(response.get("station_id") or station_id or KMA_BUSAN_STATION_ID)
+    station_name = str(response.get("station_name") or station_name or "부산")
     for date_value in requested_dates:
         raw = by_date.get(date_value)
         if raw is None:
@@ -152,7 +159,7 @@ def build_kma_historical_replay(
         rows=tuple(rows),
         source="kma_asos_historical_replay",
         note_ko=(
-            f"부산 ASOS 159의 과거 실관측을 {target_start}~{target_end} 구간에 "
+            f"{station_name} ASOS {station_id}의 과거 실관측을 {target_start}~{target_end} 구간에 "
             "역사 재현용 forcing으로 연결했습니다. 실제 관측값이지만 미래예보가 "
             "아니며, 미래 수체 정답이 없어 모델 성능 검증에는 사용할 수 없습니다."
         ),

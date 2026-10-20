@@ -18,6 +18,7 @@ APP_PATH = Path(__file__).resolve().parents[1] / "app.py"
 )
 def test_model_eval_phase_renders_all_three_panels_with_series_labels() -> None:
     app = AppTest.from_file(str(APP_PATH), default_timeout=20)
+    app.session_state["ui_mode"] = "고급 화면 (상세 탭)"  # 기존 상세 화면을 검사한다
     app.session_state["phase"] = phase_index("정량 평가")
 
     app.run(timeout=20)

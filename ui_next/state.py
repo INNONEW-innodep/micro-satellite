@@ -21,6 +21,8 @@ PHASES: tuple[tuple[str, str, str], ...] = (
     ("기상", "ASOS 관측·시나리오", ":material/cloud:"),
     ("예측 실행", "모델 선택·실행", ":material/model_training:"),
     ("결과", "마스크·면적·수위", ":material/monitoring:"),
+    ("수위 예측", "지점별 10개년 수위계·모델 평가·전망", ":material/timeline:"),
+    ("지역 발표", "지역별 한 장 요약·성능 평가", ":material/co_present:"),
     ("정량 평가", "실모델 검증·실측 수위·기상", ":material/fact_check:"),
     ("이해 가이드", "원천자료·모델·메뉴 설명", ":material/menu_book:"),
     ("API 가이드", "연계 명세·예제", ":material/api:"),

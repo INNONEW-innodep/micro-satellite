@@ -89,6 +89,7 @@ def _result_fixture() -> dict:
 def test_daily_horizons_and_dynamic_evaluation_render_without_error() -> None:
     app = AppTest.from_file(str(APP_PATH), default_timeout=20)
     app.session_state["service_mode"] = "수체 시계열 예측"
+    app.session_state["ui_mode"] = "고급 화면 (상세 탭)"  # 기존 상세 화면을 검사한다
     app.session_state["phase"] = phase_index("결과")
     app.session_state["prediction_result"] = _result_fixture()
     app.session_state["connection_attempted"] = True
@@ -181,6 +182,7 @@ def test_irregular_nas_area_result_shows_multi_frame_evidence_and_area_horizons(
 
     app = AppTest.from_file(str(APP_PATH), default_timeout=20)
     app.session_state["service_mode"] = "수체 시계열 예측"
+    app.session_state["ui_mode"] = "고급 화면 (상세 탭)"  # 기존 상세 화면을 검사한다
     app.session_state["phase"] = phase_index("결과")
     app.session_state["prediction_result"] = result
     app.session_state["prediction_context"] = {"pixel_area_placeholder": False}

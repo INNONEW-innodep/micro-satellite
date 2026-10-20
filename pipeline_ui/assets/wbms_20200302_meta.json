@@ -1,0 +1,54 @@
+{
+ "tag": "20200302",
+ "generated_utc": "2026-08-20T09:32:15Z",
+ "source": {
+  "pre": "/home/innonew98/micro-satellite/data/incoming/handover/05_l1_pre/iceye_pre/2020/20200302/Pre_Busan_ICEYE_20200302T183857.tif",
+  "wb": "/home/innonew98/micro-satellite/data/wbms_runs/wb/2020/20200302/WB_Busan_ICEYE_20200302T183857.tif"
+ },
+ "grid": {
+  "width": 19571,
+  "height": 24857,
+  "crs": "EPSG:32652",
+  "pixel_m": 3.0
+ },
+ "scene_water": {
+  "water_px": 4460585,
+  "valid_px": 98556344,
+  "water_pct_of_valid": 4.53
+ },
+ "crop": {
+  "col_off": 5040,
+  "row_off": 7917,
+  "size_px": 4096,
+  "size_km": 12.29,
+  "utm_bounds": [
+   488130.4,
+   3885896.7,
+   500418.4,
+   3898184.7
+  ],
+  "water_pct_of_valid": 13.32,
+  "stretch_db": [
+   -13.54,
+   3.62
+  ]
+ },
+ "full": {
+  "png_size": [
+   932,
+   1184
+  ],
+  "stretch_db": [
+   -12.63,
+   -0.29
+  ]
+ },
+ "model": {
+  "file": "WBMS_SAR_ICEYE.h5",
+  "arch": "U-Net",
+  "protocol_iou": 0.8786,
+  "protocol_note": "배포 프로토콜, 20200416 시험씬 기준",
+  "device": "CPU"
+ },
+ "note": "GT 대조 수치 없음 — 실모델 산출 표기 전용"
+}

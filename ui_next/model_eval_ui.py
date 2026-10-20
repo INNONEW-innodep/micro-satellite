@@ -10,6 +10,7 @@ be quoted as representative generalization performance.
 from __future__ import annotations
 
 import streamlit as st
+from tables import show_table
 
 try:  # package imports used by pytest and other Python callers
     from .model_eval import (
@@ -124,7 +125,7 @@ def render_gauge_levels_panel(
     if compact:
         rows = gauge_detail_rows(table, satellite=satellite)
         if rows:
-            st.dataframe(rows, width="stretch", hide_index=True)
+            show_table(rows)
             st.caption(
                 f"출처 · {table.provenance} (WAMIS 게이지 실측, "
                 f"{table.level_min_m:g}~{table.level_max_m:g} m) · 전체 계열과 "
@@ -160,7 +161,7 @@ def render_gauge_levels_panel(
         st.success(table.fused_message_ko + f" (출처: {table.fused_provenance})")
     else:
         st.info(FUSED_WAITING_MESSAGE_KO)
-    st.dataframe(gauge_detail_rows(table), width="stretch", hide_index=True)
+    show_table(gauge_detail_rows(table))
     st.caption(f"출처 · {table.provenance} · WAMIS 게이지 실측 수위")
     return table
 
@@ -192,12 +193,12 @@ def _render_segmentation_tab() -> None:
             f"##### {report.sensor_name} ({report.sensor_type}) · 씬별 지표 — "
             f"{report.protocol_label_ko}"
         )
-        st.dataframe(per_scene_rows(report), width="stretch", hide_index=True)
+        show_table(per_scene_rows(report))
 
     pooled = pooled_rows(valreports)
     if pooled:
         with st.expander("pooled(4씬 합산) 지표 · 대표값 아님", expanded=False):
-            st.dataframe(pooled, width="stretch", hide_index=True)
+            show_table(pooled)
             st.warning(
                 "pooled water IoU(SAR 0.925887 · 광학 0.941484)는 4개 씬 픽셀을 "
                 "합산한 값입니다. 씬별 최저(SAR 0416 0.878575)와 함께 보아야 하며 "
@@ -225,8 +226,7 @@ def _render_segmentation_tab() -> None:
     if batch.status == "waiting":
         st.info(batch.message_ko)
     else:
-        st.dataframe(
-            [
+        show_table([
                 {
                     "수치 계열": batch.protocol_label_ko,
                     "산출": report.name,
@@ -236,10 +236,7 @@ def _render_segmentation_tab() -> None:
                     "F1": report.f1,
                 }
                 for report in batch.reports
-            ],
-            width="stretch",
-            hide_index=True,
-        )
+            ])
         if batch.skipped:
             st.warning(
                 "형식이 계약과 달라 건너뛴 파일 · " + ", ".join(batch.skipped)

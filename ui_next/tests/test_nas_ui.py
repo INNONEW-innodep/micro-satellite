@@ -134,6 +134,7 @@ def test_display_only_representative_assets_exist(group_id: str) -> None:
 def test_nas_input_mode_renders_materialized_busan_demo_without_api_call() -> None:
     app = AppTest.from_file(str(APP_PATH), default_timeout=30)
     app.session_state["service_mode"] = "수체 시계열 예측"
+    app.session_state["ui_mode"] = "고급 화면 (상세 탭)"  # 기존 상세 화면을 검사한다
     app.session_state["phase"] = phase_index("데이터")
     app.session_state["input_mode"] = "NAS 전달자료"
     app.session_state["connection_attempted"] = True

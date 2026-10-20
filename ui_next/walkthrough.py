@@ -71,12 +71,13 @@ MODEL_NOTES: Final[Mapping[str, str]] = {
     ),
 }
 
-STEP_KEYS: Final[tuple[str, ...]] = ("sample", "detect", "level", "forecast")
+STEP_KEYS: Final[tuple[str, ...]] = ("sample", "detect", "level", "forecast", "gauge")
 STEP_TITLES: Final[Mapping[str, str]] = {
     "sample": "1단계 · 샘플 데이터 넣기",
     "detect": "2단계 · 수체 탐지 결과 보기",
     "level": "3단계 · 수위 산출 보기",
-    "forecast": "4단계 · 시계열 예측 실행",
+    "forecast": "4단계 · 수체 면적 시계열 예측 실행",
+    "gauge": "5단계 · 지점별 수위 예측 (10개년 수위계 학습)",
 }
 
 WALKTHROUGH_CSS = """
@@ -179,6 +180,7 @@ def load_detection_results() -> tuple[Mapping[str, Any], ...]:
     if not WB_DIR.is_dir():
         return ()
     metrics: dict[str, Mapping[str, Any]] = {}
+    by_date: dict[str, Mapping[str, Any]] = {}
     if BATCH_EVAL_DIR.is_dir():
         for path in sorted(BATCH_EVAL_DIR.glob("*.json")):
             try:
@@ -188,13 +190,19 @@ def load_detection_results() -> tuple[Mapping[str, Any], ...]:
             name = str(payload.get("wb") or "")
             if name.startswith("WB_") and isinstance(payload.get("metrics"), Mapping):
                 metrics[name] = payload["metrics"]
+            # 로컬 재현 VALREPORT(`per_scene`)도 같은 날짜의 근거로 쓴다 — 서버에는 체인
+            # 배치 JSON이, 로컬에는 VALREPORT만 있어 한쪽에서 IoU가 비어 보였다.
+            if str(payload.get("sensor_name") or "").upper() == "ICEYE":
+                for scene in payload.get("per_scene") or []:
+                    if isinstance(scene, Mapping) and scene.get("date"):
+                        by_date[str(scene["date"])] = scene
 
     rows: list[Mapping[str, Any]] = []
     for date_dir in sorted(WB_DIR.iterdir()):
         if not date_dir.is_dir():
             continue
         for tif in sorted(date_dir.glob("WB_*.tif")):
-            metric = metrics.get(tif.name, {})
+            metric = metrics.get(tif.name) or by_date.get(date_dir.name, {})
             rows.append(
                 {
                     "관측일": f"{date_dir.name[:4]}-{date_dir.name[4:6]}-{date_dir.name[6:]}",
@@ -289,6 +297,49 @@ def render_walkthrough_phase(
     _render_step_forecast(
         done, execute_quick_sample, go_to_phase, format_api_error, api_error_type
     )
+    st.divider()
+    _render_step_gauge(done, go_to_phase)
+
+
+def _render_step_gauge(done: dict[str, bool], go_to_phase) -> None:
+    """5단계 — 지상 수위계 10개년으로 학습한 지점별 수위 예측.
+
+    4단계까지는 위성 관측(수 시점)에서 나온 면적·수위였다. 수위 **예측**은
+    표본이 수백 배 많은 수위계 일 시계열로 따로 학습·검증해야 하며, 여기서
+    직전값 유지(persistence)는 기준선일 뿐 예측 모델이 아니다.
+    """
+
+    _step_header(
+        "gauge",
+        "같은 지점의 지상 수위계 10개년(2015~2024) 일 자료로 예측일수별 모델을 학습하고, "
+        "학습에 쓰지 않은 2024년 오차를 보여 준 뒤 원점을 골라 실제와 대조합니다.",
+        done["gauge"],
+        True,
+    )
+    _why(
+        "<b>왜 위성이 아니라 수위계로 학습하나요?</b> 위성은 지점당 관측이 4~8시점뿐이라 학습 구간과 "
+        "검증 구간을 날짜로 가를 수 없습니다. 수위계는 매일 관측되므로 '앞 구간으로 학습하고 뒤 구간은 "
+        "보지 않는' 정상적인 검증이 됩니다. 위성 수위는 같은 지점에서 수위계와 <b>대조</b>합니다."
+    )
+    _not(
+        "<b>직전값 유지(persistence)는 예측이 아닙니다.</b> 화면의 모델은 지점×예측일수마다 검증 연도별 "
+        "폴드에서 골랐고, persistence 대비 개선율(skill)을 함께 보여 줍니다. 강우·방류 입력은 아직 "
+        "특징에 없어 통계적 외삽이며, 홍수기 급변은 오차가 커집니다."
+    )
+    try:
+        from gauge_forecast_ui import render_gauge_forecast_step
+
+        client_factory = st.session_state.get("_api_client_factory")
+        if client_factory is None:
+            from api_client import APIClient
+
+            def client_factory():  # type: ignore[no-redef]
+                return APIClient(st.session_state.api_base_url, timeout=float(st.session_state.api_timeout))
+
+        if render_gauge_forecast_step(client_factory=client_factory, go_to_phase=go_to_phase):
+            done["gauge"] = True
+    except Exception as exc:  # noqa: BLE001 - 5단계 실패가 앞 단계를 가리면 안 된다
+        st.error(f"수위 예측 단계를 그리지 못했습니다: {exc}")
 
 
 def _render_step_sample(done: dict[str, bool], activate_sample, go_to_phase) -> None:
@@ -309,7 +360,15 @@ def _render_step_sample(done: dict[str, bool], activate_sample, go_to_phase) -> 
     if not samples:
         st.error("사용할 수 있는 샘플이 없습니다.")
         return
-    labels = {item.sample_id: f"{item.region_name} · {item.scenario_name}" for item in samples}
+    labels = {}
+    for item in samples:
+        label = f"{item.region_name} · {item.scenario_name}"
+        sensor = str(getattr(item, "sensor_label", "") or getattr(item, "sensor", "") or "")
+        if not sensor and str(item.sample_id).startswith("region:"):
+            sensor = str(item.sample_id).split(":")[-1]
+        if sensor and sensor not in label:
+            label += f" · {sensor}"
+        labels[item.sample_id] = label
     # 부분 문자열로 고르면 'busan-doc-recovered'(문서 그림 복원 데모)가 먼저 걸린다.
     # 그 샘플의 권장 모델은 persistence라 예측선이 평평하게 나와, 처음 보는 사람이
     # 곧바로 "예측이 안 되는 앱"으로 오해한다. 실자료 세트를 명시적으로 고른다.

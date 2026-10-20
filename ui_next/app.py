@@ -7,6 +7,7 @@ import hashlib
 import io
 import json
 import os
+import re
 import sys
 import zipfile
 from collections.abc import Mapping
@@ -32,27 +33,30 @@ from forecast_analysis import (
     horizon_row,
     precipitation_by_date,
 )
+from gauge_forecast_ui import render_gauge_forecast_page
 from guide import render_guide_page, render_page_help
 from learning import render_learning_help, render_learning_page
 from model_eval_ui import render_model_eval_page
 from nas_ui import render_nas_catalog
+from pipeline_view import render_pipeline_page
+from presentation_ui import render_presentation_page
 from sample_weather import resolve_sample_weather
 from samples import SampleDataset, get_sample, list_samples
+from slides import render_slides
 from state import (
     FINGERPRINTS_KEY,
+    PHASES,
     apply_configuration,
     extract_prediction_steps,
     fingerprint,
     normalize_weather_rows,
     openapi_operation_rows,
-    PHASES,
-    selectable_models,
     phase_index,
+    selectable_models,
     validate_input_rows,
 )
 from theme import compact_header_html, inject_theme, transition_overlay_html
 from walkthrough import render_walkthrough_phase
-
 
 PHASE_LOCK_REASONS = {
     "기상": "데이터 단계에서 입력 마스크를 먼저 불러오세요.",
@@ -61,6 +65,7 @@ PHASE_LOCK_REASONS = {
 }
 
 SERVICE_MODES = ("수체 시계열 예측", "작물 탐지")
+UI_MODES = ("쉬운 화면 (슬라이드)", "위성 파이프라인 (입력→예측)", "고급 화면 (상세 탭)")
 SERVICE_MODE_LABELS = {
     "수체 시계열 예측": "💧 수체 시계열 예측",
     "작물 탐지": "🌾 작물 탐지",
@@ -93,6 +98,12 @@ FALLBACK_OPERATIONS = [
     {"method": "GET", "path": Endpoints.FILES, "summary": "예측 산출물 목록"},
     {"method": "GET", "path": Endpoints.FILE, "summary": "예측 마스크 등 산출물 다운로드"},
     {"method": "GET", "path": Endpoints.BUNDLE, "summary": "결과 전체 ZIP 다운로드"},
+    {"method": "GET", "path": Endpoints.REGIONS, "summary": "지역 레지스트리(위성·수위계 보유, 지점, 학습 상태)"},
+    {"method": "POST", "path": Endpoints.GAUGE_TRAIN, "summary": "지점별 수위 예측 모델 학습·선택·평가"},
+    {"method": "GET", "path": Endpoints.GAUGE_EVALUATION, "summary": "지점×예측일수 오차표(MSE·RMSE·skill)"},
+    {"method": "GET", "path": Endpoints.GAUGE_FORECAST, "summary": "원점 기준 수위 전망(+실측 대조)"},
+    {"method": "GET", "path": Endpoints.GAUGE_FORECASTERS, "summary": "교체 가능한 수위 예측기 목록"},
+    {"method": "GET", "path": "/api/v1/segmenters", "summary": "교체 가능한 수체 탐지 어댑터"},
 ]
 
 
@@ -150,14 +161,33 @@ def render_sidebar() -> None:
             )
             return
         st.divider()
-        st.markdown("### 백엔드 연결")
-        st.text_input(
-            "FastAPI 주소",
-            value=os.getenv("WATER_API_URL", "http://localhost:8000"),
-            key="api_base_url",
-            help="예: http://localhost:8000 (끝의 /는 생략 가능)",
+        st.markdown("### 화면 모드")
+        # 위젯 상태는 그 위젯이 그려지지 않은 실행(작물 탐지 모드)에서 지워진다 → 별도 키에 보관해 되살린다
+        if "ui_mode" not in st.session_state and st.session_state.get("ui_mode_keep") in UI_MODES:
+            st.session_state["ui_mode"] = st.session_state["ui_mode_keep"]
+        st.radio(
+            "화면 모드",
+            UI_MODES,
+            key="ui_mode",
+            label_visibility="collapsed",
+            help="쉬운 화면은 지역 선택부터 성능 평가까지 여섯 장을 순서대로 넘깁니다. 고급 화면은 기존 상세 탭 전부입니다.",
         )
-        st.slider("요청 제한 시간(초)", 3, 120, 30, key="api_timeout")
+        st.session_state["ui_mode_keep"] = st.session_state.get("ui_mode", UI_MODES[0])
+        mode_now = st.session_state.get("ui_mode", UI_MODES[0])
+        if mode_now == UI_MODES[0]:
+            st.caption("지역 선택 → 데이터 → 탐지 → 예측 → 결과 → 평가")
+        elif mode_now == UI_MODES[1]:
+            st.caption("장면 입력 → 전처리 → 탐지 → 수위·면적 → 예측 → 평가 · 새 장면 등록")
+        st.divider()
+        settings_box = st.expander("백엔드 연결 (고급)", expanded=st.session_state.get("ui_mode") == UI_MODES[2])
+        with settings_box:
+            st.text_input(
+                "FastAPI 주소",
+                value=os.getenv("WATER_API_URL", "http://localhost:8000"),
+                key="api_base_url",
+                help="예: http://localhost:8000 (끝의 /는 생략 가능)",
+            )
+            st.slider("요청 제한 시간(초)", 3, 120, 30, key="api_timeout")
         changed, _ = sync_config(
             "connection",
             {"base_url": st.session_state.api_base_url.rstrip("/"), "timeout": st.session_state.api_timeout},
@@ -277,8 +307,15 @@ def render_header() -> None:
             unsafe_allow_html=True,
         )
         return
-    phase = current_phase()
-    phase_title = PHASES[phase][0]
+    if st.session_state.get("ui_mode", UI_MODES[0]) == UI_MODES[0]:
+        from slides import SLIDES, current_slide
+
+        phase_title = f"{current_slide() + 1}/{len(SLIDES)} {SLIDES[current_slide()][1]}"
+    elif st.session_state.get("ui_mode") == UI_MODES[1]:
+        phase_title = "위성 파이프라인"
+    else:
+        phase = current_phase()
+        phase_title = PHASES[phase][0]
     health = st.session_state.get("connection_status") or {}
     connected = str(health.get("status", "")).lower() in {"ok", "healthy", "ready"}
     api_label = "API 정상" if connected else "API 연결 안 됨"
@@ -295,6 +332,9 @@ def render_header() -> None:
 
 
 def render_transition_overlay() -> None:
+    # 자리(st.empty)를 항상 잡아 둔다 — 첫 이동 뒤 배너가 사라질 때 아래 요소들의 위치가 한 칸 당겨지면
+    # st.tabs 가 다시 만들어져 선택한 탭이 첫 탭으로 되돌아간다.
+    slot = st.empty()
     target = st.session_state.pop("transition_phase", None)
     if target is None:
         return
@@ -302,7 +342,7 @@ def render_transition_overlay() -> None:
         phase_title = PHASES[int(target)][0]
     except (IndexError, TypeError, ValueError):
         return
-    st.markdown(transition_overlay_html(phase_title), unsafe_allow_html=True)
+    slot.markdown(transition_overlay_html(phase_title), unsafe_allow_html=True)
 
 
 def render_service_switch() -> str:
@@ -334,10 +374,13 @@ def render_phase_navigation() -> None:
         bool(st.session_state.get("input_bundle")),
         bool(st.session_state.get("input_bundle") and st.session_state.get("weather_confirmed")),
         bool(st.session_state.get("prediction_result")),
+        True,  # 수위 예측 — 수위계 시계열은 앞 단계와 무관하게 언제나 볼 수 있다
+        True,  # 지역 발표
         True,
         True,
         True,
     )
+    assert len(readiness) == len(PHASES), "readiness 튜플은 PHASES와 길이가 같아야 한다"
     st.markdown('<div class="wc-nav-kicker">WORKFLOW</div>', unsafe_allow_html=True)
     columns = st.columns(len(PHASES), gap="small")
     for index, ((title, subtitle, icon), column) in enumerate(zip(PHASES, columns)):
@@ -450,11 +493,29 @@ def activate_sample(sample: SampleDataset, forecast_days: int = 30) -> None:
     st.session_state.input_bundle = rows
 
     weather_error: str | None = None
+
+    def _observation_loader(**query: Any) -> Mapping[str, Any]:
+        """지역 샘플은 레지스트리에 저장된 ASOS 실관측을 먼저 쓴다(서버 KMA 키가 없어도 같은 값). 없으면 실시간 조회."""
+        client = api_client()
+        sample_id = str(getattr(sample, "sample_id", "") or "")
+        if sample_id.startswith("region:"):
+            region_id = sample_id.split(":", 2)[1]
+            try:
+                stored = client.region_weather(region_id, start=query.get("start_date"), end=query.get("end_date"))
+            except APIError:
+                stored = {}
+            if stored.get("rows"):
+                return {
+                    "rows": stored["rows"], "station_id": stored.get("station_id"), "station_name": stored.get("station_name"),
+                    "source": "asos", "note_ko": stored.get("note_ko"),
+                }
+        return client.weather_observations(**query)
+
     try:
         weather_plan = resolve_sample_weather(
             sample,
             forecast_days,
-            observation_loader=api_client().weather_observations,
+            observation_loader=_observation_loader,
         )
     except APIError as exc:
         weather_error = format_api_error(exc)
@@ -498,13 +559,14 @@ def activate_sample(sample: SampleDataset, forecast_days: int = 30) -> None:
 
 
 def execute_quick_sample(
-    sample: SampleDataset, forecast_days: int = 30, *, navigate: bool = True
+    sample: SampleDataset, forecast_days: int = 30, *, navigate: bool = True, model_id: str | None = None
 ) -> None:
     """Run a catalog item through the live multipart prediction endpoint.
 
     ``navigate=False`` keeps the caller on its own screen. The redirect ends the
     script run via ``st.rerun()``, so a caller that needs to draw anything after
     the prediction (the guided walkthrough finishes its last step) must opt out.
+    ``model_id`` overrides the sample's recommended model (slide UI model picker).
     """
 
     activate_sample(sample, forecast_days)
@@ -513,16 +575,17 @@ def execute_quick_sample(
     st.session_state.connection_status = health
     models = client.list_models()
     st.session_state.models = models
+    chosen_model_id = model_id or sample.recommended_model_id
     selected_model = next(
-        (item for item in models if model_identity(item) == sample.recommended_model_id),
+        (item for item in models if model_identity(item) == chosen_model_id),
         None,
     )
     if selected_model is None:
         raise APIError(
-            f"샘플 권장 모델 {sample.recommended_model_id!r}이 백엔드에 등록되어 있지 않습니다."
+            f"모델 {chosen_model_id!r}이 백엔드에 등록되어 있지 않습니다."
         )
     if not bool(selected_model.get("available", selected_model.get("ready", True))):
-        raise APIError(f"샘플 권장 모델 {sample.recommended_model_id!r}을 현재 사용할 수 없습니다.")
+        raise APIError(f"모델 {chosen_model_id!r}을 현재 사용할 수 없습니다.")
 
     # The recovered documentation panels have no geospatial pixel area.  The
     # backend still requires a positive scale, so 1 m²/pixel is deliberately
@@ -557,7 +620,7 @@ def execute_quick_sample(
         "limitations_ko": sample.disclaimer_ko,
     }
     settings = {
-        "model_id": sample.recommended_model_id,
+        "model_id": chosen_model_id,
         "horizon_steps": forecast_days,
         "target_dates": target_dates,
         "threshold": sample.threshold,
@@ -573,6 +636,23 @@ def execute_quick_sample(
         "caution_pct": sample.caution_pct,
         "risk_pct": sample.risk_pct,
     }
+    # 수위 예측 어댑터(gauge-level-forecast)에는 이 샘플의 지역·지점을 명시한다 — 비우면 어댑터 기본값(첫 지역)으로 빠져
+    # 다른 지역 수위가 붙는다(감사에서 발견). 지역 샘플 id 는 "region:<id>:<sensor>".
+    sample_id = str(getattr(sample, "sample_id", "") or "")
+    if chosen_model_id == "gauge-level-forecast" and sample_id.startswith("region:"):
+        region_id = sample_id.split(":", 2)[1]
+        options = dict(settings["model_options"])
+        options.setdefault("region_id", region_id)
+        if not options.get("station_id"):
+            try:
+                detail = api_client().get_region(region_id)
+                stations = detail.get("stations") or []
+                preferred = next((x for x in stations if x.get("satellite_location") and x.get("model_trained")), None) or next((x for x in stations if x.get("model_trained")), None)
+                if preferred:
+                    options["station_id"] = preferred["id"]
+            except APIError:
+                pass
+        settings["model_options"] = options
     sync_config("model", settings)
     parts = [
         UploadPart(row["name"], row["content"], row["content_type"])
@@ -580,7 +660,7 @@ def execute_quick_sample(
     ]
     result = client.create_prediction(
         files=parts,
-        model_id=sample.recommended_model_id,
+        model_id=chosen_model_id,
         horizon_steps=forecast_days,
         threshold=sample.threshold,
         source_dates=list(sample.source_date_strings),
@@ -595,7 +675,7 @@ def execute_quick_sample(
             sample.synthetic_reference_provenance_ko if reference_levels else None
         ),
         water_level_config=water_level_config,
-        model_options=dict(sample.model_options),
+        model_options=dict(settings["model_options"]),
         caution_pct=sample.caution_pct,
         risk_pct=sample.risk_pct,
     )
@@ -889,12 +969,14 @@ def render_direct_upload() -> None:
         {key: value for key, value in row.items() if key != "content"}
         for row in rows
     ]
-    changed, removed = sync_config(
-        "input",
-        {"input_source": "upload", "include_levels": include_levels, "rows": draft},
-    )
-    if changed and removed:
-        st.warning("입력 파일 또는 날짜/수위가 바뀌어 기존 기상·예측 결과를 초기화했습니다.")
+    # 파일을 아직 올리지 않았으면 이전 입력(예: 샘플)을 지우지 않는다 — 라디오만 눌러 봐도 결과가 초기화되던 문제
+    if rows:
+        changed, removed = sync_config(
+            "input",
+            {"input_source": "upload", "include_levels": include_levels, "rows": draft},
+        )
+        if changed and removed:
+            st.warning("입력 파일 또는 날짜/수위가 바뀌어 기존 기상·예측 결과를 초기화했습니다.")
 
     errors = validate_input_rows(rows)
     if rows:
@@ -1742,9 +1824,14 @@ def render_prediction_phase() -> None:
         ratio_text = calibration_cols[1].text_input("100% 면적 변화당 수위 변화(m)", value="")
         area_text = calibration_cols[2].text_input("기준 면적(m², 선택)", value="")
         try:
-            baseline_level_m = float(baseline_text)
-            meters_per_area_ratio = float(ratio_text)
-            baseline_area_m2 = float(area_text) if area_text.strip() else None
+            if not baseline_text.strip() or not ratio_text.strip():
+                raise ValueError("기준 수위와 100% 면적 변화당 수위 변화를 모두 숫자로 입력하세요 (예: 2.30, 0.15).")
+            try:
+                baseline_level_m = float(baseline_text)
+                meters_per_area_ratio = float(ratio_text)
+                baseline_area_m2 = float(area_text) if area_text.strip() else None
+            except ValueError:
+                raise ValueError("숫자 형식이 아닙니다. 소수점 숫자만 입력하세요 (예: 2.30).") from None
             if baseline_area_m2 is not None and baseline_area_m2 <= 0:
                 raise ValueError("기준 면적은 0보다 커야 합니다.")
             water_level_config = {
@@ -2606,7 +2693,7 @@ def render_result_phase() -> None:
     if context.get("limitations"):
         st.warning(str(context["limitations"]))
     for warning in result.get("warnings", []):
-        st.warning(str(warning))
+        st.warning(translate_backend_warning(str(warning)))
 
     render_irregular_trend_diagnostics(result)
 
@@ -2846,7 +2933,7 @@ def render_api_guide_phase() -> None:
     st.subheader("API 가이드 · 외부 시스템 연계")
     render_page_help("api", expanded=False)
     st.write("외부 시스템은 UI를 거치지 않고 같은 REST API로 모델 목록, 예측 결과, 마스크 산출물을 가져갈 수 있습니다.")
-    st.html(flow_diagram_html())
+    st.markdown(flow_diagram_html(), unsafe_allow_html=True)  # st.html 은 <svg>/<style> 을 지운다
 
     if "openapi_spec" not in st.session_state and "openapi_error" not in st.session_state:
         try:
@@ -2958,10 +3045,36 @@ open("predicted_mask.tif", "wb").write(artifact.content)''',
     )
 
 
+_WARNING_KO: tuple[tuple[str, str], ...] = (
+    ("This is a sparse multi-frame area-trend baseline, not a trained hydrological model.",
+     "이 결과는 드문드문 관측된 면적의 추세 기준선(baseline)이며, 학습된 수문 예측 모델이 아닙니다."),
+    ("No weather rows were supplied; rainfall adjustment is zero.", "기상 행이 없어 강수 보정을 0으로 두었습니다."),
+    ("No weather rows were supplied; masks remain unchanged.", "기상 행이 없어 마스크를 그대로 두었습니다."),
+    ("This is a persistence baseline", "이 결과는 마지막 입력을 반복하는 직전값 유지 기준선입니다."),
+)
+
+
+def translate_backend_warning(text: str) -> str:
+    """어댑터 경고(영문)를 화면용 한국어로. 모르는 문장은 원문 그대로."""
+    for english, korean in _WARNING_KO:
+        if text.startswith(english):
+            return korean
+    match = re.match(r"Only (\d+) observations were available; (.*)", text)
+    if match:
+        return f"관측이 {match.group(1)}개뿐이라 추세 불확실성을 믿을 만하게 추정할 수 없습니다 ({match.group(2)})"
+    match = re.match(r"gauge series for (.+) ends at (\S+); forecast origin was clamped to that date", text)
+    if match:
+        return f"{match.group(1)} 수위계 자료가 {match.group(2)}까지라 예측 원점을 그 날짜로 맞췄습니다."
+    return text
+
+
 def format_api_error(exc: APIError) -> str:
     prefix = f"HTTP {exc.status_code} · " if exc.status_code else ""
     if exc.status_code == 422:
-        return prefix + f"요청 형식 검증에 실패했습니다. 서버 OpenAPI와 입력값을 확인하세요. ({exc})"
+        text = str(exc)
+        if text.startswith("입력값 검증 실패"):
+            return prefix + text
+        return prefix + f"요청 형식 검증에 실패했습니다. 서버 OpenAPI와 입력값을 확인하세요. ({text})"
     return prefix + str(exc)
 
 
@@ -2996,6 +3109,17 @@ def main() -> None:
     if service_mode == "작물 탐지":
         render_crop_detection_page()
         return
+    ui_mode = st.session_state.get("ui_mode", UI_MODES[0])
+    if ui_mode == UI_MODES[0]:
+        if st.session_state.get("sample_loaded_toast"):
+            st.toast(st.session_state.pop("sample_loaded_toast"))
+        render_slides(client_factory=api_client, execute_quick_sample=execute_quick_sample)
+        return
+    if ui_mode == UI_MODES[1]:
+        if st.session_state.get("sample_loaded_toast"):
+            st.toast(st.session_state.pop("sample_loaded_toast"))
+        render_pipeline_page(client_factory=api_client, execute_quick_sample=execute_quick_sample)
+        return
     render_phase_navigation()
     if st.session_state.get("sample_loaded_toast"):
         st.toast(st.session_state.pop("sample_loaded_toast"))
@@ -3012,6 +3136,8 @@ def main() -> None:
         render_weather_phase,
         render_prediction_phase,
         render_result_phase,
+        lambda: render_gauge_forecast_page(client_factory=api_client),
+        lambda: render_presentation_page(client_factory=api_client),
         render_model_eval_page,
         render_understanding_guide_phase,
         render_api_guide_phase,

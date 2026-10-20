@@ -841,12 +841,16 @@ with st.sidebar:
     n_future = st.slider("예측 시퀀스 길이 (M프레임)", 1, 5, 3)
     st.markdown("---")
     st.markdown("### 🌧️ 기상 데이터")
-    api_key = st.text_input("기상청 API 키 (선택)", type="password",
-                            help="비워두면 샘플 데이터로 동작합니다.")
+    # 이 데모는 기상청 API를 호출하지 않는다(합성 기상). 키 입력칸을 두면 "연결됨"으로
+    # 오해되므로 제거하고, 실제 ASOS 조회는 업무 UI(ui_next)로 안내한다.
+    api_key = ""
+    st.caption("이 데모의 기상은 시연용 합성값입니다. 기상청 ASOS 실조회는 업무 UI(ui_next)에서 합니다.")
     use_weather = st.checkbox("기상 데이터 융합 사용", value=True)
     st.markdown("---")
     st.markdown("### 🔬 모델 설정")
-    model_name = st.selectbox("탐지 모델", ["U-Net (WBMS_SAR_ICEYE.h5)", "DeepLabv3+", "SegFormer"])
+    # 이 데모 화면의 STEP 2 는 밝기 임계값 탐지기다. 실모델(WBMS U-Net) 결과는 사전 산출
+    # 자산으로 별도 패널에 표시된다. 가짜 모델 선택지는 동작이 없어 제거했다.
+    model_name = st.selectbox("탐지 방식", ["임계값 데모 탐지기 (시연용)"], help="실모델 산출은 STEP 2 하단의 '실모델(WBMS U-Net) 산출' 패널에 있습니다.")
     pred_model = st.selectbox("시계열 모델", ["ConvLSTM (Encoder-Decoder)", "PredRNN", "SimVP"])
     threshold = st.slider("이진화 임계값", 0.05, 0.5, 0.18, step=0.01)
     st.markdown("---")
@@ -1005,10 +1009,10 @@ with col_btn2:
                            use_container_width=True)
 
 if run_detect:
-    progress = st.progress(0, text="U-Net 모델 로딩...")
+    progress = st.progress(0, text="입력 영상 준비...")
     for pct, msg in [(15, "패치 분할 (512×512)..."),
                      (35, "Min-Max 정규화..."),
-                     (55, "U-Net 추론 중..."),
+                     (55, "임계값 탐지 (시연용) 중..."),
                      (78, "이진화 (threshold=%.2f)..." % threshold),
                      (92, "패치 병합 및 후처리...")]:
         time.sleep(0.18)
@@ -1029,8 +1033,9 @@ if st.session_state.detection_mask is not None:
     water_ratio = float(mask.sum()) / mask.size * 100
 
     st.markdown("### 🌊 STEP 2 · 수체 탐지 결과 (1차 처리)")
-    st.markdown('<p class="lead">U-Net 모델이 입력 SAR 영상에서 수체 영역(픽셀 값 1) 분류 결과를 산출했습니다. '
-                '하단의 메트릭과 마스크 오버레이로 검증할 수 있습니다.</p>',
+    st.markdown('<p class="lead">위 패널은 <b>시연용 임계값 탐지기</b>가 입력 SAR 영상에서 어두운 화소를 수체(픽셀 값 1)로 '
+                '분류한 결과입니다. 학습 모델의 산출이 아니며, 배포 U-Net(WBMS)의 실제 마스크는 아래 '
+                '"실모델(WBMS U-Net) 산출" 패널에 있습니다.</p>',
                 unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns([1, 1, 1])
@@ -1052,9 +1057,9 @@ if st.session_state.detection_mask is not None:
   <div class='metric-card'><div class='metric-label'>수체 비율</div>
     <div class='metric-value'>{water_ratio:.2f} %</div>
     <div class='metric-sub'>전체 영역 대비</div></div>
-  <div class='metric-card'><div class='metric-label'>탐지 모델</div>
-    <div class='metric-value' style='font-size:16px'>{model_name.split(' (')[0]}</div>
-    <div class='metric-sub'>{model_name.split(' (')[1].rstrip(')') if ' (' in model_name else '학습 가중치'}</div></div>
+  <div class='metric-card'><div class='metric-label'>탐지 방식</div>
+    <div class='metric-value' style='font-size:16px'>임계값 데모</div>
+    <div class='metric-sub'>학습 모델 아님 · 실모델은 아래 패널</div></div>
   <div class='metric-card'><div class='metric-label'>이진화 임계값</div>
     <div class='metric-value'>{threshold:.2f}</div>
     <div class='metric-sub'>Sigma0 dB scale</div></div>
@@ -1101,9 +1106,10 @@ if st.session_state.detection_mask is not None:
             with st.expander("🗺️ 전체 씬 오버레이 보기 (축소)"):
                 st.image(wbms_full_img, use_container_width=True,
                          caption="전체 씬 축소 오버레이 · EPSG:32652 · 3 m 라벨 격자")
-        st.caption("모델: WBMS U-Net (WBMS_SAR_ICEYE.h5) · "
-                   "IoU 0.8786 (배포 프로토콜, 20200416 시험씬 기준) · CPU 산출 · "
-                   f"2020-03-02 부산 씬 실모델 산출{_roi_txt}")
+        st.caption("모델: WBMS U-Net (WBMS_SAR_ICEYE.h5) · 2020-03-02 부산 씬 실모델 산출 · "
+                   "이 씬 GT 대조 water IoU 0.9247 (로컬 재현, data/eval/VALREPORT_local_ICEYE.json) · "
+                   "배포 프로토콜 기준치는 20200416 시험씬 IoU 0.8786 (별도 계열)"
+                   f"{_roi_txt}")
 
 # ====================== STEP 3: 기상청 데이터 연동 ======================
 if st.session_state.detection_mask is not None and use_weather:
@@ -1120,12 +1126,8 @@ if st.session_state.detection_mask is not None and use_weather:
             st.session_state.weather_df = wdf
 
     wdf = st.session_state.weather_df
-    if api_key:
-        st.markdown('<span class="tag">✓ API 연결</span>'
-                    '<span class="tag">기상청 일자료 조회서비스</span>', unsafe_allow_html=True)
-    else:
-        st.markdown('<span class="tag warn">샘플 데이터 (API 키 없음)</span>'
-                    '<span class="tag">data/weather_ex.csv 기반</span>', unsafe_allow_html=True)
+    st.markdown('<span class="tag warn">시연용 합성 기상 (실조회 아님)</span>'
+                '<span class="tag">실제 ASOS 조회는 업무 UI</span>', unsafe_allow_html=True)
 
     col_w1, col_w2 = st.columns([2, 1])
     with col_w1:
@@ -1256,19 +1258,15 @@ if st.session_state.prediction_frames is not None:
 </div>
 """, unsafe_allow_html=True)
 
-    # 평가 메트릭 (모형)
-    with st.expander("🎯 모델 성능 지표 (검증 셋 기준)"):
+    # 시계열 예측 모델의 실측 검증 지표는 없다(ConvLSTM 실학습 미수행). 합성 예시값을
+    # "검증 셋 기준"으로 적었던 표는 삭제하고, 실측이 있는 항목만 안내한다.
+    with st.expander("🎯 시계열 예측 정확도에 대해"):
         st.markdown(f"""
-| 지표 | 값 | 비고 |
-|---|---|---|
-| **IoU** | 0.7848 ± 0.34 | Intersection over Union |
-| **Dice Score** | 0.8160 ± 0.33 | F1과 유사 |
-| **Pixel Accuracy** | 0.9948 ± 0.01 | 전체 픽셀 정확도 |
-| **Precision** | 0.5612 ± 0.49 | 예측 수체 정확도 |
-| **Recall** | 0.4555 ± 0.45 | 실제 수체 검출률 |
-| **모델** | {pred_model} | |
-| **입력 시퀀스** | {n_history} 프레임 | |
-| **예측 시퀀스** | {n_future} 프레임 | |
+- 이 화면의 미래 프레임은 **시연용 합성 산출**이며, 정확도 지표를 주장하지 않습니다.
+- 실측 근거가 있는 시계열 지표는 업무 UI(`ui_next`)에 있습니다:
+  마스크 persistence IoU 실측(단기 0.84 / 장기 0.84, `data/eval/mask_persistence_iou.json`),
+  지상 수위계 10개년 홀드아웃 예측 오차(지점·예측일수별 RMSE·skill, `수위 예측` 화면).
+- 표시 중: 모델 {pred_model} · 입력 {n_history} 프레임 · 예측 {n_future} 프레임 (구성 값)
 """)
 
     # 3세부 연계

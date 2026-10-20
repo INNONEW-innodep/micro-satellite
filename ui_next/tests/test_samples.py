@@ -53,13 +53,19 @@ SYNTHETIC_IDS = ("nakdong_stable", "han_drought", "gwangju_flood")
 
 
 def test_catalog_list_and_get_helpers_are_stable() -> None:
+    # 내장 샘플은 순서·이름이 고정이고, 지역 레지스트리 샘플(`region:` 접두)은 그 뒤에 붙는다.
     samples = list_samples()
-    assert tuple(sample.sample_id for sample in samples) == EXPECTED_IDS
-    assert tuple(sample.display_name for sample in samples) == EXPECTED_NAMES
-    assert tuple(sample_catalog()) == EXPECTED_IDS
+    builtin = tuple(sample for sample in samples if not sample.sample_id.startswith("region:"))
+    assert tuple(sample.sample_id for sample in builtin) == EXPECTED_IDS
+    assert tuple(sample.display_name for sample in builtin) == EXPECTED_NAMES
+    assert tuple(key for key in sample_catalog() if not key.startswith("region:")) == EXPECTED_IDS
+    assert all(sample.sample_id.startswith("region:") for sample in samples[len(builtin):])
     assert all(get_sample(sample.sample_id) is sample for sample in samples)
-    recommended = [sample.sample_id for sample in samples if sample.recommended]
+    recommended = [sample.sample_id for sample in builtin if sample.recommended]
     assert recommended == [NAS_BUSAN_SAMPLE_ID]
+    assert all(sample.recommended for sample in samples if sample.sample_id.startswith("region:"))
+
+
     with pytest.raises(KeyError, match="available"):
         get_sample("missing")
 
@@ -114,7 +120,10 @@ def test_frame_bytes_and_helpers_are_deterministic() -> None:
         for sample in list_samples()
     }
     assert first_pass == second_pass
-    assert len({digest for digests in first_pass.values() for digest in digests}) == 24
+    builtin_digests = {
+        digest for sample_id, digests in first_pass.items() if not sample_id.startswith("region:") for digest in digests
+    }
+    assert len(builtin_digests) == 24
     assert frame_preview_bytes("gwangju_flood") == get_sample("gwangju_flood").frames[-1].png_bytes
     assert frame_preview_bytes("gwangju_flood", 0) == get_sample("gwangju_flood").frames[0].png_bytes
     with pytest.raises(IndexError, match="outside"):

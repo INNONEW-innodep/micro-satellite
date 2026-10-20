@@ -205,6 +205,10 @@ class SampleDataset:
     classification_badge_ko: str = "합성 시나리오"
     sensor_name_ko: str = "센서 없음 · 코드 생성"
     source_manifest_path: str | None = None
+    # 지역 레지스트리 샘플: 이 값이 있으면 빠른 실행이 해당 ASOS 지점의 과거 관측을 재현한다.
+    kma_station_id: str | None = None
+    kma_station_name: str | None = None
+    region_id: str | None = None
 
     @property
     def source_dates(self) -> tuple[date, ...]:
@@ -1213,9 +1217,35 @@ _SAMPLES = (
         },
     ),
 )
+
+
+def _region_samples() -> tuple[SampleDataset, ...]:
+    """지역 레지스트리 자산에서 만든 샘플. 자산이 없으면 빈 튜플(내장 샘플만 남는다)."""
+
+    try:
+        try:
+            from .region_samples import region_mask_datasets
+        except ImportError:  # pragma: no cover - Streamlit entry point
+            from region_samples import region_mask_datasets
+        return region_mask_datasets()
+    except Exception:  # noqa: BLE001 - 지역 자산 결함이 전체 샘플 목록을 막으면 안 된다
+        return ()
+
+
+_BUILTIN_SAMPLES = tuple(_SAMPLES)
+_SAMPLES = _BUILTIN_SAMPLES + tuple(_region_samples())
 _CATALOG: Mapping[str, SampleDataset] = MappingProxyType(
     {sample.sample_id: sample for sample in _SAMPLES}
 )
+
+
+def refresh_region_samples() -> tuple[SampleDataset, ...]:
+    """지역 자산을 다시 읽어 샘플 목록을 갱신한다 — 화면에서 새 장면을 등록한 직후 호출."""
+
+    global _SAMPLES, _CATALOG
+    _SAMPLES = _BUILTIN_SAMPLES + tuple(_region_samples())
+    _CATALOG = MappingProxyType({sample.sample_id: sample for sample in _SAMPLES})
+    return _SAMPLES
 
 
 def sample_catalog() -> Mapping[str, SampleDataset]:

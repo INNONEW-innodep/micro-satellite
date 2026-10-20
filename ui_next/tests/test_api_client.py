@@ -154,6 +154,26 @@ class APIClientTests(unittest.TestCase):
         self.assertEqual(client.download_bundle("p1"), b"zip")
         self.assertTrue(session.calls[0][1].endswith("/api/v1/predictions/p1/bundle"))
 
+    def test_satellite_area_series_hits_the_comparable_series_endpoint(self):
+        payload = {
+            "region_id": "nakdong_busan", "available": True,
+            "sensors": {"PlanetScope": {"rows": [
+                {"date": "2020-03-12", "area_km2_common_frame": 28.87, "area_km2_scene_footprint": 33.265},
+                {"date": "2020-03-25", "area_km2_common_frame": 30.148, "area_km2_scene_footprint": 65.305},
+            ]}},
+        }
+        session = FakeSession([FakeResponse(payload)])
+        client = APIClient("http://backend", session=session)
+        result = client.satellite_area_series("nakdong_busan")
+        self.assertEqual(
+            session.calls[0][:2],
+            ("GET", "http://backend/api/v1/regions/nakdong_busan/satellite/area-series"),
+        )
+        rows = result["sensors"]["PlanetScope"]["rows"]
+        # 같은 계열 안에 '비교 가능한 값'과 '기존 씬별 값'이 나란히 온다
+        self.assertEqual([r["area_km2_common_frame"] for r in rows], [28.87, 30.148])
+        self.assertEqual([r["area_km2_scene_footprint"] for r in rows], [33.265, 65.305])
+
 
 if __name__ == "__main__":
     unittest.main()
