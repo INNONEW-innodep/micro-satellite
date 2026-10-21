@@ -1,10 +1,15 @@
-# WATERCAST 설치 패키지용 compose — 빌드하지 않고 images/ 에서 load 한 이미지를 그대로 쓴다.
+# WATERCAST 설치 패키지용 compose — 빌드하지 않는다.
+#   이미지  = images/ 에서 load 한 런타임 이미지(python + 의존성 + docker CLI, 앱 코드 없음)
+#   앱 코드 = app/current (install.sh·update_app.sh 가 app/watercast-app-*.tar.gz 를 풀어 둔 곳) → 컨테이너 /app 에 마운트
+#   코드만 바뀌면 이미지는 그대로 두고 ./update_app.sh <새 묶음> 으로 교체한다. 의존성(requirements)이 바뀌면 런타임 이미지도 교체.
 # 포트·이미지 태그·연계 값은 같은 디렉터리의 .env 에서 읽는다 (.env.example 참고).
 services:
   watercast:
-    image: ${WATERCAST_IMAGE:-watercast:0.2.0}
+    image: ${WATERCAST_IMAGE:-watercast-runtime:0.2.0}
     container_name: ${WATERCAST_NAME:-watercast}
     restart: unless-stopped
+    working_dir: /app
+    entrypoint: ["./docker/entrypoint.sh"]
     ports:
       - "${WATERCAST_API_PORT:-18000}:8000"
       - "${WATERCAST_UI_PORT:-8501}:8501"
@@ -30,6 +35,8 @@ services:
       # cpu | gpu | auto — auto 는 여유 VRAM 3000 MiB 이상이면 GPU, 아니면 CPU 폴백.
       - BACKEND_WBMS_GPU=${WBMS_GPU:-auto}
     volumes:
+      # 앱 코드(묶음을 풀어 둔 디렉터리) — 교체는 ./update_app.sh
+      - ./app/current:/app
       - ./backend/data:/app/backend/data
       - ./data:/app/data:ro
       # 탐지 마스크 캐시만 쓰기 가능(중첩 바인드가 상위 :ro 를 덮는다)
@@ -45,14 +52,16 @@ services:
 
   # 발표용 파이프라인 데모 화면. 같은 이미지, 진입점만 다르다. 필요 없으면 .env 의 COMPOSE_PROFILES 를 비운다.
   pipeline-ui:
-    image: ${WATERCAST_IMAGE:-watercast:0.2.0}
+    image: ${WATERCAST_IMAGE:-watercast-runtime:0.2.0}
     container_name: ${WATERCAST_NAME:-watercast}-pipeline
     profiles: ["demo"]
     restart: unless-stopped
+    working_dir: /app
     entrypoint: ["./docker/pipeline_entrypoint.sh"]
     ports:
       - "${WATERCAST_PIPE_PORT:-8502}:8501"
     volumes:
+      - ./app/current:/app
       - ./data:/app/data:ro
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8501/', timeout=5).status == 200 else 1)"]

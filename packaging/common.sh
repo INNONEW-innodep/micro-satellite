@@ -9,6 +9,38 @@ ok()   { printf '\033[1;32m  ✔\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m  !\033[0m %s\n' "$*" >&2; }
 fail() { printf '\033[1;31m  ✘ %s\033[0m\n' "$*" >&2; exit 1; }
 
+# ── 로그 파일 + 실패 위치 안내 (2026-10-21) ─────────────────────────────────────
+# 모든 스크립트 출력을 logs/<스크립트>_<시각>.log 에 같이 남기고, 어떤 명령이 어디서 실패했는지와
+# 그때 볼 로그(컨테이너 로그·로그 파일 경로)를 마지막에 찍는다. 배포 담당자가 화면만 보고 원인을 좁힐 수 있게.
+LOG_DIR="$HERE/logs"
+LOG_FILE=""
+start_log() { # start_log <이름>
+  mkdir -p "$LOG_DIR"
+  LOG_FILE="$LOG_DIR/$1_$(date +%Y%m%d_%H%M%S).log"
+  exec > >(tee -a "$LOG_FILE") 2>&1
+  log "로그 파일: $LOG_FILE"
+  trap 'on_error $LINENO "$BASH_COMMAND"' ERR
+}
+on_error() { # on_error <줄> <명령>
+  local line="$1" cmd="$2"
+  printf '\033[1;31m  ✘ 실패: %s (%s %s행)\033[0m\n' "$cmd" "$(basename "${BASH_SOURCE[1]:-$0}")" "$line" >&2
+  printf '    로그 파일: %s\n' "${LOG_FILE:-없음}" >&2
+  if command -v docker >/dev/null 2>&1 && docker ps -q --filter "name=^/?${NAME:-watercast}$" 2>/dev/null | grep -q .; then
+    printf '    컨테이너 로그(마지막 30줄):\n' >&2
+    docker logs --tail 30 "${NAME:-watercast}" 2>&1 | sed 's/^/      /' >&2 || true
+  fi
+  printf '    더 보기: ./status.sh · docker compose logs --tail 200 %s · ./postcheck.sh\n' "${NAME:-watercast}" >&2
+}
+app_version() { # app/current/VERSION.json 의 build 문자열 (없으면 "-")
+  python3 - "$HERE/app/current/VERSION.json" <<'PY' 2>/dev/null || echo "-"
+import json, sys
+try:
+    d = json.load(open(sys.argv[1], encoding="utf-8")); print(f"{d.get('version','?')} build {d.get('build','?')} ({d.get('git','?')})")
+except Exception:
+    print("-")
+PY
+}
+
 need() { command -v "$1" >/dev/null 2>&1 || fail "$1 이 필요합니다: $2"; }
 
 load_env() {
@@ -37,10 +69,11 @@ load_env() {
   API_PORT="${WATERCAST_API_PORT:-18000}"
   UI_PORT="${WATERCAST_UI_PORT:-8501}"
   PIPE_PORT="${WATERCAST_PIPE_PORT:-8502}"
-  IMAGE="${WATERCAST_IMAGE:-watercast:0.2.0}"
+  IMAGE="${WATERCAST_IMAGE:-watercast-runtime:0.2.0}"
+  APP_DIR="$HERE/app/current"
   NAME="${WATERCAST_NAME:-watercast}"
   API="http://127.0.0.1:${API_PORT}"
-  : "$UI_PORT" "$PIPE_PORT" "$IMAGE" "$NAME" "$API"
+  : "$UI_PORT" "$PIPE_PORT" "$IMAGE" "$NAME" "$API" "$APP_DIR"
 }
 
 compose() {
@@ -95,4 +128,29 @@ wait_health() { # wait_health <url> [시도 횟수] — 2초 간격
     sleep 2
   done
   return 1
+}
+
+# ── 앱 묶음(바이너리) 적재 (2026-10-21) ─────────────────────────────────────────
+# app/watercast-app-<버전>-<빌드>.tar.gz (최상위 디렉터리 하나 + VERSION.json) 를 app/current 로 푼다.
+# 기존 app/current 는 app/prev 로 남겨 ./update_app.sh --rollback 으로 되돌릴 수 있다.
+# 같은 build 가 이미 current 면 건너뛴다(재실행 안전). 반환: 0 적재/유지, 1 실패.
+install_app_bundle() { # install_app_bundle <tar.gz>
+  local tarball="$1" new="$HERE/app/.new" cur="$HERE/app/current" prev="$HERE/app/prev"
+  [ -f "$tarball" ] || { warn "앱 묶음이 없습니다: $tarball"; return 1; }
+  if [ -f "$tarball.sha256" ]; then
+    (cd "$(dirname "$tarball")" && sha256sum --quiet -c "$(basename "$tarball").sha256") || { warn "앱 묶음 체크섬 불일치: $tarball"; return 1; }
+    ok "앱 묶음 체크섬 일치"
+  fi
+  rm -rf "$new"; mkdir -p "$new"
+  tar -xzf "$tarball" -C "$new" --strip-components=1 || { warn "앱 묶음을 풀지 못했습니다: $tarball"; rm -rf "$new"; return 1; }
+  [ -f "$new/VERSION.json" ] && [ -f "$new/docker/entrypoint.sh" ] && [ -d "$new/backend/app" ] \
+    || { warn "앱 묶음 내용이 올바르지 않습니다(VERSION.json·docker/entrypoint.sh·backend/app 필요): $tarball"; rm -rf "$new"; return 1; }
+  chmod +x "$new"/docker/*.sh
+  local newv curv
+  newv=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("build",""))' "$new/VERSION.json" 2>/dev/null || echo "")
+  curv=$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("build",""))' "$cur/VERSION.json" 2>/dev/null || echo "")
+  if [ -n "$newv" ] && [ "$newv" = "$curv" ]; then rm -rf "$new"; ok "앱 묶음 이미 적재됨 (build $newv)"; return 0; fi
+  if [ -d "$cur" ]; then rm -rf "$prev"; mv "$cur" "$prev"; fi
+  mv "$new" "$cur"
+  ok "앱 묶음 적재: $(app_version)$( [ -d "$prev" ] && printf ' (이전 build 는 app/prev — 되돌리기: ./update_app.sh --rollback)' )"
 }

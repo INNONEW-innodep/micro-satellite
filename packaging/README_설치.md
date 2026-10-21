@@ -1,7 +1,11 @@
 # WATERCAST 설치 안내 — 2세부 이노뎁 · 수체·수위 탐지 및 시계열 예측
 
-이 묶음은 **docker 이미지 + 런타임 데이터 + 스크립트**다. 소스를 빌드하지 않는다.
-설치는 `./install.sh` 한 번이고, 끝나면 스모크 테스트 18개가 자동으로 돈다.
+이 묶음은 **런타임 컨테이너 이미지 + 앱 바이너리(코드 묶음) + 런타임 데이터 + 스크립트**다. 소스를 빌드하지 않는다.
+설치는 `./install.sh` 한 번이고, 끝나면 스모크 테스트 18개가 자동으로 돈다. 배포 담당자용 명령 순서는 `배포_실행순서.md`.
+
+- `images/watercast-runtime-<버전>.tar.gz` — 런타임 이미지(python 3.11 + 의존성 + docker CLI). **앱 코드가 없다.** 의존성이 바뀔 때만 교체.
+- `app/watercast-app-<버전>-<빌드>.tar.gz` — 앱 바이너리(backend·화면·지역 자료·스크립트 + `VERSION.json`). `install.sh` 가 `app/current` 에 풀어
+  컨테이너 `/app` 에 마운트한다. **코드가 바뀌면 이 묶음만 받아 `./update_app.sh` 로 교체**한다(이미지 그대로, 1분).
 
 ## 1. 요구사항
 
@@ -26,8 +30,8 @@ cd watercast-<버전>-<날짜>
 ./install.sh
 ```
 
-`install.sh` 가 하는 일: 요구사항 확인 → 체크섬 확인 → `.env` 생성 → 이미지 `docker load` → `docker compose up -d`
-→ API 헬스 대기(최대 3분) → `smoke_test.sh`. 다시 실행해도 안전하다 (있는 `.env`·데이터는 그대로, 이미지는 다시 적재하지 않는다).
+`install.sh` 가 하는 일: 요구사항 확인 → 체크섬 확인 → `.env` 생성 → 런타임 이미지 `docker load` → 앱 묶음을 `app/current` 에 적재
+→ `docker compose up -d` → API 헬스 대기(최대 3분) → `smoke_test.sh`. 출력은 `logs/install_<시각>.log` 에도 남고 실패하면 멈춘 단계·명령과 볼 로그를 찍는다. 다시 실행해도 안전하다 (있는 `.env`·데이터는 그대로, 이미지는 다시 적재하지 않는다).
 
 끝나면 이렇게 뜬다.
 
@@ -44,7 +48,8 @@ cd watercast-<버전>-<날짜>
 |---|---|---|
 | `WATERCAST_API_PORT` · `WATERCAST_UI_PORT` · `WATERCAST_PIPE_PORT` | 18000 · 8501 · 8502 | 호스트 포트 |
 | `COMPOSE_PROFILES` | `demo` | 데모 UI 까지 띄움. 비우면 API·업무 UI 만 |
-| `KMA_API_KEY` | 비움 | 기상청 ASOS 키. 없으면 저장된 관측만 사용 |
+| `KMA_API_KEY` | 비움 | **선택.** 기상청 공공데이터포털 일반 인증키 — 과거 관측(ASOS)·단기예보를 새로 받을 때만. 없어도 예측·탐지·화면 전부 동작. 우리 API 자체는 인증이 없다 |
+| `WATERCAST_NAME` | watercast | 컨테이너 이름 접두. 같은 서버에 두 벌 띄울 때 바꾼다 |
 | `BACKEND_LIAISON_LOG_URL` | 비움 | 통합 플랫폼 알고리즘 로그 API. 비면 전송 안 함 |
 | `BACKEND_LIAISON_SYSTEM_CODE` · `BACKEND_LIAISON_ALGM_ID` | SC000000 · AG000000 | 수체탐지 코드. 통합 측 배정값으로 교체 |
 | `WITH_SMSS_NET` | 0 | 1 이면 3세부 공유 네트워크 오버레이(`docker-compose.smss-net.yml`)를 항상 덧붙인다 |
@@ -64,6 +69,8 @@ cd watercast-<버전>-<날짜>
 | `./start.sh` | 기동·재기동 (`.env` 반영) |
 | `./stop.sh` | 중지(데모 컨테이너 포함). 이미지·데이터는 남는다 |
 | `./smoke_test.sh` | 설치 확인 18개 다시 실행 |
+| `./postcheck.sh [--quick]` | **배포 후 확인** — 환경·설정·컨테이너·API·스모크를 점검하고 `logs/postcheck_<시각>.txt` 보고서. 실패 시 컨테이너 로그를 붙인다 |
+| `./update_app.sh app/<앱 묶음>.tar.gz` | **앱 바이너리 교체** — 이미지는 그대로, 코드만 교체 → 재기동 → 헬스 → 스모크. `--rollback` 으로 직전 build 복귀 |
 | `./uninstall.sh [--images] [--wbms-image] [--data]` | 제거. `--wbms-image` 는 공유될 수 있는 11 GB 이미지라 따로 지정. `--data` 는 잡 상태·규약 산출물·사용자 지역을 지운다 |
 | `WITH_SMSS_NET=1 ./start.sh` | 3세부 공유 네트워크에 붙여 기동(1회). 계속 붙여 두려면 `.env` 에 `WITH_SMSS_NET=1` 을 적는다 — 환경변수로만 주면 다음 `./start.sh` 때 오버레이 없이 재생성된다. 네트워크(`docker network create smss-net`)가 먼저 있어야 한다 |
 
@@ -169,6 +176,8 @@ nvidia-container-toolkit 필요, 없으면 자동으로 CPU). 잡의 `warnings` 
 
 ## 7. 문제가 생기면
 
+- **스크립트가 `✘ 실패: <명령> (<스크립트> N행)` 으로 멈춤**: 그 아래 로그 파일 경로와 컨테이너 로그 30줄이 찍힌다. `logs/` 의 해당 로그를 보낸다.
+- **앱 교체 뒤 이상**: `./update_app.sh --rollback` 으로 직전 build 복귀(`app/prev`).
 - **포트 사용 중** (`install.sh` 가 `호스트 포트 N 가 이미 사용 중` 으로 멈추거나 compose 가 `address already in use`): `.env` 포트를 바꾸고 `./start.sh`.
 - **API 가 3분 안에 안 뜸**: `docker compose logs --tail 100 watercast`.
 - **SELinux 로 마운트가 안 읽힘** (Rocky·RHEL, 스모크 3·4번 실패): `docker-compose.yml` 의 볼륨 세 줄 끝에 `:z` 를 붙이고 `./start.sh`
@@ -189,7 +198,10 @@ nvidia-container-toolkit 필요, 없으면 자동으로 CPU). 잡의 `warnings` 
 
 | 경로 | 내용 |
 |---|---|
-| `images/watercast-<버전>.tar.gz` | API + 업무 UI + 데모 UI 이미지. 지역 자료 7개 유역 내장 |
+| `images/watercast-runtime-<버전>.tar.gz` | 런타임 이미지(python + 의존성 + docker CLI). 앱 코드 없음 |
+| `app/watercast-app-<버전>-<빌드>.tar.gz` (+`.sha256`) | 앱 바이너리 — API·업무 UI·데모 UI 코드, 지역 자료 7개 유역, `VERSION.json`. `install.sh`/`update_app.sh` 가 `app/current` 에 푼다(이전 build 는 `app/prev`) |
+| `logs/` | 설치·교체·확인 로그와 보고서 |
+| `배포_실행순서.md` | 배포 담당자용 명령 순서·설정 항목·확인·교체·장애 대응 |
 | `data/wbms_runs/` | 탐지 캐시 마스크 18씬 GeoTIFF + meta + qc (부산 ICEYE 4 · PlanetScope 4, 대청 PlanetScope 10) |
 | `data/incoming/handover/` | 전처리 사이드카 JSON · 융합 LSTM 번들 · 기상 CSV |
 | `backend/data/` | 쓰기 디렉터리. 잡 상태 · 규약 산출물 · 사용자 지역 · 예측 결과 |

@@ -109,36 +109,43 @@ ssh -p 10322 ssteam@semyeongsoft.com \
 이것만 담고, 대용량 원본은 아래처럼 따로 올린다.
 (같은 이유로 `.dockerignore`에도 넣어 빌드 컨텍스트가 커지지 않게 했다.)
 
-## 설치 패키지로 배포 (2026-10-20 검증)
+## 설치 패키지로 배포 — 런타임 컨테이너 + 앱 바이너리 (2026-10-21)
 
-소스를 빌드하지 않고 **이미지 + 런타임 데이터 + 스크립트** 묶음으로 설치하는 경로. 다른 기관·현장 PC 에 주는 형태이며,
-2026-10-20 에 semyeongsoft 서버에서 운영본(18000)과 나란히 설치해 스모크 테스트 18/18 을 확인했다.
+소스를 빌드하지 않고 받는 쪽이 `./install.sh` 로 올리는 형태. 2026-10-21 부터 **런타임 이미지(의존성만)** 와 **앱 묶음(코드 + 지역 자료,
+`VERSION.json`)** 을 분리했다. 코드만 바뀌면 앱 묶음(약 90 MB)만 다시 만들어 `./update_app.sh` 로 교체하고, 의존성(requirements)이
+바뀔 때만 런타임 이미지를 다시 준다. 배포 담당자용 명령 순서는 `packaging/배포_실행순서.md`(패키지에 같이 들어간다).
 
 ```bash
-# 1) 패키지 만들기 (로컬, 저장소 루트, docker 필요 — 약 10분, 433 MB)
-scripts/package/build_release.sh                 # docker build → docker save → 데이터·스크립트·문서 → MANIFEST.json·SHA256SUMS
-#   --no-build    기존 watercast:<ver> 이미지 재사용      --with-wbms   실탐지 묶음(wbms:0.13 11 GB + 모델·전처리) 별도 tar
-ls dist/watercast-0.2.0-20261020.tar.gz
+# 1) 패키지 만들기 (로컬, 저장소 루트, docker 필요)
+scripts/package/build_release.sh                 # 런타임 이미지(--target runtime) → save, 앱 묶음, 데이터·스크립트·문서, MANIFEST·SHA256SUMS
+scripts/package/build_release.sh --app-only      # 앱 묶음만 dist/watercast-app-<ver>-<build>.tar.gz (+.sha256), 약 3초 — 코드 교체 배포용
+#   --no-build 기존 런타임 이미지 재사용   --with-wbms 실탐지 묶음(wbms:0.13 11 GB + 모델·전처리) 별도 tar
 
 # 2) 서버로 보내기
-scp -P 10322 dist/watercast-0.2.0-20261020.tar.gz ssteam@semyeongsoft.com:~/ssteam/pkg_test/
+scp -P 10322 dist/watercast-0.2.0-<날짜>.tar.gz ssteam@semyeongsoft.com:~/ssteam/pkg_test/
 
-# 3) 서버에서 설치 (받는 쪽은 docker·docker compose v2·python3·curl 만 있으면 된다)
-ssh -p 10322 ssteam@semyeongsoft.com
-cd ~/ssteam/pkg_test && tar -xzf watercast-0.2.0-20261020.tar.gz && cd watercast-0.2.0-20261020
-cp .env.example .env
-#   운영본과 나란히 띄울 때는 포트·이름을 바꾼다(운영본은 18000/8501/8502, watercast)
-sed -i 's/^WATERCAST_API_PORT=.*/WATERCAST_API_PORT=18100/; s/^WATERCAST_UI_PORT=.*/WATERCAST_UI_PORT=8511/; s/^WATERCAST_PIPE_PORT=.*/WATERCAST_PIPE_PORT=8512/; s/^WATERCAST_NAME=.*/WATERCAST_NAME=watercast-pkg/' .env
-#   KMA_API_KEY·RUN_AS(id -u:id -g)·BACKEND_LIAISON_* 도 여기서
-./install.sh            # 요구사항 → SHA256 → .env → docker load → compose up → 헬스 대기 → smoke_test.sh 18개
-./status.sh             # 상태        ./smoke_test.sh  다시 검사
-./stop.sh               # 중지(데이터·이미지 유지)      ./start.sh  재기동(.env 반영)
-./uninstall.sh --images # 제거(이미지까지), --data 면 잡 상태·산출물도
+# 3) 서버에서 설치 (docker·docker compose v2·python3·curl)
+cd ~/ssteam/pkg_test && tar -xzf watercast-0.2.0-<날짜>.tar.gz && cd watercast-0.2.0-<날짜>
+cp .env.example .env     # 포트·이름·RUN_AS(id -u:id -g)·KMA_API_KEY(선택)·BACKEND_LIAISON_*
+#   운영본과 나란히 띄울 때: 포트 18100/8511/8512, WATERCAST_NAME=watercast-pkg
+./install.sh             # 요구사항 → SHA256 → .env → 런타임 이미지 load → 앱 묶음 → compose up → 헬스 → 스모크 18개   (logs/install_*.log)
+./postcheck.sh           # 배포 후 확인 — 환경·설정·컨테이너·API·스모크 → logs/postcheck_*.txt (실패 시 컨테이너 로그 포함)
+
+# 4) 코드만 바뀐 앱 교체 (이미지 그대로)
+scp -P 10322 dist/watercast-app-0.2.0-<build>.tar.gz* ssteam@semyeongsoft.com:~/ssteam/pkg_test/watercast-0.2.0-<날짜>/app/
+./update_app.sh app/watercast-app-0.2.0-<build>.tar.gz   # 체크섬 → app/current 교체(이전은 app/prev) → 재기동 → 헬스 → 스모크
+./update_app.sh --rollback                               # 직전 build 로 복귀
+./status.sh  ./smoke_test.sh  ./stop.sh  ./start.sh  ./uninstall.sh --images
 ```
 
-- 패키지의 이미지 태그는 `watercast:0.2.0`(운영본은 `watercast:latest` 로 빌드) — 같은 서버에서 겹치지 않는다. 같은 태그가 이미 있으면 `install.sh` 는 적재를 건너뛰므로 새 패키지를 시험할 때는 `docker image rm watercast:0.2.0` 뒤에 설치한다.
-- 서버의 시험 설치는 `~/ssteam/pkg_test/watercast-0.2.0-20261020`(18100/8511/8512, 컨테이너 `watercast-pkg`·`watercast-pkg-pipeline`). 필요 없으면 그 디렉터리에서 `./stop.sh` 또는 `./uninstall.sh --images`.
-- 오류 응답은 모든 API 가 같은 봉투(`detail` + `error{status, code, message_ko, fields[], request_id, …}`, 헤더 `X-Request-ID`)로 답하고 `GET /api/v1/errors/recent` 에 최근 200건이 남는다. 서버 로그와는 `docker compose logs watercast | grep <request_id>` 로 맞춘다.
+- 패키지 구성: `images/watercast-runtime-<ver>.tar.gz`, `app/watercast-app-<ver>-<build>.tar.gz`(+`.sha256`), `data/`(탐지 캐시·사이드카), `backend/data/`(쓰기),
+  `src/`(호스트 러너), 스크립트 9개(`install/start/stop/status/smoke_test/postcheck/update_app/uninstall/detect_scene`), `README_설치.md`, `배포_실행순서.md`, `MANIFEST.json`, `SHA256SUMS`, `logs/`.
+- 컨테이너는 `./app/current` 를 `/app` 에 마운트해 실행한다(`working_dir: /app`, `entrypoint: ./docker/entrypoint.sh`). `GET /api/v1/health` 의 `build` 가 앱 묶음의
+  `VERSION.json`(version·build·git·runtime_image)을 보여 주므로 어떤 묶음이 돌고 있는지 바로 안다.
+- 런타임 이미지 태그는 `watercast-runtime:<ver>`(운영본은 `watercast:latest` 로 빌드) — 같은 서버에서 겹치지 않는다. 같은 태그가 이미 있으면 `install.sh` 는 적재를 건너뛴다.
+- 모든 스크립트는 `logs/<스크립트>_<시각>.log` 에 출력을 남기고, 실패하면 멈춘 명령·줄과 컨테이너 로그 30줄을 찍는다.
+- 오류 응답은 모든 API 가 같은 봉투(`detail` + `error{status, code, message_ko, fields[], request_id, …}`, 헤더 `X-Request-ID`)로 답하고 `GET /api/v1/errors/recent` 에 최근 200건이 남는다.
+- 서버의 시험 설치는 `~/ssteam/pkg_test/watercast-0.2.0-<날짜>`(18100/8511/8512, 컨테이너 `watercast-pkg`·`watercast-pkg-pipeline`). 내리려면 그 디렉터리에서 `./stop.sh` 또는 `./uninstall.sh --images`.
 
 ## 원본 SAR 데이터 (`data/`, 3.7 GB)
 
