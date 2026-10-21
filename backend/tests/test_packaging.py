@@ -44,8 +44,28 @@ def test_env_example_covers_every_variable_the_compose_reads() -> None:
 
 def test_image_version_tag_matches_backend_version() -> None:
     version = re.search(r'version: str = "([^"]+)"', (ROOT / "backend/app/config.py").read_text(encoding="utf-8")).group(1)
-    assert f"watercast:{version}" in (PKG / ".env.example").read_text(encoding="utf-8")
-    assert f"watercast:{version}" in (PKG / "docker-compose.yml").read_text(encoding="utf-8")
+    assert f"watercast-runtime:{version}" in (PKG / ".env.example").read_text(encoding="utf-8")
+    assert f"watercast-runtime:{version}" in (PKG / "docker-compose.yml").read_text(encoding="utf-8")
+    assert f"watercast-runtime:0.2.0" in (PKG / "common.sh").read_text(encoding="utf-8")  # build_release.sh 가 sed 로 바꾸는 기준 문자열
+
+
+def test_release_layout_runtime_image_plus_app_bundle() -> None:
+    """2026-10-21: 런타임 이미지(의존성만) + 앱 바이너리(app/current 마운트) 분리 — 코드만 바뀌면 묶음만 교체."""
+    release = (PKG / "docker-compose.yml").read_text(encoding="utf-8")
+    assert release.count("./app/current:/app") == 2 and "working_dir: /app" in release  # watercast · pipeline-ui 둘 다
+    dockerfile = (ROOT / "Dockerfile").read_text(encoding="utf-8")
+    assert "AS runtime" in dockerfile and "FROM runtime AS full" in dockerfile and dockerfile.index("AS runtime") < dockerfile.index("COPY . .")
+    build = (ROOT / "scripts/package/build_release.sh").read_text(encoding="utf-8")
+    assert "--target runtime" in build and "watercast-runtime-${VER}.tar.gz" in build and "--app-only" in build and "VERSION.json" in build
+    common = (PKG / "common.sh").read_text(encoding="utf-8")
+    assert "install_app_bundle()" in common and "start_log()" in common and "on_error()" in common
+    for name in ("update_app.sh", "postcheck.sh", "배포_실행순서.md"):
+        assert (PKG / name).exists(), name
+    assert "--rollback" in (PKG / "update_app.sh").read_text(encoding="utf-8")
+    assert "logs/postcheck_" in (PKG / "postcheck.sh").read_text(encoding="utf-8") or "postcheck_" in (PKG / "postcheck.sh").read_text(encoding="utf-8")
+    runbook = (PKG / "배포_실행순서.md").read_text(encoding="utf-8")
+    for key in ("install.sh", "postcheck.sh", "update_app.sh", "KMA_API_KEY", "RUN_AS", "인증이 없다", "05_l1_pre"):
+        assert key in runbook, key
 
 
 def test_readme_mentions_every_script_and_every_env_variable() -> None:
