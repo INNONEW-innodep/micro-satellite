@@ -4,6 +4,7 @@ import logging
 import os
 
 import json
+from pathlib import Path
 from datetime import date
 from typing import Annotated, Any, TypeVar
 
@@ -46,6 +47,19 @@ from .wbms.router import router as wbms_router
 from .wbms.runner import DockerRunner
 
 T = TypeVar("T")
+
+
+def app_build_info() -> dict[str, Any] | None:
+    """설치 패키지 앱 묶음의 ``VERSION.json``(저장소 루트) — 없으면 None(소스 실행)."""
+
+    path = Path(__file__).resolve().parents[2] / "VERSION.json"
+    if not path.is_file():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) else None
 
 
 def _ensure_logging() -> None:
@@ -133,6 +147,7 @@ def create_app(
             result_store=str(current_store.root),
             plugin_errors=current_registry.load_errors,
             store_errors=current_store.load_errors,
+            build=app_build_info(),
         )
 
     @app.get(

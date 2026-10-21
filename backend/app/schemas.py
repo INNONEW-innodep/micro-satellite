@@ -218,6 +218,8 @@ class HealthResponse(BaseModel):
     result_store: str
     plugin_errors: list[str] = Field(default_factory=list)
     store_errors: list[str] = Field(default_factory=list)
+    # 2026-10-21: 설치 패키지의 앱 묶음 정보(VERSION.json — version·build·git·built_at). 소스로 돌릴 때는 null
+    build: dict[str, Any] | None = None
 
 
 class WeatherObservationRequest(BaseModel):

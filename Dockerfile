@@ -12,8 +12,10 @@ RUN apt-get update \
     && /usr/local/bin/docker --version \
     && rm -rf /var/lib/apt/lists/*
 
-# ── 2단계: 런타임 이미지 ────────────────────────────────────────────────────────────
-FROM python:3.11-slim
+# ── 2단계: 런타임 이미지 (의존성만, 앱 코드 없음) ─────────────────────────────────────
+# 설치 패키지는 이 단계만 `docker build --target runtime` 으로 굽고, 앱 코드는 별도 묶음(app/watercast-app-*.tar.gz)을
+# 호스트 ./app/current 에 풀어 /app 에 마운트한다 — 코드만 바뀌면 이미지는 그대로 두고 묶음만 교체한다(2026-10-21).
+FROM python:3.11-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -37,6 +39,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 데몬으로 wbms 컨테이너를 띄운다(backend/app/wbms/runner.py). pip 레이어 뒤에 두어
 # 의존성 캐시를 깨지 않는다.
 COPY --from=docker-cli /usr/local/bin/docker /usr/local/bin/docker
+
+# ── 3단계: 앱 코드를 구운 전체 이미지 (개발 compose `build: .` 의 기본 대상) ───────────────────
+FROM runtime AS full
 
 COPY . .
 
