@@ -115,6 +115,7 @@ cp packaging/*.sh packaging/docker-compose.yml packaging/docker-compose.smss-net
 sed -i "s|watercast-runtime:0.2.0|$IMAGE|g" "$OUT/docker-compose.yml" "$OUT/.env.example" "$OUT/common.sh"
 cp packaging/README_설치.md "$OUT/README_설치.md"
 cp packaging/배포_실행순서.md "$OUT/배포_실행순서.md"
+cp packaging/패키지_안내.md "$OUT/패키지_안내.md"
 cp docs/liaison/연계정리_이노뎁_2세부_작성본.md "$OUT/연계정리_이노뎁_2세부.md"
 chmod +x "$OUT"/*.sh
 
