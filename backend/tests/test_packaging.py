@@ -57,10 +57,10 @@ def test_release_layout_runtime_image_plus_app_bundle() -> None:
     assert "AS runtime" in dockerfile and "FROM runtime AS full" in dockerfile and dockerfile.index("AS runtime") < dockerfile.index("COPY . .")
     build = (ROOT / "scripts/package/build_release.sh").read_text(encoding="utf-8")
     assert "--target runtime" in build and "watercast-runtime-${VER}.tar.gz" in build and "--app-only" in build and "VERSION.json" in build
-    assert "packaging/패키지_안내.md" in build and "packaging/배포_실행순서.md" in build  # 문서 두 장이 묶음에 들어간다
+    assert "packaging/패키지_안내.md" in build and "packaging/배포_실행순서.md" in build and "packaging/현장_배포_절차.md" in build  # 문서 세 장이 묶음에 들어간다
     common = (PKG / "common.sh").read_text(encoding="utf-8")
     assert "install_app_bundle()" in common and "start_log()" in common and "on_error()" in common
-    for name in ("update_app.sh", "postcheck.sh", "배포_실행순서.md", "패키지_안내.md"):
+    for name in ("update_app.sh", "postcheck.sh", "gpu_check.sh", "배포_실행순서.md", "패키지_안내.md", "현장_배포_절차.md"):
         assert (PKG / name).exists(), name
     assert "--rollback" in (PKG / "update_app.sh").read_text(encoding="utf-8")
     assert "logs/postcheck_" in (PKG / "postcheck.sh").read_text(encoding="utf-8") or "postcheck_" in (PKG / "postcheck.sh").read_text(encoding="utf-8")

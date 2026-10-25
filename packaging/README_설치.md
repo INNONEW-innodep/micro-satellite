@@ -69,6 +69,7 @@ cd watercast-<버전>-<날짜>
 | `./start.sh` | 기동·재기동 (`.env` 반영) |
 | `./stop.sh` | 중지(데모 컨테이너 포함). 이미지·데이터는 남는다 |
 | `./smoke_test.sh` | 설치 확인 18개 다시 실행 |
+| `./gpu_check.sh [--quick]` | **GPU 점검** — 호스트 드라이버 → nvidia-container-toolkit → 탐지 이미지 안 GPU → TensorFlow 인식 → 합성곱 실험 순으로 보고 `WBMS_GPU` 권장값을 낸다(새 세대 GPU 대비). 로그 `logs/gpu_check_*.log` |
 | `./postcheck.sh [--quick]` | **배포 후 확인** — 환경·설정·컨테이너·API·스모크를 점검하고 `logs/postcheck_<시각>.txt` 보고서. 실패 시 컨테이너 로그를 붙인다 |
 | `./update_app.sh app/<앱 묶음>.tar.gz` | **앱 바이너리 교체** — 이미지는 그대로, 코드만 교체 → 재기동 → 헬스 → 스모크. `--rollback` 으로 직전 build 복귀 |
 | `./uninstall.sh [--images] [--wbms-image] [--data]` | 제거. `--wbms-image` 는 공유될 수 있는 11 GB 이미지라 따로 지정. `--data` 는 잡 상태·규약 산출물·사용자 지역을 지운다 |
@@ -202,6 +203,7 @@ nvidia-container-toolkit 필요, 없으면 자동으로 CPU). 잡의 `warnings` 
 | `app/watercast-app-<버전>-<빌드>.tar.gz` (+`.sha256`) | 앱 바이너리 — API·업무 UI·데모 UI 코드, 지역 자료 7개 유역, `VERSION.json`. `install.sh`/`update_app.sh` 가 `app/current` 에 푼다(이전 build 는 `app/prev`) |
 | `logs/` | 설치·교체·확인 로그와 보고서 |
 | `배포_실행순서.md` | 배포 담당자용 명령 순서·설정 항목·확인·교체·장애 대응 |
+| `현장_배포_절차.md` | 새 서버(Ubuntu 24.04·새 세대 GPU)에 처음부터 올리는 순서 — 호스트 준비, GPU 판정 분기, 첫 장면 시험, 연계 값 |
 | `data/wbms_runs/` | 탐지 캐시 마스크 18씬 GeoTIFF + meta + qc (부산 ICEYE 4 · PlanetScope 4, 대청 PlanetScope 10) |
 | `data/incoming/handover/` | 전처리 사이드카 JSON · 융합 LSTM 번들 · 기상 CSV |
 | `backend/data/` | 쓰기 디렉터리. 잡 상태 · 규약 산출물 · 사용자 지역 · 예측 결과 |
