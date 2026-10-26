@@ -58,6 +58,14 @@ def test_release_layout_runtime_image_plus_app_bundle() -> None:
     build = (ROOT / "scripts/package/build_release.sh").read_text(encoding="utf-8")
     assert "--target runtime" in build and "watercast-runtime-${VER}.tar.gz" in build and "--app-only" in build and "VERSION.json" in build
     assert "packaging/패키지_안내.md" in build and "packaging/배포_실행순서.md" in build and "packaging/현장_배포_절차.md" in build  # 문서 세 장이 묶음에 들어간다
+    # 2026-10-26: 탐지 엔진(wbms 이미지·모델·입력 영상·보조자료)은 기본 포함 — 1세부 연동 패키지는 하나다. --lite 만 예외
+    assert "WITH_WBMS=1; BUILD=1" in build and "--lite" in build and "wbms-0.13.tar.gz" in build and "-detect.tar.gz" not in build
+    install = (PKG / "install.sh").read_text(encoding="utf-8")
+    assert "images -maxdepth 1 -name 'wbms-*.tar.gz'" in install and "DETECT=1" in install
+    postcheck = (PKG / "postcheck.sh").read_text(encoding="utf-8")
+    assert 'req "탐지 엔진 이미지 wbms:0.13"' in postcheck and "03_model" in postcheck
+    for doc in ("README_설치.md", "배포_실행순서.md", "현장_배포_절차.md", "패키지_안내.md"):
+        assert "-detect.tar.gz" not in (PKG / doc).read_text(encoding="utf-8"), doc
     common = (PKG / "common.sh").read_text(encoding="utf-8")
     assert "install_app_bundle()" in common and "start_log()" in common and "on_error()" in common
     for name in ("update_app.sh", "postcheck.sh", "gpu_check.sh", "배포_실행순서.md", "패키지_안내.md", "현장_배포_절차.md"):

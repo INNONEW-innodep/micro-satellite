@@ -7,15 +7,15 @@
 #   ./detect_scene.sh 20200302 --order-id 1 --scene-id 1 --work-id 1 --product-id ICEYE_X5_SLC_SM_23467_20200302T183857
 #   ./detect_scene.sh 20200302 --force               이미 탐지된(캐시) 장면을 다시 탐지. 없으면 완료 마커를 보고 건너뛴다
 #
-# 필요: images/wbms-0.13.tar.gz 적재(install.sh --with-wbms), data/incoming/handover 의 03_model·05_l1_pre·06_aux
-#       (실탐지 묶음에 포함). 산출: data/wbms_runs/wb/<yyyy>/<date>/WB_*.tif 와 backend/data/wbms_products/PT000003_*.tif
+# 필요: wbms:0.13 이미지(install.sh 가 패키지의 images/wbms-0.13.tar.gz 를 적재), data/incoming/handover 의 03_model·05_l1_pre·06_aux
+#       (패키지에 포함). 산출: data/wbms_runs/wb/<yyyy>/<date>/WB_*.tif 와 backend/data/wbms_products/PT000003_*.tif
 # 설치를 sudo 로 했으면 이것도 sudo 로 (backend/data/wbms_products 가 root 소유).
 . "$(dirname "$0")/common.sh"; load_env
 case "${1:-}" in ""|-h|--help) sed -n '2,12p' "$0"; exit 1;; esac
 DATE="$1"; shift
 [[ "$DATE" =~ ^[0-9]{8}$ ]] || fail "날짜는 YYYYMMDD 8자리입니다: $DATE"
-docker image inspect wbms:0.13 >/dev/null 2>&1 || fail "wbms:0.13 이미지가 없습니다 — ./install.sh --with-wbms"
-[ -d data/incoming/handover/03_model ] || fail "data/incoming/handover/03_model 이 없습니다 (실탐지 묶음 필요)"
+docker image inspect wbms:0.13 >/dev/null 2>&1 || fail "wbms:0.13 이미지가 없습니다 — ./install.sh (패키지의 images/wbms-0.13.tar.gz 적재)"
+[ -d data/incoming/handover/03_model ] || fail "data/incoming/handover/03_model 이 없습니다 (전체 패키지 필요 — lite 묶음에는 없음)"
 [ -f src/scripts/wbms_chain_runner.py ] || fail "src/scripts/wbms_chain_runner.py 가 없습니다 (패키지가 불완전)"
 export BACKEND_LIAISON_LOG_URL="${BACKEND_LIAISON_LOG_URL:-}" \
        BACKEND_LIAISON_SYSTEM_CODE="${BACKEND_LIAISON_SYSTEM_CODE:-SC000000}" \

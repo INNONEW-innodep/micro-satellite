@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # WATERCAST 설치 — 런타임 이미지 적재 → 앱 묶음(바이너리) 적재 → 설정 → 기동 → 상태 확인 → 스모크 테스트.
 #
-#   ./install.sh               기본 설치 (API·업무 UI, 데모 화면 포함)
-#   ./install.sh --with-wbms   실탐지용 wbms 이미지(11 GB)까지 적재
+#   ./install.sh               설치 (API·화면·수위 예측 + 탐지 엔진 wbms 이미지가 묶음에 있으면 자동 적재)
 #   ./install.sh --no-smoke    설치 후 스모크 테스트 생략
+#   ./install.sh --with-wbms   (예전 옵션, 이제 기본 동작 — 묶음에 images/wbms-*.tar.gz 가 있으면 항상 적재)
 #   WITH_SMSS_NET=1 ./install.sh   3세부 공유 네트워크(smss-net)에 붙여 기동 (.env 에 적어 두면 계속 유지)
 #
 # 다시 실행해도 안전하다(이미 있는 .env·데이터·같은 build 의 앱은 건드리지 않는다).
@@ -60,16 +60,22 @@ else
   docker image inspect "$IMAGE" >/dev/null 2>&1 || fail "적재 후에도 $IMAGE 가 없습니다 — .env 의 WATERCAST_IMAGE 와 tar 안의 태그(위 'Loaded image:')를 맞추세요"
   ok "$IMAGE 적재"
 fi
-if [ "$WITH_WBMS" = "1" ]; then
-  if docker image inspect wbms:0.13 >/dev/null 2>&1; then ok "wbms:0.13 이미 있음"
-  else
-    wb=$(find images -maxdepth 1 -name 'wbms-*.tar.gz' 2>/dev/null | sort | head -1 || true)
-    [ -n "$wb" ] || fail "images/wbms-*.tar.gz 가 없습니다 (실탐지 묶음은 별도 전달)"
-    log "  docker load -i $wb (11 GB, 10분 이상, 진행 표시 없음)"
-    docker load -i "$wb"
-    docker image inspect wbms:0.13 >/dev/null 2>&1 || fail "적재 후에도 wbms:0.13 이 없습니다"
-    ok "wbms:0.13 적재"
-  fi
+# 탐지 엔진 이미지 — 묶음에 있으면 항상 적재한다(1세부 연동 패키지의 기본). lite 묶음에는 없다.
+wb=$(find images -maxdepth 1 -name 'wbms-*.tar.gz' 2>/dev/null | sort | head -1 || true)
+if docker image inspect wbms:0.13 >/dev/null 2>&1; then
+  ok "탐지 엔진 wbms:0.13 이미 있음"; DETECT=1
+elif [ -n "$wb" ]; then
+  log "  docker load -i $wb (11 GB, 10분 이상, 진행 표시 없음)"
+  docker load -i "$wb"
+  docker image inspect wbms:0.13 >/dev/null 2>&1 || fail "적재 후에도 wbms:0.13 이 없습니다"
+  ok "탐지 엔진 wbms:0.13 적재"; DETECT=1
+else
+  [ "$WITH_WBMS" = "1" ] && fail "images/wbms-*.tar.gz 가 없습니다 — 탐지 엔진이 든 전체 패키지가 필요합니다"
+  warn "탐지 엔진 이미지가 묶음에 없음(lite 묶음) — 새 영상 탐지는 안 되고 캐시된 장면만 보입니다"; DETECT=0
+fi
+if [ "$DETECT" = "1" ]; then
+  [ -d data/incoming/handover/03_model ] && ok "탐지 모델 가중치 data/incoming/handover/03_model" || warn "탐지 모델 가중치(03_model)가 없습니다 — 새 영상 탐지가 실패합니다"
+  n_pre=$(find data/incoming/handover/05_l1_pre -name 'Pre_*.tif' 2>/dev/null | wc -l); ok "전처리 입력 영상 $n_pre 장 (새 영상은 같은 위치에 넣는다)"
 fi
 
 log "5/7 앱 묶음(바이너리) 적재 → app/current"
@@ -97,7 +103,7 @@ log "7/7 확인"
 if [ "$RUN_SMOKE" = "1" ]; then ./smoke_test.sh; fi
 cat <<MSG
 
-설치 완료  (앱 $(app_version))
+설치 완료  (앱 $(app_version) · 탐지 엔진 $( [ "${DETECT:-0}" = "1" ] && echo "wbms:0.13 준비됨 — GPU 판정은 ./gpu_check.sh" || echo "없음(lite)"))
   API 문서   http://<이 서버>:${API_PORT}/docs        (인증 없음 — 바로 호출)
   업무 UI    http://<이 서버>:${UI_PORT}/
   간단 화면  http://<이 서버>:${API_PORT}/simple

@@ -1,9 +1,10 @@
 # WATERCAST 설치 안내 — 2세부 이노뎁 · 수체·수위 탐지 및 시계열 예측
 
-이 묶음은 **런타임 컨테이너 이미지 + 앱 바이너리(코드 묶음) + 런타임 데이터 + 스크립트**다. 소스를 빌드하지 않는다.
+이 묶음은 2세부 서비스 전체 — **플랫폼 런타임 이미지 + 앱 바이너리(코드 묶음) + 수체 탐지 엔진(wbms 이미지·모델·보조자료) + 데이터 + 스크립트**다. 소스를 빌드하지 않는다. 1세부가 새 위성 영상을 보내면 탐지 → 면적 → 수위 → 예측까지 이 묶음 하나로 돈다.
 설치는 `./install.sh` 한 번이고, 끝나면 스모크 테스트 18개가 자동으로 돈다. 배포 담당자용 명령 순서는 `배포_실행순서.md`.
 
-- `images/watercast-runtime-<버전>.tar.gz` — 런타임 이미지(python 3.11 + 의존성 + docker CLI). **앱 코드가 없다.** 의존성이 바뀔 때만 교체.
+- `images/watercast-runtime-<버전>.tar.gz` — 플랫폼 런타임 이미지(python 3.11 + 의존성 + docker CLI). **앱 코드가 없다.** 의존성이 바뀔 때만 교체.
+- `images/wbms-0.13.tar.gz` — 수체 탐지 엔진 이미지(11 GB) + `data/incoming/handover/{03_model,05_l1_pre,06_aux}`(모델 가중치·전처리 입력 영상·보조자료). `install.sh` 가 자동 적재한다. 탐지 재빌드본을 받으면 이미지만 교체.
 - `app/watercast-app-<버전>-<빌드>.tar.gz` — 앱 바이너리(backend·화면·지역 자료·스크립트 + `VERSION.json`). `install.sh` 가 `app/current` 에 풀어
   컨테이너 `/app` 에 마운트한다. **코드가 바뀌면 이 묶음만 받아 `./update_app.sh` 로 교체**한다(이미지 그대로, 1분).
 
@@ -15,7 +16,7 @@
 | docker | 24 이상, `docker compose` v2 플러그인 |
 | python3 | 3.9 이상. 표준 라이브러리만 쓴다. 스모크 테스트·실탐지 러너용 |
 | tar, curl, sha256sum | 묶음 풀기·설치 스크립트가 쓴다 |
-| 디스크 | 기본 묶음: tar 약 0.45 GB, 풀고 이미지(1.1 GB)까지 적재하면 약 2 GB. 실탐지 묶음을 더하면 약 45 GB 추가(wbms 이미지 11 GB + 모델·전처리·보조자료 32 GB. 받은 tar 를 지우기 전까지는 그만큼 더) |
+| 디스크 | 전체 패키지: tar 약 40 GB, 풀고 이미지(런타임 1 GB + 탐지 11 GB)까지 적재하면 약 90 GB. lite 묶음(탐지 엔진 제외)은 2 GB(wbms 이미지 11 GB + 모델·전처리·보조자료 32 GB. 받은 tar 를 지우기 전까지는 그만큼 더) |
 | 포트 | 18000 API · 8501 업무 UI · 8502 데모 UI. 겹치면 `.env` 에서 바꾼다 |
 | GPU | 필요 없음. 실탐지를 GPU 로 돌릴 때만 NVIDIA 드라이버 + nvidia-container-toolkit |
 
@@ -30,7 +31,7 @@ cd watercast-<버전>-<날짜>
 ./install.sh
 ```
 
-`install.sh` 가 하는 일: 요구사항 확인 → 체크섬 확인 → `.env` 생성 → 런타임 이미지 `docker load` → 앱 묶음을 `app/current` 에 적재
+`install.sh` 가 하는 일: 요구사항 확인 → 체크섬 확인 → `.env` 생성 → 런타임 이미지·탐지 엔진 이미지 `docker load` → 앱 묶음을 `app/current` 에 적재
 → `docker compose up -d` → API 헬스 대기(최대 3분) → `smoke_test.sh`. 출력은 `logs/install_<시각>.log` 에도 남고 실패하면 멈춘 단계·명령과 볼 로그를 찍는다. 다시 실행해도 안전하다 (있는 `.env`·데이터는 그대로, 이미지는 다시 적재하지 않는다).
 
 끝나면 이렇게 뜬다.
@@ -72,7 +73,7 @@ cd watercast-<버전>-<날짜>
 | `./gpu_check.sh [--quick]` | **GPU 점검** — 호스트 드라이버 → nvidia-container-toolkit → 탐지 이미지 안 GPU → TensorFlow 인식 → 합성곱 실험 순으로 보고 `WBMS_GPU` 권장값을 낸다(새 세대 GPU 대비). 로그 `logs/gpu_check_*.log` |
 | `./postcheck.sh [--quick]` | **배포 후 확인** — 환경·설정·컨테이너·API·스모크를 점검하고 `logs/postcheck_<시각>.txt` 보고서. 실패 시 컨테이너 로그를 붙인다 |
 | `./update_app.sh app/<앱 묶음>.tar.gz` | **앱 바이너리 교체** — 이미지는 그대로, 코드만 교체 → 재기동 → 헬스 → 스모크. `--rollback` 으로 직전 build 복귀 |
-| `./uninstall.sh [--images] [--wbms-image] [--data]` | 제거. `--wbms-image` 는 공유될 수 있는 11 GB 이미지라 따로 지정. `--data` 는 잡 상태·규약 산출물·사용자 지역을 지운다 |
+| `./uninstall.sh [--images] [--wbms-image] [--data]` | 제거. `--wbms-image` 는 탐지 엔진 11 GB 이미지(다른 작업과 공유될 수 있어 따로 지정). `--data` 는 잡 상태·규약 산출물·사용자 지역을 지운다 |
 | `WITH_SMSS_NET=1 ./start.sh` | 3세부 공유 네트워크에 붙여 기동(1회). 계속 붙여 두려면 `.env` 에 `WITH_SMSS_NET=1` 을 적는다 — 환경변수로만 주면 다음 `./start.sh` 때 오버레이 없이 재생성된다. 네트워크(`docker network create smss-net`)가 먼저 있어야 한다 |
 
 ## 4-0. 화면 세 가지
@@ -125,38 +126,35 @@ cd watercast-<버전>-<날짜>
 `PT000003_{product_id}.tif` 사본을 `backend/data/wbms_products/` 에 만든다. 알고리즘 로그는
 `.env` 의 `BACKEND_LIAISON_LOG_URL` 이 있을 때 대기·진행·완료·에러 4종을 JSON 으로 POST 한다.
 
-## 6. 실탐지 (새 장면)
+## 6. 새 영상 탐지
 
-API 컨테이너가 호스트 docker 소켓(`/var/run/docker.sock`, compose 에 들어 있다)으로 `wbms:0.13` 을 직접
-띄우므로 **캐시에 없는 장면이나 `force: true` 탐지 잡은 API 가 스스로 탐지한다**. 실탐지 묶음(별도 tar)과
-`./install.sh --with-wbms` 는 여전히 필요하다(이미지 11 GB + 모델·전처리·보조자료).
+탐지 엔진(wbms:0.13 이미지·모델·보조자료)은 이 패키지에 들어 있고 `install.sh` 가 적재한다. API 컨테이너가 호스트 docker 소켓
+(`/var/run/docker.sock`, compose 에 들어 있다)으로 wbms 컨테이너를 직접 띄우므로 **새 영상을 올리면 API 가 스스로 탐지한다.**
 
 ```bash
-cd watercast-<버전>-<날짜>                                        # 기본 패키지 디렉터리 안에서
-tar -xzf ../watercast-<버전>-<날짜>-detect.tar.gz --strip-components=1   # images/ 와 data/ 가 합쳐진다
-./install.sh --with-wbms                                         # wbms:0.13 이미지 적재 (11 GB)
-curl -s -X POST http://localhost:18000/api/v1/wbms/segmentation/jobs -H 'Content-Type: application/json' \
-  -d '{"sensor":"iceye","testbed":"busan","image_date":"20200302","force":true}'    # 202 + job_id
-curl -s http://localhost:18000/api/v1/wbms/segmentation/jobs/<job_id>              # status 가 succeeded/failed 될 때까지 폴링
+./gpu_check.sh                                                   # GPU 로 돌릴 수 있는지 판정(없거나 실패하면 CPU, 장면당 10분 내외)
+curl -s -X POST http://localhost:18000/api/v1/scenes -F region_id=nakdong_busan -F sensor=ICEYE -F image_date=2020-04-16 \
+  -F acquisition_time=183630 -F pre_path=/app/data/incoming/handover/05_l1_pre/iceye_pre/2020/20200416/Pre_Busan_ICEYE_20200416T183630.tif \
+  -F order_id=21 -F scene_id=5 -F work_id=W-21                     # 장면 파이프라인(탐지→면적→수위→예측→납품) 접수
+curl -s http://localhost:18000/api/v1/scenes/20200416_ICEYE        # 단계별 진행·경고 (detect 단계 시간으로 GPU/CPU 구분)
 ```
 
-`.env` 의 세 값이 이 경로를 조정한다 — `HOST_ROOT`(패키지 디렉터리 절대경로. 비우면 `./start.sh` 를 실행한
-디렉터리라 보통 그대로 둔다), `RUN_AS`(산출물 소유자 uid:gid. `data/wbms_runs` 소유자와 같아야 쓸 수 있다),
-`WBMS_GPU`(auto: 여유 VRAM 3000 MiB 이상이면 GPU 30~60초, 아니면 CPU 10분 내외. GPU 는 NVIDIA 드라이버 +
-nvidia-container-toolkit 필요, 없으면 자동으로 CPU). 잡의 `warnings` 에 CPU 폴백 사유가 남는다.
-소켓은 컨테이너에 호스트 docker 권한을 주므로 내부망 서버 전제다 — 빼려면 compose 의 `/var/run/docker.sock`
-줄을 지운다(그러면 탐지 잡은 캐시된 장면만 답한다).
+새 영상은 전처리 결과 `data/incoming/handover/05_l1_pre/<센서>_pre/<yyyy>/<yyyymmdd>/Pre_Busan_<센서>_<yyyymmdd>T<시각>.tif` 에 두고
+`pre_path=/app/data/incoming/...` 로 부르거나, `pre_file` 로 업로드한다(그러면 경로가 필요 없다). `/simple` 화면의 "새 영상 올리기"도 같은 일을 한다.
+
+`.env` 의 세 값이 탐지 실행을 조정한다 — `HOST_ROOT`(패키지 디렉터리 절대경로. 비우면 `./start.sh` 를 실행한 디렉터리라 보통 그대로),
+`RUN_AS`(산출물 소유자 uid:gid. `data/wbms_runs` 소유자와 같아야 쓸 수 있다), `WBMS_GPU`(auto: GPU 가 되면 GPU 30~60초, 안 되면 CPU 10분 내외.
+GPU 실행이 실패해도 CPU 로 자동 재시도). 잡의 `warnings`·`gpu_fallback` 에 CPU 사유가 남는다.
+소켓은 컨테이너에 호스트 docker 권한을 주므로 내부망 서버 전제다 — 빼려면 compose 의 `/var/run/docker.sock` 줄을 지운다(그러면 탐지 잡은 캐시된 장면만 답한다).
 
 호스트에서 직접 돌리는 대안(소켓을 뺐거나 API 를 거치지 않을 때):
 
 ```bash
-./detect_scene.sh 20200302 --force                       # CPU 10분 내외. 기본 묶음에 든 8장면은 이미 캐시라 --force 없이는 건너뛴다
+./detect_scene.sh 20200302 --force                       # CPU 10분 내외. 묶음에 든 장면은 이미 캐시라 --force 없이는 건너뛴다
 ./detect_scene.sh 20200302 --force --gpu auto --order-id 1 --scene-id 1 --work-id 1
 ```
 
 산출: `data/wbms_runs/wb/<yyyy>/<date>/WB_*.tif` 와 `backend/data/wbms_products/PT000003_*.tif`.
-그 뒤 API 의 탐지 잡은 이 장면을 캐시로 즉시 반환한다. 새 장면은 전처리 결과
-`data/incoming/handover/05_l1_pre/<센서>_pre/<yyyy>/<date>/Pre_Busan_<센서>_<date>T<시각>.tif` 가 있어야 한다.
 
 ## 6-1. 오류 응답 읽는 법 (2026-10-20)
 
@@ -186,7 +184,7 @@ nvidia-container-toolkit 필요, 없으면 자동으로 CPU). 잡의 `warnings` 
   compose 파일은 체크섬 검사에서 제외라 `./install.sh` 를 다시 돌려도 된다.
   호스트 실탐지(`detect_scene.sh`)의 `docker run` 마운트에는 `:z` 가 없으니 그때도 막히면 `chcon -Rt container_file_t data backend/data`.
 - **체크섬 불일치**: 전송이 깨진 것. 다시 받는다.
-- **탐지 잡이 422 `no ① Pre_*.tif found …`**: 그 장면의 전처리 입력이 없다 — 실탐지 묶음을 6절대로 풀었는지 확인.
+- **탐지 잡이 422 `no ① Pre_*.tif found …`**: 그 장면의 전처리 입력이 `data/incoming/handover/05_l1_pre/...` 에 없다 — 6절의 경로 규칙대로 두었는지 확인.
 - **탐지 잡이 `failed` 에 `docker executable not found` 또는 `Cannot connect to the Docker daemon`**: compose 의
   `/var/run/docker.sock` 줄이 빠졌거나 소켓 경로가 다르다(`docker context ls`). 임시로는 `./detect_scene.sh` 로 호스트에서 탐지한다.
 - **탐지 잡이 `failed` 에 `/out` 쓰기 `Permission denied`**: `.env` 의 `RUN_AS` 가 `data/wbms_runs` 소유자와 다르다.
@@ -199,13 +197,14 @@ nvidia-container-toolkit 필요, 없으면 자동으로 CPU). 잡의 `warnings` 
 
 | 경로 | 내용 |
 |---|---|
-| `images/watercast-runtime-<버전>.tar.gz` | 런타임 이미지(python + 의존성 + docker CLI). 앱 코드 없음 |
+| `images/watercast-runtime-<버전>.tar.gz` | 플랫폼 런타임 이미지(python + 의존성 + docker CLI). 앱 코드 없음 |
+| `images/wbms-0.13.tar.gz` | 수체 탐지 엔진 이미지(시립대 인수, TF 2.14·CUDA 11.8, 11 GB). lite 묶음에는 없음 |
 | `app/watercast-app-<버전>-<빌드>.tar.gz` (+`.sha256`) | 앱 바이너리 — API·업무 UI·데모 UI 코드, 지역 자료 7개 유역, `VERSION.json`. `install.sh`/`update_app.sh` 가 `app/current` 에 푼다(이전 build 는 `app/prev`) |
 | `logs/` | 설치·교체·확인 로그와 보고서 |
 | `배포_실행순서.md` | 배포 담당자용 명령 순서·설정 항목·확인·교체·장애 대응 |
 | `현장_배포_절차.md` | 새 서버(Ubuntu 24.04·새 세대 GPU)에 처음부터 올리는 순서 — 호스트 준비, GPU 판정 분기, 첫 장면 시험, 연계 값 |
 | `data/wbms_runs/` | 탐지 캐시 마스크 18씬 GeoTIFF + meta + qc (부산 ICEYE 4 · PlanetScope 4, 대청 PlanetScope 10) |
-| `data/incoming/handover/` | 전처리 사이드카 JSON · 융합 LSTM 번들 · 기상 CSV |
+| `data/incoming/handover/` | 탐지 모델 가중치(03_model) · 전처리 입력 영상 22장(05_l1_pre) · 보조자료 DEM 등(06_aux) · 융합 LSTM 번들 · 기상 CSV |
 | `backend/data/` | 쓰기 디렉터리. 잡 상태 · 규약 산출물 · 사용자 지역 · 예측 결과 |
 | `src/` | 호스트 실탐지 러너와 연계 모듈 |
 | `연계정리_이노뎁_2세부.md` | 기관 간 연계 시트 작성본 · API 목록 · 로그 포맷 대응 |

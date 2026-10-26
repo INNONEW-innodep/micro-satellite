@@ -117,9 +117,9 @@ ssh -p 10322 ssteam@semyeongsoft.com \
 
 ```bash
 # 1) 패키지 만들기 (로컬, 저장소 루트, docker 필요)
-scripts/package/build_release.sh                 # 런타임 이미지(--target runtime) → save, 앱 묶음, 데이터·스크립트·문서, MANIFEST·SHA256SUMS
+scripts/package/build_release.sh                 # 런타임 이미지(--target runtime) → save, 앱 묶음, 탐지 엔진(wbms 이미지·모델·입력 영상·보조자료), 데이터·스크립트·문서, MANIFEST·SHA256SUMS — 약 40 GB
 scripts/package/build_release.sh --app-only      # 앱 묶음만 dist/watercast-app-<ver>-<build>.tar.gz (+.sha256), 약 3초 — 코드 교체 배포용
-#   --no-build 기존 런타임 이미지 재사용   --with-wbms 실탐지 묶음(wbms:0.13 11 GB + 모델·전처리) 별도 tar
+#   --no-build 기존 런타임 이미지 재사용   --lite 탐지 엔진(wbms:0.13 11 GB + 모델·전처리·보조자료)을 뺀 시연용 0.5 GB 묶음. 기본은 탐지 엔진 포함 약 40 GB
 
 # 2) 서버로 보내기
 scp -P 10322 dist/watercast-0.2.0-<날짜>.tar.gz ssteam@semyeongsoft.com:~/ssteam/pkg_test/
@@ -447,19 +447,19 @@ curl -X POST http://localhost:18000/api/v1/regions/nakdong_busan/gauge/train \
 `…/jobs/{job_id}/files/{name}`, `GET /api/v1/regions/{id}/satellite/scenes/{scene_id}/mask`;
 `GET …/satellite/levels` 와 `…/satellite/area-series` 에 `start`·`end` 기간 필터.
 
-## 설치 패키지 만들기 (다른 기관에 전달, 2026-10-01)
+## 설치 패키지 만들기 (다른 기관에 전달 — 2026-10-01 시작, 2026-10-26 탐지 엔진 포함 단일 묶음)
 
-소스 빌드 없이 `docker load` 로 올리는 묶음. 템플릿은 `packaging/`, 빌더는 `scripts/package/build_release.sh`.
+소스 빌드 없이 `docker load` 로 올리는 묶음. 템플릿은 `packaging/`, 빌더는 `scripts/package/build_release.sh`. 위 "설치 패키지로 배포" 절이 최신 절차다.
 
 ```bash
-scripts/package/build_release.sh               # dist/watercast-<ver>-<날짜>.tar.gz  (약 430 MB)
-scripts/package/build_release.sh --with-wbms   # + dist/…-detect.tar.gz  실탐지 묶음 (wbms:0.13 + 모델·전처리·보조자료, 약 23 GB)
-scripts/package/build_release.sh --no-build    # 이미지는 그대로, 스크립트·데이터만 다시 묶기
+scripts/package/build_release.sh               # dist/watercast-<ver>-<날짜>.tar.gz  약 40 GB — 런타임 이미지 + 앱 묶음 + 탐지 엔진(wbms:0.13·모델·입력 영상·보조자료)
+scripts/package/build_release.sh --app-only    # 앱 묶음만 (코드 교체 배포용)
+scripts/package/build_release.sh --lite        # 탐지 엔진을 뺀 시연용 0.5 GB 묶음 (새 영상 탐지 불가)
+scripts/package/build_release.sh --no-build    # 런타임 이미지는 그대로, 나머지만 다시 묶기
 ```
 
-받는 쪽은 `tar -xzf` 뒤 `./install.sh` 한 번이다(요구사항 확인 → 체크섬 → .env → load → up → 헬스 → 스모크 10개).
-실탐지는 `-detect` 묶음을 `--strip-components=1` 로 겹쳐 푼 뒤 `./install.sh --with-wbms`, `./detect_scene.sh <YYYYMMDD> --force`.
-자세한 것은 `packaging/README_설치.md`. 묶음 내용·검증 기록은 작업로그 6-13절.
+받는 쪽은 `tar -xzf` 뒤 `./install.sh` 한 번이다(요구사항 확인 → 체크섬 → .env → 런타임·탐지 이미지 load → 앱 묶음 → up → 헬스 → 스모크 18개),
+이어서 `./postcheck.sh`(30개 점검)·`./gpu_check.sh`(GPU 판정). 자세한 것은 `packaging/README_설치.md`·`배포_실행순서.md`·`현장_배포_절차.md`.
 
 주의: 패키지 compose 는 `packaging/docker-compose.yml` 로 따로 있다. 개발 compose 에 환경변수를 더하면
 `backend/tests/test_packaging.py` 가 패키지 compose 에도 있는지 검사한다. `.dockerignore` 가 DEPLOY.md·docs·packaging 을

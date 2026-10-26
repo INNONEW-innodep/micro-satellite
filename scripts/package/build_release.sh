@@ -1,29 +1,28 @@
 #!/usr/bin/env bash
-# WATERCAST 설치 패키지 빌드 — 다른 기관이 받아서 docker 로 올리는 묶음을 dist/ 에 만든다.
+# WATERCAST 설치 패키지 빌드 — 2세부(이노뎁) 수체 탐지 + 수위·시계열 예측 서비스를 다른 기관(1세부·3세부·현장)이 받아서 docker 로 올리는 묶음.
 #
-# 구성(2026-10-21): "런타임 컨테이너 + 앱 바이너리" 분리
-#   images/watercast-runtime-<ver>.tar.gz      python 3.11 + 의존성 + docker CLI (앱 코드 없음) — 의존성이 바뀔 때만 교체
-#   app/watercast-app-<ver>-<stamp>.tar.gz     앱 코드 묶음(backend·ui_next·pipeline_ui·regions·scripts·docker 진입점 + VERSION.json)
-#                                              코드가 바뀌면 이것만 다시 만들어 ./update_app.sh 로 교체
+# 구성(2026-10-26): 패키지 하나에 **탐지 엔진까지 전부** 들어간다 — "런타임 컨테이너 + 앱 바이너리 + 탐지 엔진 + 데이터"
+#   images/watercast-runtime-<ver>.tar.gz      플랫폼 런타임 이미지(python 3.11 + 의존성 + docker CLI, 앱 코드 없음) — 의존성이 바뀔 때만 교체
+#   images/wbms-0.13.tar.gz                    수체 탐지 엔진 이미지(시립대 인수, TF 2.14·CUDA 11.8, 11 GB) — 재빌드본을 받으면 교체
+#   app/watercast-app-<ver>-<stamp>.tar.gz     앱 바이너리(backend·화면·지역 자료·스크립트 + VERSION.json) — 코드가 바뀌면 이것만 ./update_app.sh
+#   data/incoming/handover/03_model|05_l1_pre|06_aux   탐지 모델 가중치 · 전처리 입력 영상 · 보조자료(DEM 등, 정답 라벨 제외)
+#   data/wbms_runs/                            이미 탐지한 장면의 마스크 캐시
 #
-#   scripts/package/build_release.sh                 기본 묶음 (런타임 이미지 + 앱 묶음 + 런타임 데이터 + 스크립트)
-#   scripts/package/build_release.sh --app-only      앱 묶음만 dist/ 에 (코드 교체 배포용, 1분)
-#   scripts/package/build_release.sh --with-wbms     + 실탐지 묶음 (wbms:0.13 이미지 11 GB, 모델·전처리·보조자료 28 GB)
+#   scripts/package/build_release.sh                 전체 패키지 (약 40 GB, 수십 분)  → dist/watercast-<ver>-<yyyymmdd>.tar.gz
+#   scripts/package/build_release.sh --app-only      앱 묶음만 dist/ 에 (코드 교체 배포용, 수 초)
+#   scripts/package/build_release.sh --lite          탐지 엔진·입력 영상을 뺀 작은 묶음(0.5 GB) — 화면·예측 시연 전용, 새 영상 탐지는 안 됨
 #   scripts/package/build_release.sh --no-build      런타임 이미지를 다시 빌드하지 않고 기존 태그 사용
-#
-# 산출: dist/watercast-<ver>-<yyyymmdd>/ 와 dist/watercast-<ver>-<yyyymmdd>.tar.gz (실탐지 묶음은 별도 tar),
-#       --app-only 는 dist/watercast-app-<ver>-<stamp>.tar.gz (+ .sha256)
 set -euo pipefail
 REPO="$(cd "$(dirname "$0")/../.." && pwd)"; cd "$REPO"
 VER=$(python3 -c "import re;print(re.search(r'version: str = \"([^\"]+)\"', open('backend/app/config.py').read()).group(1))")
 STAMP=$(date +%Y%m%d)
 BUILD_ID=$(date +%Y%m%d%H%M%S)
 NAME="watercast-${VER}-${STAMP}"
-OUT="dist/${NAME}"
+OUT="dist/${NAME}"  # --lite 는 아래에서 이름을 바꾼다
 IMAGE="watercast-runtime:${VER}"
 GIT=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)
-WITH_WBMS=0; BUILD=1; APP_ONLY=0
-for arg in "$@"; do case "$arg" in --with-wbms) WITH_WBMS=1;; --no-build) BUILD=0;; --app-only) APP_ONLY=1;; *) echo "알 수 없는 인자 $arg" >&2; exit 2;; esac; done
+WITH_WBMS=1; BUILD=1; APP_ONLY=0
+for arg in "$@"; do case "$arg" in --lite) WITH_WBMS=0;; --with-wbms) WITH_WBMS=1;; --no-build) BUILD=0;; --app-only) APP_ONLY=1;; *) echo "알 수 없는 인자 $arg" >&2; exit 2;; esac; done
 log() { printf '\033[1;34m[build]\033[0m %s\n' "$*"; }
 
 # ── 앱 묶음 ────────────────────────────────────────────────────────────────
@@ -70,7 +69,8 @@ if [ "$APP_ONLY" = "1" ]; then
   exit 0
 fi
 
-log "패키지 $NAME → $OUT"
+if [ "$WITH_WBMS" = "0" ]; then NAME="${NAME}-lite"; OUT="dist/${NAME}"; fi
+log "패키지 $NAME → $OUT $( [ "$WITH_WBMS" = "1" ] && echo "(탐지 엔진 포함)" || echo "(lite — 탐지 엔진 제외)")"
 rm -rf "$OUT"; mkdir -p "$OUT"/{images,app,data,backend/data,src,logs}
 
 # ── 1. 런타임 이미지 ───────────────────────────────────────────────────────
@@ -120,29 +120,19 @@ cp packaging/현장_배포_절차.md "$OUT/현장_배포_절차.md"
 cp docs/liaison/연계정리_이노뎁_2세부_작성본.md "$OUT/연계정리_이노뎁_2세부.md"
 chmod +x "$OUT"/*.sh
 
-# ── 6. 실탐지 묶음 (선택, 대용량) ────────────────────────────────────────────
+# ── 6. 탐지 엔진 (기본 포함 — 패키지 하나로 1세부 연동) ─────────────────────────
 if [ "$WITH_WBMS" = "1" ]; then
-  log "6/7 실탐지 묶음 (wbms:0.13 + 모델·전처리·보조자료) — 수십 분"
-  BIG="dist/${NAME}-detect"
-  rm -rf "$BIG"; mkdir -p "$BIG/images" "$BIG/$H"
-  docker save wbms:0.13 | gzip -1 > "$BIG/images/wbms-0.13.tar.gz"
-  mkdir -p "$BIG/$H/03_model" "$BIG/$H/05_l1_pre" "$BIG/$H/06_aux"
-  rsync -a "$H/03_model/" "$BIG/$H/03_model/"
-  rsync -a "$H/05_l1_pre/" "$BIG/$H/05_l1_pre/"
-  rsync -a --exclude='Labels_GT*' "$H/06_aux/" "$BIG/$H/06_aux/"
-  cat > "$BIG/README_실탐지묶음.md" <<'MD'
-# 실탐지 묶음
-기본 패키지 디렉터리 **안으로** 푼다. 최상위 디렉터리를 벗겨야 images/ 와 data/ 가 합쳐진다.
-    cd <기본 패키지 디렉터리>
-    tar -xzf ../watercast-*-detect.tar.gz --strip-components=1
-    sha256sum --quiet -c SHA256SUMS-detect      # 선택: 무결성 확인
-그 다음  ./install.sh --with-wbms  로 wbms 이미지를 적재하고  ./detect_scene.sh <YYYYMMDD>  로 탐지한다.
-MD
-  (cd "$BIG" && find . -type f ! -name 'SHA256SUMS*' -print0 | sort -z | xargs -0 sha256sum > SHA256SUMS-detect)
-  tar -C dist -czf "dist/${NAME}-detect.tar.gz" "${NAME}-detect"
-  log "    → dist/${NAME}-detect.tar.gz ($(du -h "dist/${NAME}-detect.tar.gz" | cut -f1))"
+  log "6/7 탐지 엔진: wbms:0.13 이미지(11 GB) + 모델 가중치 + 전처리 입력 영상 + 보조자료 — 수십 분"
+  docker image inspect wbms:0.13 >/dev/null || { echo "wbms:0.13 이미지가 로컬에 없습니다 (docker load 뒤 다시)" >&2; exit 1; }
+  docker save wbms:0.13 | gzip -1 > "$OUT/images/wbms-0.13.tar.gz"
+  mkdir -p "$OUT/$H/03_model" "$OUT/$H/05_l1_pre" "$OUT/$H/06_aux"
+  rsync -a "$H/03_model/" "$OUT/$H/03_model/"
+  rsync -a "$H/05_l1_pre/" "$OUT/$H/05_l1_pre/"
+  # 정답 라벨(학습·검증용 2.2 GB)은 탐지에 쓰지 않으므로 뺀다
+  rsync -a --exclude='Labels_GT*' "$H/06_aux/" "$OUT/$H/06_aux/"
+  log "    탐지 엔진 포함: $(du -sh "$OUT/images/wbms-0.13.tar.gz" | cut -f1) 이미지 · $(find "$OUT/$H/05_l1_pre" -name 'Pre_*.tif' | wc -l) 입력 장면"
 else
-  log "6/7 실탐지 묶음 생략 (--with-wbms 로 생성)"
+  log "6/7 탐지 엔진 제외 (--lite) — 새 영상 탐지 불가, 캐시된 장면만"
 fi
 
 # ── 7. 매니페스트·체크섬·tar ──────────────────────────────────────────
@@ -161,12 +151,13 @@ manifest = {
     "runtime_image": image, "runtime_image_id": sh(f"docker image inspect -f '{{{{.Id}}}}' {image}"),
     "runtime_image_size_bytes": int(sh(f"docker image inspect -f '{{{{.Size}}}}' {image}") or 0),
     "app_bundle": app[0] if app else None, "app_build": build_id,
-    "layout_ko": "런타임 컨테이너(images/) + 앱 바이너리(app/) 분리 — 코드만 바뀌면 app 묶음을 ./update_app.sh 로 교체, 의존성이 바뀌면 런타임 이미지 교체",
+    "detection_engine_included": os.path.exists(os.path.join(out, "images", "wbms-0.13.tar.gz")),
+    "layout_ko": "런타임 컨테이너(images/watercast-runtime) + 앱 바이너리(app/) + 탐지 엔진(images/wbms-0.13 + data/incoming/handover) — 코드만 바뀌면 app 묶음을 ./update_app.sh 로 교체, 의존성이 바뀌면 런타임 이미지 교체, 탐지 재빌드본을 받으면 wbms 이미지 교체",
     "contents": {
-        "images/": "런타임 이미지 watercast-runtime (python 3.11 + 의존성 + docker CLI, 앱 코드 없음)",
+        "images/": "런타임 이미지 watercast-runtime (python 3.11 + 의존성 + docker CLI, 앱 코드 없음) · 탐지 엔진 이미지 wbms-0.13 (lite 묶음에는 없음)",
         "app/": "앱 묶음 watercast-app-<ver>-<build>.tar.gz (+ .sha256). install.sh 가 app/current 로 푼다",
         "data/wbms_runs/": "탐지 캐시 마스크 GeoTIFF + meta/qc (부산 ICEYE 4 · PlanetScope 4 · 대청 PlanetScope 10)",
-        "data/incoming/handover/": "전처리 사이드카 JSON, 융합 LSTM 번들, 기상 CSV",
+        "data/incoming/handover/": "탐지 모델 가중치(03_model) · 전처리 입력 영상(05_l1_pre) · 보조자료 DEM 등(06_aux) · 융합 LSTM 번들 · 기상 CSV (lite 묶음은 사이드카 JSON·번들·CSV 만)",
         "backend/data/": "쓰기 디렉터리 (잡 상태·규약 산출물·사용자 지역·예측 결과)",
         "src/": "호스트 실탐지 러너와 연계 모듈 (python3 표준 라이브러리만)",
         "logs/": "설치·교체·확인 스크립트 로그와 보고서",

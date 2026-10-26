@@ -45,7 +45,7 @@ if docker image inspect wbms:0.13 >/dev/null 2>&1; then
     fi
   else CTN_GPU=0; fi
 else
-  warn "wbms:0.13 이미지가 없음 — 실탐지 묶음을 풀고 ./install.sh --with-wbms 뒤 다시 점검 (지금은 캐시된 장면만 탐지 가능)"
+  warn "wbms:0.13 이미지가 없음 — 전체 패키지의 ./install.sh 가 적재한다(lite 묶음에는 없음). 지금은 캐시된 장면만 탐지 가능"
   IMG=0; CTN_GPU=0; REASON="${REASON:-탐지 이미지 없음}"
 fi
 

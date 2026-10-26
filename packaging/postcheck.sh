@@ -44,7 +44,6 @@ req "app/current 에 앱 묶음 (VERSION.json)" sh_all "[ -f app/current/VERSION
 req "쓰기 디렉터리 backend/data" sh_all "for d in regions wbms_jobs wbms_products wbms_fusion results; do [ -d backend/data/\$d ] || exit 1; done; echo 5개"
 req "탐지 캐시 data/wbms_runs/wb" sh_all "n=\$(find data/wbms_runs/wb -name 'WB_*_qc.json' 2>/dev/null | wc -l); echo \"\$n 장면\"; [ \"\$n\" -ge 1 ]"
 opt "RUN_AS 가 data/wbms_runs 소유자와 같음 (탐지 산출 쓰기)" sh_all "o=\$(stat -c '%u:%g' data/wbms_runs); echo \"소유자 \$o · RUN_AS ${RUN_AS:-1000:1000}\"; [ \"\$o\" = '${RUN_AS:-1000:1000}' ]"
-opt "새 장면 입력 위치 data/incoming/handover/05_l1_pre (실탐지 묶음)" sh_all "[ -d data/incoming/handover/05_l1_pre ] && find data/incoming/handover/05_l1_pre -name 'Pre_*.tif' | wc -l | sed 's/\$/ 장면 입력 파일/'"
 
 log "C. 컨테이너·포트"
 # 기동 직후에는 healthcheck 가 아직 'starting' 일 수 있어(간격 30초) 최대 90초 기다린다
@@ -64,7 +63,15 @@ req "컨테이너가 쓰는 이미지 = $IMAGE" sh_all "i=\$(docker inspect -f '
 req "API 포트 $API_PORT 응답" sh_all "curl -fsS --max-time 5 '$API/api/v1/health' >/dev/null && echo listening"
 req "업무 UI 포트 $UI_PORT 응답" sh_all "curl -fsS --max-time 8 -o /dev/null -w '%{http_code}' 'http://127.0.0.1:$UI_PORT/' | grep -q 200 && echo 200"
 opt "컨테이너 → 호스트 docker 소켓 (탐지 잡이 wbms 컨테이너를 띄우는 길)" sh_all "docker exec '$NAME' docker version --format 'server {{.Server.Version}}'"
-opt "wbms:0.13 이미지 (실탐지용, 없으면 캐시 장면만)" sh_all "docker image inspect wbms:0.13 --format 'size {{.Size}}' | awk '{printf \"%.1f GB\n\", \$2/1e9}'"
+# 탐지 엔진 — 전체 패키지(images/wbms-*.tar.gz 또는 모델 디렉터리가 있음)에서는 필수, lite 묶음에서는 선택
+if ls images/wbms-*.tar.gz >/dev/null 2>&1 || [ -d data/incoming/handover/03_model ]; then
+  req "탐지 엔진 이미지 wbms:0.13" sh_all "docker image inspect wbms:0.13 --format 'size {{.Size}}' | awk '{printf \"%.1f GB\n\", \$2/1e9}'"
+  req "탐지 모델 가중치 (03_model)" sh_all "n=\$(find data/incoming/handover/03_model -type f | wc -l); echo \"\$n 파일\"; [ \"\$n\" -ge 1 ]"
+  req "전처리 입력 영상 (05_l1_pre, 새 영상을 넣는 위치)" sh_all "n=\$(find data/incoming/handover/05_l1_pre -name 'Pre_*.tif' | wc -l); echo \"\$n 장\"; [ \"\$n\" -ge 1 ]"
+  req "보조자료 (06_aux, 수위 산출 DEM 등)" sh_all "n=\$(find data/incoming/handover/06_aux -type f | wc -l); echo \"\$n 파일\"; [ \"\$n\" -ge 1 ]"
+else
+  opt "wbms:0.13 이미지 (lite 묶음 — 없으면 캐시 장면만)" sh_all "docker image inspect wbms:0.13 --format 'size {{.Size}}' | awk '{printf \"%.1f GB\n\", \$2/1e9}'"
+fi
 
 log "D. API"
 req "health status=ok · 버전" sh_all "curl -fsS '$API/api/v1/health' | python3 -c 'import json,sys; d=json.load(sys.stdin); assert d[\"status\"]==\"ok\"; b=d.get(\"build\") or {}; print(\"v\"+d[\"version\"], \"build\", b.get(\"build\",\"-\"), \"models\", d[\"models_loaded\"])'"
