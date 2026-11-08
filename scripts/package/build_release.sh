@@ -106,6 +106,7 @@ touch "$OUT"/backend/data/.keep "$OUT"/logs/.keep
 log "4/7 소스 (실탐지 러너·연계 모듈)"
 mkdir -p "$OUT/src/scripts" "$OUT/src/backend/app/wbms"
 cp scripts/wbms_chain_runner.py "$OUT/src/scripts/"
+cp scripts/eval_iitp_indicator.py "$OUT/src/scripts/"   # TTA TC2 시험용 — 표준 라이브러리만, 설치본 API(localhost:18000)로 실행
 cp backend/app/wbms/liaison.py backend/app/wbms/liaison_log.py "$OUT/src/backend/app/wbms/"
 touch "$OUT/src/backend/__init__.py" "$OUT/src/backend/app/__init__.py" "$OUT/src/backend/app/wbms/__init__.py"
 
