@@ -1036,6 +1036,7 @@
   function hourAsOfValue() { if (state.originKind !== 'pick') return ''; var v = $('#hourAsOf').value || state.hourAsOf; state.hourAsOf = v; return v; }
 
   // ---------- 5 모델
+  function testYearKo() { var sp = state.evaluation && state.evaluation.split; var y = sp && sp.test_start ? String(sp.test_start).slice(0, 4) : ''; return y ? y + '년' : '시험 연도'; }
   function evalRow(station, h) {
     var rows = (state.evaluation && state.evaluation.rows) || [];
     var exact = rows.filter(function (r) { return r.station_id === station && Number(r.horizon) === Number(h); })[0];
@@ -1063,7 +1064,7 @@
     if (state.unit === 'hour') { state.levelModel = ''; opt('', '시 단위 릿지 자기회귀 — 자동', '최근 24시간 변화량 24개 · 24시간/7일 평균 대비 편차 · 시각·계절 조화항 → 출발 시각까지의 자료로 그 자리에서 학습(수 초). 자료가 30일 미만이면 직전값 유지', '기본'); }
     else if (!state.targets.level) { box.innerHTML = '<p class="empty">수위를 예측하지 않아요 — 면적 모델만 고르세요</p>'; }
     else {
-      opt('', '자동 — 검증에서 가장 잘 나온 모델', ev ? '지점 ' + state.station + ' · ' + ev.horizon + '일 뒤 선택 모델 ' + (MODEL_KO[ev.forecaster_id] || ev.forecaster_name || ev.forecaster_id) + ' · 2024년 시험 RMSE ±' + cm(ev.test_rmse) + ' cm (직전값 유지 ' + cm(ev.persistence_test_rmse) + ' cm)' : '예측일수마다 검증 연도에서 고른 모델을 써요', '기본');
+      opt('', '자동 — 검증에서 가장 잘 나온 모델', ev ? '지점 ' + state.station + ' · ' + ev.horizon + '일 뒤 선택 모델 ' + (MODEL_KO[ev.forecaster_id] || ev.forecaster_name || ev.forecaster_id) + ' · ' + testYearKo() + ' 시험 RMSE ±' + cm(ev.test_rmse) + ' cm (직전값 유지 ' + cm(ev.persistence_test_rmse) + ' cm)' : '예측일수마다 검증 연도에서 고른 모델을 써요', '기본');
       state.forecasters.forEach(function (f) { opt(f.id, (f.name_ko || f.name || MODEL_KO[f.id] || f.id), (f.plain_ko || f.description || ''), f.is_baseline ? '기준선' : ''); });
     }
     var ab = $('#areaModels'); ab.innerHTML = '';
@@ -1204,11 +1205,11 @@
       else lines.push({ html: '숫자는 <b>하루 평균 수위</b>예요. 왼쪽은 출발값, 오른쪽은 ' + state.horizon + '일 뒤 전망 — 지금 보는 건 검증에서 <b>가장 잘 나온 모델</b> <b>' + esc(MODEL_KO[modelId] || modelId || '자동 선택') + '</b> (예측일수마다 다른 모델) · 다른 모델이 궁금하면 위에서 바꿔 보세요' });
       if (rec) lines.push({ kind: 'good', html: '출발값은 <b>위성 수위</b> ' + esc(num(rec.corrected_water_level_m, 2)) + ' m (' + esc(rec.satellite) + ') — 지상 수위계 ' + esc(num(f.origin_level_m, 2)) + ' m 와 ' + esc(cm(shift)) + ' cm 차이만큼 전망 전체를 옮겼어요. 이후 실제(초록 점)는 지상 수위계 값이에요' });
       if (!state.scene) lines.push({ html: '영상 없이 지상 수위계만으로 낸 전망이라 면적 전망은 없어요' });
-      if (ev) lines.push({ html: '예상 오차: 2024년 한 해를 매일 ' + esc(ev.horizon) + '일 뒤로 예측했을 때 평균 <b>±' + esc(cm(ev.test_rmse)) + ' cm</b> (RMSE) · 직전값 유지(' + esc(cm(ev.persistence_test_rmse)) + ' cm)보다 ' + esc((ev.skill_vs_persistence >= 0 ? '+' : '') + num(ev.skill_vs_persistence * 100, 0)) + ' % 나음' });
+      if (ev) lines.push({ html: '예상 오차: ' + testYearKo() + ' 한 해를 매일 ' + esc(ev.horizon) + '일 뒤로 예측했을 때 평균 <b>±' + esc(cm(ev.test_rmse)) + ' cm</b> (RMSE) · 직전값 유지(' + esc(cm(ev.persistence_test_rmse)) + ' cm)보다 ' + esc((ev.skill_vs_persistence >= 0 ? '+' : '') + num(ev.skill_vs_persistence * 100, 0)) + ' % 나음' });
       if (f.verification && f.verification.n) lines.push({ kind: 'good', html: '이번 전망을 실제와 맞춰 보니(' + esc(f.verification.n) + '일) 평균 <b>±' + esc(cm(f.verification.rmse_m)) + ' cm</b> 차이' + (f.verification.persistence_rmse_m != null ? ' · 직전값 유지였다면 ±' + esc(cm(f.verification.persistence_rmse_m)) + ' cm' : '') + (rec ? ' (지상 수위계 기준 전망으로 계산)' : '') });
       else lines.push({ html: '출발일 뒤 실측이 아직 없어 이번 전망은 비교하지 못했어요' });
       lines.push({ html: '파란 띠는 예전 검증에서 본 흔들림 폭(±1σ)이에요 — 보증 구간이 아니라 "이 정도는 빗나갈 수 있다"는 뜻' });
-      if (f.in_sample) lines.push({ kind: 'warn', html: '출발일이 모델 학습·검증 기간 안이라 이 그래프는 성능 근거로 쓰지 마세요 — 성능은 위의 2024년 시험값으로' });
+      if (f.in_sample) lines.push({ kind: 'warn', html: '출발일이 모델 학습·검증 기간 안이라 이 그래프는 성능 근거로 쓰지 마세요 — 성능은 위의 ' + testYearKo() + ' 시험값으로' });
       if (state.scene && state.originKind === 'scene' && (state.clamped || f.as_of_clamped)) lines.push({ kind: 'warn', html: '영상 날짜(' + esc(fmtKo(state.scene.image_date)) + ')에는 수위 자료가 없어요 (자료 ' + esc(f.data_period ? period(f.data_period) : '') + ') → 자료 끝 ' + esc(state.horizon) + '일 전인 ' + esc(fmtKo(f.as_of)) + '에서 출발해 전망 전부를 실측과 비교했어요' });
       why($('#levelWhy'), lines);
     });
@@ -1240,7 +1241,7 @@
       if (am.model === 'level-area-bridge') {
         var ev = state.station ? evalRow(am.gauge_station_id || state.station, state.horizon) : null;
         lines.push({ html: '면적은 따로 맞추지 않고 <b>수위 전망에 따라</b> 움직여요: 면적 = 출발 면적 ' + esc(num(base, 1)) + ' + ' + esc(num(am.slope_km2_per_m, 2)) + ' km²/m × (수위 변화) · 기울기는 ' + (String(am.slope_source || '').indexOf('manifest') >= 0 ? '지형(DEM) 수위-면적 곡선' : String(am.slope_source || '') === 'option' ? '직접 지정' : '면적 계열 적합(잡음 주의)') + ', 지점 ' + esc(am.gauge_station_id || '') });
-        if (ev) lines.push({ html: '예상 오차 ≈ 기울기 × 수위 오차 = ' + esc(num(am.slope_km2_per_m, 2)) + ' × ' + esc(cm(ev.test_rmse)) + ' cm ≈ <b>±' + esc(num(am.slope_km2_per_m * ev.test_rmse, 2)) + ' km²</b> (' + esc(ev.horizon) + '일 뒤, 2024년 시험 기준)' });
+        if (ev) lines.push({ html: '예상 오차 ≈ 기울기 × 수위 오차 = ' + esc(num(am.slope_km2_per_m, 2)) + ' × ' + esc(cm(ev.test_rmse)) + ' cm ≈ <b>±' + esc(num(am.slope_km2_per_m * ev.test_rmse, 2)) + ' km²</b> (' + esc(ev.horizon) + '일 뒤, ' + testYearKo() + ' 시험 기준)' });
       } else {
         lines.push({ html: '최근 영상들의 면적 추세를 이어 그린 값이에요 (수위 자료 없이 영상만 사용)' });
       }

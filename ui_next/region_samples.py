@@ -51,15 +51,22 @@ def region_mask_datasets(regions_dir: Path = REGIONS_DIR, user_dir: Path | None 
     out: list[SampleDataset] = []
     user_dir = user_dir if user_dir is not None else user_regions_dir()
     candidates: dict[str, Path] = {}
+    builtin_dirs: dict[str, Path] = {}
     for base in (regions_dir, user_dir):
         if base is None or not base.is_dir():
             continue
         for region_dir in sorted(base.iterdir()):
             if (region_dir / "region.json").is_file():
                 candidates[region_dir.name] = region_dir  # 사용자 디렉터리가 나중이라 같은 id 를 덮어쓴다
-    for _, region_dir in sorted(candidates.items()):
+                if base == regions_dir:
+                    builtin_dirs[region_dir.name] = region_dir
+    for name, region_dir in sorted(candidates.items()):
         manifest = _load_json(region_dir / "region.json")
-        scenes_payload = _load_json(region_dir / "satellite" / "scenes.json")
+        # 사용자 사본(재학습 산출물만 든 경우 등)에 위성 자산이 없으면 내장 자산을 그대로 쓴다 — 사본이 내장 장면을 가리지 않게.
+        satellite_dir = region_dir / "satellite"
+        if not (satellite_dir / "scenes.json").is_file() and name in builtin_dirs:
+            satellite_dir = builtin_dirs[name] / "satellite"
+        scenes_payload = _load_json(satellite_dir / "scenes.json")
         if not manifest or not scenes_payload:
             continue
         region_id = str(manifest.get("id") or region_dir.name)
@@ -75,9 +82,9 @@ def region_mask_datasets(regions_dir: Path = REGIONS_DIR, user_dir: Path | None 
             pixel_area = None
             for scene in scenes:
                 frame_meta = scene["frame"]
-                mask_path = region_dir / "satellite" / frame_meta["path"]
+                mask_path = satellite_dir / frame_meta["path"]
                 overlay_rel = (scene.get("images") or {}).get("overlay")
-                overlay_path = region_dir / "satellite" / overlay_rel if overlay_rel else None
+                overlay_path = satellite_dir / overlay_rel if overlay_rel else None
                 try:
                     mask_bytes = mask_path.read_bytes()
                 except OSError:

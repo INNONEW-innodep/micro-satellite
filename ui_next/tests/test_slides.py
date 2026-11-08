@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ui_next.region_samples import region_mask_datasets, region_sample_id
+from ui_next.region_samples import REGIONS_DIR, region_mask_datasets, region_sample_id
 from ui_next.samples import list_samples
 from ui_next.slides import SLIDE_KEYS, SLIDES, slide_index
 
@@ -38,3 +38,13 @@ def test_app_defaults_to_easy_mode_and_keeps_crop_page() -> None:
     assert "render_pipeline_page(client_factory=api_client, execute_quick_sample=execute_quick_sample)" in source
     assert "render_slides(client_factory=api_client, execute_quick_sample=execute_quick_sample)" in source
     assert "render_crop_detection_page()" in source
+
+
+def test_user_copy_without_satellite_assets_does_not_hide_builtin_samples(tmp_path) -> None:
+    # 재학습 산출물만 든 사용자 사본(region.json + models/)이 생겨도 내장 위성 장면 샘플은 그대로 보여야 한다
+    user_copy = tmp_path / "nakdong_busan"
+    user_copy.mkdir()
+    (user_copy / "region.json").write_text((REGIONS_DIR / "nakdong_busan" / "region.json").read_text(encoding="utf-8"), encoding="utf-8")
+    ids = {s.sample_id for s in region_mask_datasets(user_dir=tmp_path)}
+    assert region_sample_id("nakdong_busan", "ICEYE") in ids
+    assert region_sample_id("nakdong_busan", "PlanetScope") in ids
