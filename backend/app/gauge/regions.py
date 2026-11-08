@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import csv
 import io
+import filecmp
 import json
 import re
 import shutil
@@ -26,6 +27,17 @@ from .forecasters import DailySeries
 REGION_SCHEMA = "watercast.region/1"
 SERIES_SCHEMA = "watercast.gauge.series/1"
 _ID_PATTERN = re.compile(r"^[A-Za-z0-9_.-]{1,64}$")
+
+
+def _same_tree(left: Path, right: Path) -> bool:
+    """두 디렉터리의 파일 목록과 내용이 같은지(재귀). 사용자 사본이 내장 복사본일 뿐인지 판단할 때 쓴다."""
+
+    if not (left.is_dir() and right.is_dir()):
+        return False
+    cmp = filecmp.dircmp(left, right)
+    if cmp.left_only or cmp.right_only or cmp.diff_files or cmp.funny_files:
+        return False
+    return all(_same_tree(left / sub, right / sub) for sub in cmp.common_dirs)
 
 
 class RegionError(ValueError):
@@ -560,9 +572,15 @@ class RegionRegistry:
                     return False
             except OSError:
                 return False
-        models_dir = user_region / (builtin_record.manifest.get("forecast", {}).get("artifacts_dir") or "models/gauge")
-        if models_dir.is_dir() and any(models_dir.iterdir()):
-            return False
+        artifacts_rel = builtin_record.manifest.get("forecast", {}).get("artifacts_dir") or "models/gauge"
+        models_dir, builtin_models = user_region / artifacts_rel, builtin_record.path / artifacts_rel
+        if models_dir.is_dir():
+            for child in models_dir.iterdir():
+                if child.is_symlink() or child.is_file():
+                    return False  # 지점 산출물·평가표가 남아 있다
+                # 하위 디렉터리(예: experiments/ — 사본을 만들 때 내장에서 그대로 복사된 것)는 내장과 내용이 같을 때만 복사본으로 본다
+                if not _same_tree(child, builtin_models / child.name):
+                    return False
         return True
 
     def load_weather_rows(self, region_id: str) -> list[dict[str, Any]]:

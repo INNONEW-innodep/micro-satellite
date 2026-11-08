@@ -120,3 +120,37 @@ def test_satellite_locations_sit_on_their_gauge_anchor(region_id: str, tmp_path:
             station = stations[gauge]
             xs, ys = transform("EPSG:4326", "EPSG:32652", [station["lon"], anchor[0]], [station["lat"], anchor[1]])
             assert ((xs[0] - xs[1]) ** 2 + (ys[0] - ys[1]) ** 2) ** 0.5 < 5.0, (loc_id, "수위계 좌표 ≠ anchor")
+
+
+def test_reset_removes_user_copy_left_by_retraining(tmp_path: Path) -> None:
+    """재학습이 만든 사용자 사본(region.json·series·weather·models 사본 + 새 산출물)은 되돌리기로 통째로 걷힌다.
+
+    사본의 models/gauge/experiments/ 는 내장에서 그대로 복사된 디렉터리라 '사용자가 더한 것'이 아니다 —
+    이것 때문에 사본이 남아 origin=user 로 내장 지역을 계속 가리던 결함(2026-11-08)의 회귀 테스트.
+    """
+
+    registry = _registry(tmp_path)
+    record = registry.get("nakdong_busan")
+    user_region = registry._materialize_user_copy(record)
+    user_models = user_region / "models" / "gauge"
+    assert (user_models / "experiments").is_dir()  # 내장 experiments 가 사본에 복사돼 있다
+    (user_models / "구포대교.json").write_text("{}", encoding="utf-8")  # 재학습 산출물 흉내
+    (user_models / "evaluation.json").write_text("{}", encoding="utf-8")
+
+    removed = registry.reset_user_artifacts("nakdong_busan")
+
+    assert "구포대교.json" in removed and "evaluation.json" in removed
+    assert not user_region.exists(), "내장 복사본뿐인 사본은 전체가 제거되어야 한다"
+    assert RegionRegistry(REGIONS_DIR, tmp_path / "user").get("nakdong_busan").origin == "builtin"
+
+
+def test_reset_keeps_user_copy_that_has_user_scenes(tmp_path: Path) -> None:
+    registry = _registry(tmp_path)
+    user_region = registry._materialize_user_copy(registry.get("nakdong_busan"))
+    (user_region / "satellite").mkdir()
+    (user_region / "satellite" / "scenes.json").write_text('{"scenes": []}', encoding="utf-8")
+    (user_region / "models" / "gauge" / "evaluation.json").write_text("{}", encoding="utf-8")
+
+    registry.reset_user_artifacts("nakdong_busan")
+
+    assert user_region.is_dir() and (user_region / "satellite" / "scenes.json").is_file()

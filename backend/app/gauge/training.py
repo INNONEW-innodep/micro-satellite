@@ -36,6 +36,8 @@ MIN_TRAIN_DAYS = 730
 MIN_VAL_DAYS = 90
 MIN_TEST_DAYS = 30
 SPLIT_KEYS = ("train_end", "val_start", "val_end", "test_start", "test_end")
+# 강수·기온 외생 입력을 쓰는 예측기 — 평가표의 '기상 사용' 표기와 화면 설명이 이 집합을 따른다
+WEATHER_FORECASTER_IDS = frozenset({"ridge_arx", "ridge_arx_season", "ridge_arx_future", "ridge_arx_season_future"})
 
 
 class TrainingError(RuntimeError):
@@ -547,10 +549,10 @@ def summarize_evaluation(artifacts: Mapping[str, Mapping[str, Any]], region: Reg
                     "skill_vs_persistence": block.get("skill_vs_persistence"),
                     "regime_shift_flag": bool(diagnostics.get("regime_shift_flag")),
                     "test_mean_shift_sigma": diagnostics.get("test_mean_shift_sigma"),
-                    # 기상 사용: AR-X, AR-X 를 품은 앙상블, 그리고 강수·기온 채널을 입력으로 받는 신경망(지역에 기상 자료가 있을 때)
-                    "uses_weather": block["forecaster_id"] in ("ridge_arx",) or (
+                    # 기상 사용: AR-X 계열(계절편차형 포함), 그 계열을 품은 앙상블, 그리고 강수·기온 채널을 입력으로 받는 신경망(지역에 기상 자료가 있을 때)
+                    "uses_weather": block["forecaster_id"] in WEATHER_FORECASTER_IDS or (
                         block["forecaster_id"] == "ensemble_mean"
-                        and any(m.get("forecaster_id") == "ridge_arx" for m in (block.get("params_eval") or {}).get("members", []))
+                        and any(m.get("forecaster_id") in WEATHER_FORECASTER_IDS for m in (block.get("params_eval") or {}).get("members", []))
                     ) or (
                         str(block["forecaster_id"]).startswith("neural_") and bool(artifact.get("weather_available"))
                     ),
