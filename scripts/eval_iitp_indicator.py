@@ -4,8 +4,9 @@
 분석 PC 에서 한 번 실행하면 아래 네 단계가 순서대로 돈다. 배포된 시스템의 공개 API 만 호출하며
 표준 라이브러리만 쓰므로 Python 3.10 이상이면 추가 설치가 없다.
 
-  [1] 수위 예측 모델 학습  — 지상 수위관측소 자료로 학습한다. 초소형위성 촬영 연도는 시험 구간으로
-                             떼어 두어 학습·모델 선택에 쓰지 않는다(연도는 위성 장면 날짜에서 정한다).
+  [1] 수위 예측 모델 학습  — 지상 수위관측소 자료로 지점을 하나씩 순서대로 학습한다. 초소형위성 촬영 연도는
+                             시험 구간으로 떼어 두어 학습·모델 선택에 쓰지 않는다(연도는 위성 장면 날짜에서 정한다).
+                             지점 하나가 끝날 때마다 60초 쉰다(--station-pause 로 조정, 0 이면 쉬지 않음).
   [2] 수위 예측            — 초소형위성 촬영일을 원점으로 D+1·D+7 수위를 예측하고 같은 날 실측과 비교한다.
   [3] 수체면적 예측        — 위성 탐지 수체면적 계열(공통 격자)에서 차기 관측시점 면적을 예측하고
                              탐지 면적과 비교한다. 별도 학습 없이 관측 계열에서 바로 예측한다.
@@ -14,7 +15,9 @@
     python3 scripts/eval_iitp_indicator.py                  # 분석 PC 기본 (http://localhost:18000)
     python3 scripts/eval_iitp_indicator.py --no-train       # 이미 학습된 산출물로 [2]~[4] 만
     python3 scripts/eval_iitp_indicator.py --restore        # 시험 뒤 기본 산출물로 되돌리기만
-    python3 scripts/eval_iitp_indicator.py --json-out 결과.json
+    python3 scripts/eval_iitp_indicator.py --station-pause 0 # 지점 사이 대기 없이 (리허설·점검용, 약 30초)
+    python3 scripts/eval_iitp_indicator.py --json-out 결과.json --text-out 결과.txt
+                                                            # SSH 로 실행했으면 끝에 클라이언트 PC 로 가져가는 scp 명령을 찍는다
 
 산정식
   MSE(h) = ( MSE_L(h) + MSE_A ) / 2 ,  h = 1, 7
@@ -29,7 +32,9 @@
 from __future__ import annotations
 
 import argparse
+import getpass
 import json
+import os
 import sys
 import time
 import unicodedata
@@ -37,7 +42,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Sequence
 
 DEFAULT_API = "http://localhost:18000"
 DEFAULT_REGION = "nakdong_busan"
@@ -46,6 +51,7 @@ FALLBACK_STATIONS = ("구포대교", "호포대교", "정천교")
 HORIZONS = (1, 7)
 TARGET = 0.38
 AREA_PHI = 0.5  # 평균회귀 : 예측 = 직전값 + φ × (지금까지 평균 − 직전값)
+STATION_PAUSE_S = 60.0  # 지점 하나 학습이 끝날 때마다 쉬는 시간. 진행을 눈으로 따라갈 수 있게 두는 대기이며 대기라고 찍는다
 
 
 # --- HTTP -----------------------------------------------------------------------------
@@ -102,6 +108,15 @@ def linked_stations(api: str, region: str) -> tuple[str, ...]:
     return linked or FALLBACK_STATIONS
 
 
+def all_stations(api: str, region: str) -> tuple[str, ...]:
+    """지역의 수위관측소 전부(지역 상세 순서). 학습은 이 전부를 돌리고, 비교는 위성 연계 지점만 쓴다."""
+    detail = get(api, f"/api/v1/regions/{quote(region)}")
+    ids = tuple(str(s["id"]) for s in detail.get("stations") or [] if s.get("id"))
+    if not ids:
+        raise RuntimeError(f"{region} 에 수위관측소가 없습니다")
+    return ids
+
+
 def region_name(api: str, region: str) -> str:
     try:
         return str(get(api, f"/api/v1/regions/{quote(region)}").get("name") or region)
@@ -139,6 +154,33 @@ def parse_horizons(raw: str) -> tuple[int, ...]:
     return horizons
 
 
+def fetch_hint(paths: Sequence[str]) -> str | None:
+    """SSH 로 들어와 실행했을 때 결과 파일을 클라이언트 PC 로 가져가는 scp 명령. 분석 PC 에서 직접 실행했으면 None.
+
+    SSH_CONNECTION 은 "클라이언트IP 포트 서버IP 포트" — 서버IP·포트가 클라이언트가 접속에 쓴 바로 그 주소다.
+    """
+    conn = os.environ.get("SSH_CONNECTION", "").split()
+    if len(conn) < 3 or not paths:
+        return None
+    host = conn[2]
+    port = conn[3] if len(conn) > 3 else "22"
+    if ":" in host:  # IPv6
+        host = f"[{host}]"
+    user = getpass.getuser()
+
+    def target(path: str) -> str:
+        # 공백은 '\\ ' 로 이스케이프하고 인자 전체를 "…" 로 감싼다 — 구형 scp(원격 셸 경유)와 SFTP 모드(OpenSSH 9 이상),
+        # bash·cmd·PowerShell 어디서 붙여 넣어도 한 경로로 전달된다. 공백이 없으면 그대로.
+        text = str(Path(path).resolve())
+        if not any(ch.isspace() for ch in text):
+            return f"{user}@{host}:{text}"
+        escaped = "".join(f"\\{ch}" if ch.isspace() else ch for ch in text)
+        return f'"{user}@{host}:{escaped}"'
+
+    opts = f"-P {port} " if port != "22" else ""
+    return "scp " + opts + " ".join(target(p) for p in paths) + " ."
+
+
 def ensure_writable(path: str) -> None:
     """결과 파일을 쓸 수 있는지 학습 전에 확인한다 — 학습을 다 끝낸 뒤에야 저장 실패를 알게 되지 않도록."""
     target = Path(path)
@@ -158,31 +200,67 @@ def train(
     region: str,
     split: dict[str, str],
     *,
+    stations: Sequence[str] | None = None,
     poll_s: float = 2.0,
     timeout_s: float = 1800.0,
     progress: Callable[[str], None] | None = None,
-    sleep: Callable[[float], None] = time.sleep,
+    sleep: Callable[[float], None] | None = None,
 ) -> dict[str, Any]:
-    """수위 예측 모델을 비동기 잡으로 학습시키고 끝날 때까지 기다린다. 진행률은 progress 콜백으로 알린다.
+    """수위 예측 모델을 비동기 잡으로 학습시키고 끝날 때까지 기다린다. ``stations`` 를 주면 그 지점만 학습한다.
 
-    같은 지역에 이미 돌고 있는 잡이 있으면(409 — 직전 실행을 중간에 끊은 경우) 새로 걸지 않고 그 잡에 이어 붙는다.
+    같은 지역에 이미 돌고 있는 학습이 있으면(409 — 직전 실행을 중간에 끊었거나 화면에서 재학습 중) 끝나기를 기다린 뒤
+    다시 접수한다. 비동기 잡은 잡 목록에서 끝나는 것을 지켜보고, 동기 학습(잡 목록에 나오지 않는 지역 잠금)은 접수될
+    때까지 폴링 간격으로 같은 요청을 다시 낸다.
     """
 
+    sleep = sleep or time.sleep
+    path = f"/api/v1/regions/{quote(region)}/gauge/train"
+    body: dict[str, Any] = {"split": split, "async_run": True}
+    if stations:
+        body["stations"] = [str(s) for s in stations]
     try:
-        accepted = post(api, f"/api/v1/regions/{quote(region)}/gauge/train", {"split": split, "async_run": True})
+        accepted = post(api, path, body)
     except RuntimeError as exc:
         if "HTTP 409" not in str(exc):
             raise
-        accepted = active_job(api, region) or {}
-        if not accepted:
-            raise
-        if progress is not None:
-            progress(f"진행 중인 학습 잡 {accepted.get('job_id')} 에 이어 붙음")
+        running = active_job(api, region)
+        if running and running.get("job_id"):
+            if progress is not None:
+                progress(f"진행 중인 학습 잡 {running['job_id']} 이 끝나기를 기다림")
+            wait_job(api, region, str(running["job_id"]), poll_s=poll_s, timeout_s=timeout_s, progress=None, sleep=sleep)
+        elif progress is not None:
+            progress("진행 중인 동기 학습이 끝나기를 기다림")
+        accepted = resubmit_until_accepted(api, path, body, poll_s=poll_s, timeout_s=timeout_s, sleep=sleep, cause=exc)
     job_id = accepted.get("job_id")
     if not job_id:
         raise RuntimeError(f"학습 잡이 접수되지 않았습니다: {str(accepted)[:200]}")
+    job = wait_job(api, region, str(job_id), poll_s=poll_s, timeout_s=timeout_s, progress=progress, sleep=sleep)
+    if str(job.get("status")) == "failed":
+        raise RuntimeError(f"학습 실패: {job.get('error')}")
+    evaluation = job.get("evaluation") or {}
+    return {
+        "job_id": job_id,
+        "elapsed_s": float(job.get("elapsed_s") or 0.0),
+        "stations": [str(s) for s in job.get("stations") or []],
+        "n_stations": len(job.get("stations") or []),
+        "split": job.get("split_used") or split,
+        "trained_at": evaluation.get("trained_at"),
+    }
+
+
+def wait_job(
+    api: str,
+    region: str,
+    job_id: str,
+    *,
+    poll_s: float = 2.0,
+    timeout_s: float = 1800.0,
+    progress: Callable[[str], None] | None = None,
+    sleep: Callable[[float], None] | None = None,
+) -> dict[str, Any]:
+    """학습 잡이 done 또는 failed 가 될 때까지 폴링한다. 진행률은 progress 콜백으로 알린다."""
+    sleep = sleep or time.sleep
     waited = 0.0
-    job: dict[str, Any] = accepted
     while waited <= timeout_s:
         job = get(api, f"/api/v1/regions/{quote(region)}/gauge/train/jobs/{quote(job_id)}")
         status = str(job.get("status"))
@@ -190,21 +268,84 @@ def train(
         if progress is not None:
             cur = prog.get("current_station")
             progress(f"{prog.get('stations_done', 0)}/{prog.get('stations_total', '?')} 지점" + (f" · {cur}" if cur else ""))
-        if status == "done":
-            break
-        if status == "failed":
-            raise RuntimeError(f"학습 실패: {job.get('error')}")
+        if status in ("done", "failed"):
+            return job
         sleep(poll_s)
         waited += poll_s
-    else:
-        raise RuntimeError(f"학습이 {timeout_s:.0f}초 안에 끝나지 않았습니다 (job_id={job_id})")
-    evaluation = job.get("evaluation") or {}
+    raise RuntimeError(f"학습이 {timeout_s:.0f}초 안에 끝나지 않았습니다 (job_id={job_id})")
+
+
+def resubmit_until_accepted(
+    api: str,
+    path: str,
+    body: dict[str, Any],
+    *,
+    poll_s: float = 2.0,
+    timeout_s: float = 1800.0,
+    sleep: Callable[[float], None] | None = None,
+    cause: BaseException | None = None,
+) -> dict[str, Any]:
+    """409 가 풀릴 때까지 같은 학습 요청을 폴링 간격으로 다시 낸다. 동기 학습의 지역 잠금은 잡 목록에 나오지 않아 이 방법밖에 없다."""
+    sleep = sleep or time.sleep
+    waited = 0.0
+    while True:
+        sleep(poll_s)
+        waited += poll_s
+        try:
+            return post(api, path, body)
+        except RuntimeError as again:
+            if "HTTP 409" not in str(again):
+                raise
+            if waited > timeout_s:
+                raise RuntimeError(f"진행 중인 학습이 {timeout_s:.0f}초 안에 끝나지 않았습니다 ({again})") from cause
+
+
+def train_all(
+    api: str,
+    region: str,
+    split: dict[str, str],
+    stations: Sequence[str],
+    *,
+    pause_s: float = STATION_PAUSE_S,
+    progress: Callable[[str], None] | None = None,
+    sleep: Callable[[float], None] | None = None,
+    **wait: Any,
+) -> dict[str, Any]:
+    """지점을 하나씩 순서대로 학습한다(지점마다 잡 하나). 지점 하나가 끝날 때마다 ``pause_s`` 초 쉰다.
+
+    대기는 진행을 눈으로 따라갈 수 있게 두는 것이라 대기라고 찍는다(0 이면 바로 다음 지점). 서버는 이번에 학습하지
+    않은 지점의 산출물을 평가표에 그대로 두므로, 전부 돌고 나면 한 번에 학습한 것과 같은 상태가 된다.
+    """
+
+    sleep = sleep or time.sleep
+
+    def notice(msg: str) -> None:  # train() 의 폴링 진행률("0/1 지점 …")은 여기서 따로 찍으므로 409 안내만 넘긴다
+        if progress is not None and not msg[:1].isdigit():
+            progress(msg)
+
+    jobs: list[dict[str, Any]] = []
+    total = len(stations)
+    for index, station in enumerate(stations, start=1):
+        if progress is not None:
+            progress(f"{index}/{total} 지점 · {station} 학습 중 …")
+        info = train(api, region, split, stations=[station], progress=notice, sleep=sleep, **wait)
+        jobs.append(info)
+        if progress is not None:
+            progress(f"{index}/{total} 지점 · {station} 완료 ({info['elapsed_s']:.1f}초)")
+        if pause_s > 0:
+            if progress is not None:
+                progress(f"{pause_s:g}초 대기 … (지점 하나가 끝날 때마다 쉼 — --station-pause 로 조정)")
+            sleep(pause_s)
+    last = jobs[-1] if jobs else {}
     return {
-        "job_id": job_id,
-        "elapsed_s": float(job.get("elapsed_s") or 0.0),
-        "n_stations": len(job.get("stations") or []),
-        "split": job.get("split_used") or split,
-        "trained_at": evaluation.get("trained_at"),
+        "job_ids": [j["job_id"] for j in jobs],
+        "stations": [sid for j in jobs for sid in j["stations"]],
+        "n_stations": sum(j["n_stations"] for j in jobs),
+        "elapsed_s": round(sum(j["elapsed_s"] for j in jobs), 3),
+        "pause_s": float(pause_s),
+        "pause_total_s": float(pause_s) * len(jobs),
+        "split": last.get("split") or split,
+        "trained_at": last.get("trained_at"),
     }
 
 
@@ -227,7 +368,15 @@ def active_split(api: str, region: str) -> dict[str, Any]:
     if not split:
         raise RuntimeError("학습 산출물이 없습니다 — --no-train 없이 실행해 학습 단계를 먼저 수행하세요")
     return {"split": {k: str(v)[:10] for k, v in split.items()}, "trained_at": evaluation.get("trained_at"),
-            "origin": evaluation.get("artifacts_origin")}
+            "origin": evaluation.get("artifacts_origin"),
+            "other_split": [str(x) for x in evaluation.get("stations_with_other_split") or []]}
+
+
+def assert_fresh(stations: Sequence[str], active: dict[str, Any], hint: str) -> None:
+    """비교 지점이 활성 구간과 다른 구간의 산출물로 남아 있으면 중단한다(지점별 학습이 일부만 반영된 상태)."""
+    stale = sorted(set(stations) & set(active.get("other_split") or []))
+    if stale:
+        raise RuntimeError(f"비교 지점이 다른 구간의 산출물로 남아 있습니다: {stale} — {hint}")
 
 
 def assert_split(expected: dict[str, str], actual: dict[str, str]) -> None:
@@ -487,6 +636,9 @@ def run(args: argparse.Namespace, out: Callable[[str], None] = print) -> int:
         if path:
             ensure_writable(path)
     horizons = parse_horizons(args.horizons)
+    pause_s = float(args.station_pause)
+    if not 0 <= pause_s <= 600:
+        raise RuntimeError(f"--station-pause 는 0~600 초 사이여야 합니다: {args.station_pause!r}")
 
     name = region_name(api, region)
     out(banner("TTA-26-03423 TC2 — 수체면적 및 수위변화 시계열 예측 정확도 (MSE)"))
@@ -510,6 +662,7 @@ def run(args: argparse.Namespace, out: Callable[[str], None] = print) -> int:
     if args.no_train:
         active = active_split(api, region)
         assert_split(split, active["split"])
+        assert_fresh(stations, active, "--no-train 없이 실행해 학습 단계를 먼저 수행하세요")
         out(f" [1/4] 수위 예측 모델 학습 ........ 건너뜀 (기존 산출물 사용, 학습 시각 {active.get('trained_at')})")
         trained: dict[str, Any] = {"skipped": True, **active}
     else:
@@ -517,13 +670,18 @@ def run(args: argparse.Namespace, out: Callable[[str], None] = print) -> int:
 
         def progress(msg: str) -> None:
             if msg != state["last"]:
-                out(f"        학습 중 … {msg}")
+                out(f"        {msg}")
                 state["last"] = msg
 
-        out(" [1/4] 수위 예측 모델 학습 (지상 수위관측소 자료)")
-        trained = train(api, region, split, progress=progress)
-        assert_split(split, active_split(api, region)["split"])
-        out(f"        완료 — {trained['n_stations']}지점, {trained['elapsed_s']:.1f}초")
+        stations_all = all_stations(api, region)
+        pause_ko = f", 지점마다 {pause_s:g}초 대기" if pause_s > 0 else ""
+        out(f" [1/4] 수위 예측 모델 학습 (지상 수위관측소 자료 — {len(stations_all)}지점 순차 학습{pause_ko})")
+        trained = train_all(api, region, split, stations_all, pause_s=pause_s, progress=progress)
+        active = active_split(api, region)
+        assert_split(split, active["split"])
+        assert_fresh(stations, active, "다시 실행하세요")
+        waited_ko = f" + 대기 {trained['pause_total_s']:g}초" if pause_s > 0 else ""
+        out(f"        완료 — {trained['n_stations']}지점, 학습 {trained['elapsed_s']:.1f}초{waited_ko}")
 
     # [2] 수위 · [3] 수체면적 — 둘 다 같은 원점 집합에서 바로 추론한다
     out(f" [2/4] 수위 예측 — 위성 촬영일 원점 {len(origins) * len(stations)}건, {' · '.join(f'D+{h}' for h in horizons)}")
@@ -569,6 +727,10 @@ def run(args: argparse.Namespace, out: Callable[[str], None] = print) -> int:
             out(f" 화면 출력 저장 : {args.text_out}")
     except OSError as exc:
         raise RuntimeError(f"결과 파일을 저장할 수 없습니다: {exc}") from exc
+    hint = fetch_hint([p for p in (args.json_out, args.text_out) if p])
+    if hint:
+        out(" 결과 파일 가져가기 — 클라이언트 PC 터미널에서 실행하면 현재 폴더로 복사된다 :")
+        out(f"   {hint}")
     if args.json:
         sink(json.dumps(payload, ensure_ascii=False, indent=2))
     return 0 if all(v["verdict"] == "적합" for v in result.values()) else 1
@@ -583,6 +745,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--test-year", type=int, default=None, help="시험 연도 강제 지정 (기본: 위성 촬영 연도)")
     parser.add_argument("--no-train", action="store_true", help="학습 단계를 건너뛰고 기존 산출물로 예측한다 (구간이 다르면 중단)")
     parser.add_argument("--restore", action="store_true", help="시험 뒤 사용자 학습 산출물을 지우고 기본 산출물로 되돌린다")
+    parser.add_argument("--station-pause", type=float, default=STATION_PAUSE_S, metavar="SEC",
+                        help="지점 하나 학습이 끝날 때마다 쉬는 시간(초, 기본 60). 0 이면 쉬지 않는다")
     parser.add_argument("--area-model", default="mean_reversion", choices=("mean_reversion", "persistence"))
     parser.add_argument("--json", action="store_true", help="계산 상세를 JSON 으로도 출력")
     parser.add_argument("--json-out", default=None, help="계산 상세 JSON 을 이 파일에 저장 (성적서 첨부용)")
@@ -598,7 +762,7 @@ def main(argv: list[str] | None = None) -> int:
         print(f"[오류] {exc}", file=sys.stderr)
         return 2
     except KeyboardInterrupt:
-        print("\n[중단] 사용자가 중단했습니다. 서버의 학습 잡은 끝까지 돌며, 다시 실행하면 진행 중인 잡에 이어 붙습니다.", file=sys.stderr)
+        print("\n[중단] 사용자가 중단했습니다. 서버에서 돌던 지점 학습은 끝까지 돌며, 다시 실행하면 그 학습이 끝나기를 기다린 뒤 첫 지점부터 다시 학습합니다.", file=sys.stderr)
         return 130
     except (OSError, ValueError, KeyError, TypeError) as exc:  # 통신 끊김·타임아웃·예상 밖 응답 — 부적합(1)과 구분되는 2
         print(f"[오류] 실행 중 예외 — {type(exc).__name__}: {exc}", file=sys.stderr)

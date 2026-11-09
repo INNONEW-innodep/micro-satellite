@@ -7,10 +7,13 @@
 * 활성 산출물의 구간이 시험 설정과 다르면 중단한다(--no-train 경로).
 * 수체면적은 '그 시점까지 관측된 값'만 쓰고, 제출값(공통 격자·평균회귀 0.02663)을 그대로 재현한다.
 * 한 번 실행에 학습 → 수위 D+1·D+7 → 수체면적 → 지표가 전부 나오고 비교표가 출력된다.
+* 학습은 지역 지점 전부를 하나씩 순서대로 돌리고, 지점 하나가 끝날 때마다 쉰다(기본 60초) — 대기는 대기라고 찍는다.
+* SSH 로 들어와 실행했으면 결과 파일을 클라이언트 PC 로 가져가는 scp 명령을 끝에 찍는다.
 """
 
 from __future__ import annotations
 
+import getpass
 import importlib.util
 import json
 from pathlib import Path
@@ -54,6 +57,8 @@ class FakeApi:
         self.calls: list[tuple[str, str]] = []
         self.polls = 0
         self.trained_with: dict[str, Any] | None = None
+        self.train_bodies: list[dict[str, Any]] = []
+        self.other_split: list[str] = []
         self.levels = {
             "A": {"2020-02-18": 2.0, "2020-02-19": 2.1, "2020-02-25": 2.3, "2020-03-02": 2.2, "2020-03-03": 2.25,
                   "2020-03-09": 2.0, "2020-06-01": 3.0, "2020-12-31": 1.0},
@@ -84,12 +89,14 @@ class FakeApi:
             return {"id": REGION, "name": "가짜 지역", "stations": [
                 {"id": "A", "satellite_location": "a"}, {"id": "B", "satellite_location": "b"}, {"id": "C", "satellite_location": None}]}
         if path.endswith("/gauge/evaluation"):
-            return {"split": self.split, "trained_at": "2026-11-08T00:00:00+00:00", "artifacts_origin": "user"}
+            return {"split": self.split, "trained_at": "2026-11-08T00:00:00+00:00", "artifacts_origin": "user",
+                    "stations_with_other_split": list(self.other_split)}
         if "/gauge/train/jobs/" in path:
             self.polls += 1
             if self.polls < 2:
                 return {"status": "running", "progress": {"stations_done": 1, "stations_total": 2, "current_station": "A"}}
-            return {"status": "done", "elapsed_s": 12.5, "stations": ["A", "B"], "split_used": self.split,
+            trained = (self.trained_with or {}).get("stations") or ["A", "B"]
+            return {"status": "done", "elapsed_s": 12.5, "stations": list(trained), "split_used": self.split,
                     "progress": {"stations_done": 2, "stations_total": 2}, "evaluation": {"trained_at": "2026-11-08T00:00:00+00:00"}}
         for station in self.levels:
             if path.endswith(f"/gauge/{station}/series"):
@@ -102,6 +109,7 @@ class FakeApi:
         self.calls.append(("POST", path))
         assert path.endswith("/gauge/train")
         self.trained_with = body
+        self.train_bodies.append(body)
         self.split = dict(body["split"])  # 학습하면 활성 구간이 요청 구간으로 바뀐다
         return {"job_id": "job1", "status": "queued"}
 
@@ -202,6 +210,55 @@ def test_train_polls_until_done_and_reports_progress(fake: FakeApi) -> None:
     assert seen[0].startswith("1/2 지점") and seen[-1].startswith("2/2 지점")
 
 
+def test_train_all_runs_stations_one_by_one_and_pauses_after_each(fake: FakeApi) -> None:
+    slept: list[float] = []
+    seen: list[str] = []
+    info = script.train_all(API, REGION, SPLIT_2020, ("A", "B", "C"), pause_s=60, progress=seen.append, sleep=slept.append)
+    assert [b["stations"] for b in fake.train_bodies] == [["A"], ["B"], ["C"]]
+    assert slept.count(60) == 3  # 지점 하나가 끝날 때마다 한 번씩, 마지막 지점 뒤에도
+    assert info["n_stations"] == 3 and info["elapsed_s"] == 37.5 and info["pause_total_s"] == 180.0
+    assert info["stations"] == ["A", "B", "C"] and info["split"] == SPLIT_2020
+    assert seen[0] == "1/3 지점 · A 학습 중 …" and seen[1] == "1/3 지점 · A 완료 (12.5초)"
+    assert seen[2].startswith("60초 대기 …") and seen[-1].startswith("60초 대기 …")
+    assert not any(m.startswith("0/1") or m.startswith("1/1") for m in seen)  # 잡 폴링 진행률은 따로 찍지 않는다
+
+
+def test_train_all_without_pause_never_sleeps_for_the_gap(fake: FakeApi) -> None:
+    slept: list[float] = []
+    seen: list[str] = []
+    info = script.train_all(API, REGION, SPLIT_2020, ("A", "B"), pause_s=0, progress=seen.append, sleep=slept.append)
+    assert info["pause_total_s"] == 0.0 and all(t == 2.0 for t in slept)  # 남는 건 폴링 간격만
+    assert not any("대기" in m for m in seen)
+
+
+def _fail_station_b(fake: FakeApi, monkeypatch: pytest.MonkeyPatch) -> None:
+    original = fake.get
+
+    def failing(api: str, path: str, **params: Any) -> Any:
+        if "/gauge/train/jobs/" in path and (fake.trained_with or {}).get("stations") == ["B"]:
+            return {"status": "failed", "error": "자료 부족"}
+        return original(api, path, **params)
+
+    monkeypatch.setattr(script, "get", failing)
+
+
+def test_train_all_aborts_on_failed_station_without_pausing(fake: FakeApi, monkeypatch: pytest.MonkeyPatch) -> None:
+    _fail_station_b(fake, monkeypatch)
+    slept: list[float] = []
+    with pytest.raises(RuntimeError, match="학습 실패: 자료 부족"):
+        script.train_all(API, REGION, SPLIT_2020, ("A", "B", "C"), pause_s=60, sleep=slept.append)
+    assert [b["stations"] for b in fake.train_bodies] == [["A"], ["B"]]  # C 는 접수하지 않는다
+    assert slept.count(60) == 1  # A 뒤에만 쉬고, 실패 뒤에는 쉬지 않는다
+
+
+def test_main_exits_2_when_a_station_job_fails(fake: FakeApi, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    _fail_station_b(fake, monkeypatch)
+    assert script.main(["--api", API, "--region", REGION]) == 2
+    assert "[오류] 학습 실패: 자료 부족" in capsys.readouterr().err
+    assert [b["stations"] for b in fake.train_bodies] == [["A"], ["B"]]
+    assert all(not p.endswith("/forecast") for _, p in fake.calls)  # 실패 뒤 예측 단계로 넘어가지 않는다
+
+
 def test_train_raises_on_failed_job(fake: FakeApi, monkeypatch: pytest.MonkeyPatch) -> None:
     original = fake.get
 
@@ -236,10 +293,71 @@ def test_run_trains_then_scores_both_terms_in_one_go(fake: FakeApi, tmp_path: Pa
     assert "2.100" in text and "ICEYE" in text and "PlanetScope" in text  # 비교표에 실측·탐지값이 찍힌다
     assert text.count("적합") >= 2 and "부적합" not in text
     assert ("POST", f"/api/v1/regions/{REGION}/gauge/train") in fake.calls
+    # 학습은 지역 지점 전부(A·B·C)를 하나씩 순서대로 — 비교(연계 2개소)와 별개로 C 도 학습한다
+    assert [b["stations"] for b in fake.train_bodies] == [["A"], ["B"], ["C"]]
+    assert all(b["split"] == SPLIT_2020 and b["async_run"] is True for b in fake.train_bodies)
+    assert "3지점 순차 학습, 지점마다 60초 대기" in text and text.count("60초 대기 …") == 3
+    assert "완료 — 3지점, 학습 37.5초 + 대기 180초" in text
     payload = json.loads(out_file.read_text(encoding="utf-8"))
     assert payload["split"] == SPLIT_2020 and set(payload["result"]) == {"D+1", "D+7"}
     assert payload["result"]["D+1"]["area_norm_mse"] == pytest.approx(0.02663, abs=5e-5)
-    assert payload["train"]["elapsed_s"] == 12.5
+    assert payload["train"]["elapsed_s"] == 37.5 and payload["train"]["n_stations"] == 3
+    assert payload["train"]["job_ids"] == ["job1", "job1", "job1"] and payload["train"]["pause_total_s"] == 180.0
+
+
+def test_run_station_pause_zero_skips_the_waits(fake: FakeApi) -> None:
+    code, text = _run(["--api", API, "--region", REGION, "--station-pause", "0"])
+    assert code == 0 and "대기" not in text and "3지점 순차 학습)" in text
+    assert len(fake.train_bodies) == 3
+
+
+def test_run_labels_fractional_pause_with_the_seconds_actually_slept(fake: FakeApi, monkeypatch: pytest.MonkeyPatch) -> None:
+    slept: list[float] = []
+    monkeypatch.setattr(script.time, "sleep", slept.append)
+    code, text = _run(["--api", API, "--region", REGION, "--station-pause", "0.5"])
+    assert code == 0 and slept.count(0.5) == 3
+    assert "지점마다 0.5초 대기" in text and text.count("0.5초 대기 …") == 3 and "+ 대기 1.5초" in text
+
+
+def test_run_rejects_station_pause_out_of_range_before_touching_the_api(fake: FakeApi) -> None:
+    with pytest.raises(RuntimeError, match="--station-pause"):
+        _run(["--api", API, "--region", REGION, "--station-pause", "-5"])
+    assert fake.calls == []
+
+
+def test_run_stops_when_a_compared_station_is_left_on_another_split(fake: FakeApi) -> None:
+    fake.other_split = ["B"]  # 지점별 학습이 B 만 반영되지 않은 상태를 흉내낸다
+    with pytest.raises(RuntimeError, match=r"다른 구간의 산출물로 남아 있습니다: \['B'\]"):
+        _run(["--api", API, "--region", REGION, "--station-pause", "0"])
+    fake.other_split = ["C"]  # 비교하지 않는 지점이면 상관없다
+    code, _ = _run(["--api", API, "--region", REGION, "--station-pause", "0"])
+    assert code == 0
+
+
+def test_run_prints_scp_command_only_when_run_over_ssh(fake: FakeApi, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    out_json, out_txt = tmp_path / "r.json", tmp_path / "r.txt"
+    monkeypatch.setenv("SSH_CONNECTION", "172.18.10.100 51000 172.18.10.113 22")
+    code, text = _run(["--api", API, "--region", REGION, "--no-train", "--json-out", str(out_json), "--text-out", str(out_txt)])
+    assert code == 0
+    user = getpass.getuser()
+    assert f"scp {user}@172.18.10.113:{out_json.resolve()} {user}@172.18.10.113:{out_txt.resolve()} ." in text
+    assert "결과 파일 가져가기" not in out_txt.read_text(encoding="utf-8")  # 저장된 출력물에는 안내가 들어가지 않는다
+    monkeypatch.delenv("SSH_CONNECTION")
+    code, text = _run(["--api", API, "--region", REGION, "--no-train", "--json-out", str(out_json)])
+    assert code == 0 and "결과 파일 가져가기" not in text  # 분석 PC 에서 직접 실행했으면 안내가 없다
+
+
+def test_fetch_hint_carries_a_non_default_ssh_port_and_escapes_spaces(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    user = getpass.getuser()
+    plain = tmp_path / "r.json"
+    spaced = tmp_path / "결과 폴더" / "r 1.txt"
+    monkeypatch.setenv("SSH_CONNECTION", "172.18.10.100 51000 172.18.10.113 10322")
+    hint = script.fetch_hint([str(plain), str(spaced)])
+    escaped = str(spaced.resolve()).replace(" ", "\\ ")
+    assert hint == f'scp -P 10322 {user}@172.18.10.113:{plain.resolve()} "{user}@172.18.10.113:{escaped}" .'
+    monkeypatch.setenv("SSH_CONNECTION", "fe80::1 51000 fe80::2 22")
+    assert script.fetch_hint([str(plain)]) == f"scp {user}@[fe80::2]:{plain.resolve()} ."
+    assert script.fetch_hint([]) is None
 
 
 def test_run_no_train_stops_when_active_split_differs(fake: FakeApi) -> None:
@@ -300,26 +418,65 @@ def test_run_text_out_keeps_the_printed_tables(fake: FakeApi, tmp_path: Path) ->
     assert "화면 출력 저장" in text
 
 
-def test_train_attaches_to_running_job_on_409(fake: FakeApi, monkeypatch: pytest.MonkeyPatch) -> None:
-    def conflict(api: str, path: str, body: dict[str, Any]) -> Any:
+def test_train_waits_for_running_job_on_409_then_submits_again(fake: FakeApi, monkeypatch: pytest.MonkeyPatch) -> None:
+    posts: list[dict[str, Any]] = []
+
+    def conflict_once(api: str, path: str, body: dict[str, Any]) -> Any:
         fake.calls.append(("POST", path))
-        raise RuntimeError(f"POST {path} → HTTP 409: 진행 중인 학습 잡이 있습니다")
+        posts.append(body)
+        if len(posts) == 1:
+            raise RuntimeError(f"POST {path} → HTTP 409: 진행 중인 학습 잡이 있습니다")
+        return {"job_id": "job2", "status": "queued"}
+
+    original_get = fake.get
+    polled: list[str] = []
+
+    def with_listing(api: str, path: str, **params: Any) -> Any:
+        if path.endswith("/gauge/train/jobs"):
+            return {"items": [{"job_id": "job1", "status": "running", "region_id": REGION}]}
+        if "/gauge/train/jobs/" in path:
+            polled.append(path.rsplit("/", 1)[-1])
+            return {"status": "done", "elapsed_s": 3.0, "stations": ["A"], "split_used": SPLIT_2020,
+                    "progress": {"stations_done": 1, "stations_total": 1}, "evaluation": {"trained_at": "t"}}
+        return original_get(api, path, **params)
+
+    monkeypatch.setattr(script, "post", conflict_once)
+    monkeypatch.setattr(script, "get", with_listing)
+    seen: list[str] = []
+    info = script.train(API, REGION, SPLIT_2020, stations=["A"], progress=seen.append, sleep=lambda s: None)
+    assert info["job_id"] == "job2" and any("끝나기를 기다림" in s for s in seen)
+    assert polled[0] == "job1" and polled[-1] == "job2"  # 먼저 돌던 잡을 기다린 뒤 새 잡을 폴링
+    assert len(posts) == 2 and posts[1] == {"split": SPLIT_2020, "async_run": True, "stations": ["A"]}
+
+
+def test_train_waits_for_sync_training_lock_on_409(fake: FakeApi, monkeypatch: pytest.MonkeyPatch) -> None:
+    """동기 학습(async_run=false)의 지역 잠금은 잡 목록에 나오지 않는다 — 409 가 풀릴 때까지 같은 요청을 다시 낸다."""
+    posts = 0
+
+    def conflict_twice(api: str, path: str, body: dict[str, Any]) -> Any:
+        nonlocal posts
+        posts += 1
+        if posts <= 2:
+            raise RuntimeError(f"POST {path} → HTTP 409: 같은 지역에 진행 중인 학습이 있습니다 (job_id=None, running)")
+        return fake.post(api, path, body)
 
     original_get = fake.get
 
     def with_listing(api: str, path: str, **params: Any) -> Any:
         if path.endswith("/gauge/train/jobs"):
-            return {"items": [{"job_id": "job1", "status": "running", "region_id": REGION}]}
+            return {"items": []}  # 실제 서버 모양 — 동기 잠금은 목록에 없다
         return original_get(api, path, **params)
 
-    monkeypatch.setattr(script, "post", conflict)
+    monkeypatch.setattr(script, "post", conflict_twice)
     monkeypatch.setattr(script, "get", with_listing)
+    slept: list[float] = []
     seen: list[str] = []
-    info = script.train(API, REGION, SPLIT_2020, progress=seen.append, sleep=lambda s: None)
-    assert info["job_id"] == "job1" and any("이어 붙음" in s for s in seen)
+    info = script.train(API, REGION, SPLIT_2020, progress=seen.append, sleep=slept.append)
+    assert info["job_id"] == "job1" and posts == 3 and slept.count(2.0) >= 2
+    assert any("동기 학습이 끝나기를 기다림" in m for m in seen)
 
 
-def test_train_409_without_running_job_is_reported(fake: FakeApi, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_train_gives_up_when_409_persists_past_timeout(fake: FakeApi, monkeypatch: pytest.MonkeyPatch) -> None:
     def conflict(api: str, path: str, body: dict[str, Any]) -> Any:
         raise RuntimeError(f"POST {path} → HTTP 409: 잠금")
 
@@ -332,8 +489,8 @@ def test_train_409_without_running_job_is_reported(fake: FakeApi, monkeypatch: p
 
     monkeypatch.setattr(script, "post", conflict)
     monkeypatch.setattr(script, "get", with_listing)
-    with pytest.raises(RuntimeError, match="HTTP 409"):
-        script.train(API, REGION, SPLIT_2020, sleep=lambda s: None)
+    with pytest.raises(RuntimeError, match="4초 안에 끝나지 않았습니다.*HTTP 409"):
+        script.train(API, REGION, SPLIT_2020, poll_s=2.0, timeout_s=4.0, sleep=lambda s: None)
 
 
 def test_main_maps_unexpected_exceptions_to_exit_2(fake: FakeApi, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
