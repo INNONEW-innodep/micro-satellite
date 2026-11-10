@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data: blob:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; font-src 'self'">
+<title>WATERCAST 시험 자료 현황</title>
+<style>
+  :root { --bg:#f3f5f8; --card:#fff; --ink:#16202c; --muted:#6b7684; --line:#e2e7ee; --accent:#0f6fd1; --accent-soft:#e8f1fc; --ok:#178a4c; --ok-soft:#e4f5ea; --warn:#b26a00; --warn-soft:#fff3d6; --err:#c0392b; --err-soft:#fdecea; --green:#1baf7a; --violet:#6b46c1; --radius:18px; --shadow:0 1px 2px rgba(16,24,40,.05),0 10px 26px rgba(16,24,40,.07); }
+  * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  html { font-size:15px; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:-apple-system,"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif; -webkit-font-smoothing:antialiased; }
+  .wrap { width:100%; max-width:1180px; padding:12px 16px 60px; margin:0 auto; width:min(1180px,100% - 32px); padding:12px 0 60px; }
+  header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:8px 0 10px; flex-wrap:wrap; }
+  .brand { display:flex; align-items:center; gap:9px; font-weight:800; font-size:1rem; letter-spacing:.02em; color:var(--ink); text-decoration:none; }
+  .brand .logo { width:34px; height:34px; border-radius:10px; background:var(--accent); display:grid; place-items:center; color:#fff; }
+  .brand .logo svg { width:20px; height:20px; }
+  .brand .title { color:var(--muted); font-weight:700; margin-left:6px; }
+  .brand .title::before { content:'·'; margin-right:8px; color:#b9c6d3; }
+  nav { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  nav a { color:var(--muted); text-decoration:none; font-size:.85rem; padding:7px 11px; border-radius:999px; border:1.5px solid var(--line); background:#fff; font-weight:700; }
+  nav a:hover { border-color:#b9c6d3; color:var(--ink); }
+  .health { display:inline-flex; align-items:center; gap:6px; font-size:.78rem; color:var(--muted); }
+  .health .dot { width:8px; height:8px; border-radius:50%; background:#c6cfd9; }
+  .health.ok .dot { background:var(--ok); } .health.bad .dot { background:var(--err); }
+  svg { fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  .card { background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:16px 18px; }
+  .card + .card { margin-top:14px; }
+  .card h2 { margin:0 0 4px; font-size:1.08rem; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .card h2 .n { width:24px; height:24px; border-radius:50%; background:var(--ink); color:#fff; display:grid; place-items:center; font-size:.76rem; }
+  .card h2 .sub { color:var(--muted); font-weight:600; font-size:.86rem; }
+  .card .lead { margin:0 0 12px; color:var(--muted); font-size:.88rem; line-height:1.45; }
+  .banner { margin:0 0 12px; padding:10px 13px; border-radius:12px; background:var(--err-soft); color:var(--err); font-weight:700; font-size:.88rem; }
+  .top { display:flex; align-items:flex-start; justify-content:space-between; gap:14px; flex-wrap:wrap; }
+  .field { display:grid; gap:4px; font-size:.84rem; color:var(--muted); font-weight:700; min-width:260px; }
+  .field select { font:inherit; font-size:.95rem; font-weight:700; color:var(--ink); border:2px solid var(--line); border-radius:11px; padding:9px 11px; background:#fff; min-height:42px; }
+  .tiles { display:grid; grid-template-columns:repeat(auto-fit, minmax(190px, 1fr)); gap:9px; flex:1; }
+  .tile { background:var(--bg); border-radius:12px; padding:9px 12px; }
+  .tile b { display:block; font-size:.98rem; font-weight:900; letter-spacing:-.01em; } .tile span { display:block; font-size:.76rem; color:var(--muted); line-height:1.3; margin-top:2px; }
+  .tile.hi { background:var(--accent-soft); } .tile.hi b { color:var(--accent); }
+  .chips { display:flex; flex-wrap:wrap; gap:8px; }
+  .chip { border:2px solid var(--line); background:#fff; border-radius:13px; padding:8px 12px; font:inherit; font-weight:700; font-size:.88rem; color:var(--ink); cursor:pointer; display:inline-flex; align-items:center; gap:7px; }
+  .chip:hover { border-color:#b9c6d3; }
+  .chip.is-on { border-color:var(--accent); background:var(--accent-soft); color:var(--accent); }
+  .chip .sub { font-weight:600; color:var(--muted); font-size:.76rem; } .chip.is-on .sub { color:var(--accent); }
+  .chip .tag { font-size:.68rem; font-weight:800; padding:2px 7px; border-radius:999px; background:var(--ok-soft); color:var(--ok); }
+  .chip.static { cursor:default; } .chip.static:hover { border-color:var(--line); }
+  .chip.sar { border-color:#d5dde6; } .chip .sen { font-size:.7rem; font-weight:800; padding:2px 7px; border-radius:999px; background:var(--accent-soft); color:var(--accent); }
+  .chip .sen.opt { background:#e3f7ee; color:var(--green); }
+  .group { margin-top:12px; } .group > b { display:block; font-size:.84rem; color:var(--muted); margin-bottom:7px; }
+  .toolbar { display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-top:12px; }
+  .tabs { display:flex; gap:6px; background:var(--bg); padding:4px; border-radius:12px; width:fit-content; max-width:100%; flex-wrap:wrap; }
+  .tabs button { border:0; background:none; font:inherit; font-weight:700; font-size:.86rem; padding:8px 12px; border-radius:9px; color:var(--muted); cursor:pointer; }
+  .tabs button.is-on { background:#fff; color:var(--accent); box-shadow:0 1px 3px rgba(16,24,40,.12); }
+  .tabs button:disabled { opacity:.45; cursor:not-allowed; }
+  .actions { display:flex; gap:8px; flex-wrap:wrap; }
+  .btn { border:2px solid var(--line); border-radius:11px; background:#fff; color:var(--ink); font:inherit; font-weight:800; font-size:.86rem; padding:8px 12px; cursor:pointer; display:inline-flex; align-items:center; gap:7px; text-decoration:none; }
+  .btn:hover { border-color:#b9c6d3; } .btn svg { width:16px; height:16px; }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:9px; margin-top:12px; }
+  .chart { margin-top:12px; background:#fff; border:1.5px solid var(--line); border-radius:14px; padding:6px 8px 2px; overflow:hidden; }
+  .chart svg { width:100%; height:auto; display:block; stroke:none; }
+  .chart .ax { font-size:11px; fill:#6b7684; } .chart .lbl { font-size:11px; fill:#b26a00; font-weight:700; }
+  .legend { display:flex; gap:14px; flex-wrap:wrap; margin-top:8px; font-size:.78rem; color:var(--muted); font-weight:600; }
+  .legend i { display:inline-block; width:12px; height:12px; border-radius:3px; vertical-align:-2px; margin-right:5px; }
+  .legend i.line { height:3px; border-radius:2px; vertical-align:2px; }
+  .legend i.dash { height:0; border-top:2px dashed var(--warn); vertical-align:3px; }
+  .legend i.dot { border-radius:50%; }
+  details.tbl { margin-top:12px; border:1.5px solid var(--line); border-radius:14px; padding:8px 12px 12px; }
+  details.tbl summary { cursor:pointer; font-weight:800; font-size:.9rem; color:var(--ink); padding:4px 0; }
+  details.tbl summary .sub { color:var(--muted); font-weight:600; font-size:.8rem; margin-left:8px; }
+  .tscroll { max-height:520px; overflow:auto; margin-top:8px; border-radius:10px; }
+  table { width:100%; border-collapse:collapse; font-size:.86rem; }
+  th, td { padding:7px 10px; border-bottom:1px solid var(--line); text-align:left; white-space:nowrap; }
+  th { color:var(--muted); font-weight:700; font-size:.78rem; position:sticky; top:0; background:#fff; z-index:1; }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  tr.origin td { background:var(--warn-soft); font-weight:800; }
+  tr.d1 td { background:var(--ok-soft); } tr.d7 td { background:#f0ecfa; }
+  td .mark { display:inline-block; font-size:.7rem; font-weight:800; padding:2px 7px; border-radius:999px; }
+  .mark.o { background:#fff; color:var(--warn); border:1.5px solid var(--warn); } .mark.d1 { background:#fff; color:var(--ok); border:1.5px solid var(--ok); } .mark.d7 { background:#fff; color:var(--violet); border:1.5px solid var(--violet); }
+  td.dim, .dim { color:var(--muted); }
+  .sensor { margin-top:14px; border:1.5px solid var(--line); border-radius:14px; padding:12px 14px; }
+  .sensor h3 { margin:0 0 4px; font-size:.98rem; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .sensor h3 .sen { font-size:.72rem; font-weight:800; padding:3px 8px; border-radius:999px; }
+  .sensor .meta { color:var(--muted); font-size:.8rem; margin:0 0 8px; line-height:1.45; }
+  .thumbs { display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; margin-top:10px; }
+  .thumb { border:2px solid var(--line); border-radius:12px; overflow:hidden; background:#0b2239; text-decoration:none; color:var(--ink); display:block; }
+  .thumb img { width:100%; aspect-ratio:1/1.1; object-fit:contain; display:block; background:#0b2239; }
+  .thumb span { display:block; padding:6px 9px; font-size:.78rem; font-weight:700; background:#fff; }
+  .thumb span small { display:block; color:var(--muted); font-weight:600; }
+  .notes { margin:12px 0 0; padding:11px 13px 11px 28px; background:var(--bg); border-radius:12px; font-size:.84rem; color:var(--ink); line-height:1.5; }
+  .notes li + li { margin-top:4px; }
+  .empty { color:var(--muted); margin:10px 0 0; font-size:.9rem; }
+  footer { margin-top:18px; color:var(--muted); font-size:.8rem; line-height:1.5; }
+  footer a { color:var(--muted); }
+  @media (max-width: 700px) { .card { padding:14px; } th, td { padding:6px 7px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="brand" href="/app" title="서비스 화면으로"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 12c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/><path d="M3 17c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2"/><path d="M12 3v5"/><path d="M9 6l3 2 3-2"/></svg></span>WATERCAST<span class="title">시험 자료 현황</span></a>
+    <nav>
+      <span class="health" id="health" role="status" aria-live="polite"><span class="dot" aria-hidden="true"></span><span id="healthText">연결 확인 중…</span></span>
+      <a href="/app">서비스 화면</a>
+      <a href="/eval">모델 성적표</a>
+    </nav>
+  </header>
+
+  <div class="banner" id="err" hidden></div>
+
+  <section class="card" id="regionCard">
+    <div class="top">
+      <label class="field">지역
+        <select id="regionSel" aria-label="지역 선택"></select>
+      </label>
+      <div class="tiles" id="regionTiles"></div>
+    </div>
+    <div class="group">
+      <b>초소형위성 촬영일 — 수위 예측의 원점(기준일)이 되는 날짜</b>
+      <div class="chips" id="originChips"></div>
+    </div>
+  </section>
+
+  <section class="card" id="levelCard">
+    <h2><span class="n">1</span>수위 Raw 데이터 <span class="sub">지상 수위관측소 일 수위</span></h2>
+    <p class="lead" id="levelLead">관측소를 고르면 서버가 가진 일 수위 자료를 그대로 보여 준다.</p>
+    <div class="chips" id="stationChips"></div>
+    <div class="toolbar">
+      <div class="tabs" id="rangeTabs" role="tablist" aria-label="보는 구간">
+        <button type="button" role="tab" data-r="all">전체 기간</button>
+        <button type="button" role="tab" data-r="test">시험 연도</button>
+        <button type="button" role="tab" data-r="around">촬영일 전후</button>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn" id="csvBtn" disabled><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 20h16"/></svg>CSV 내려받기</button>
+        <a class="btn" id="jsonLink" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2"/></svg>원본 JSON</a>
+      </div>
+    </div>
+    <div class="stats" id="levelStats"></div>
+    <div class="chart" id="levelChart"></div>
+    <div class="legend" id="levelLegend" hidden>
+      <span data-when="line"><i class="line" style="background:#0f6fd1"></i>일 수위 (m)</span>
+      <span data-when="band"><i style="background:#0f6fd1;opacity:.15"></i>시험 연도 구간</span>
+      <span data-when="origin"><i class="dash"></i>촬영일(원점)</span>
+      <span data-when="detail"><i class="dot" style="background:#178a4c"></i>D+1 실측</span>
+      <span data-when="detail"><i class="dot" style="background:#6b46c1"></i>D+7 실측</span>
+    </div>
+    <details class="tbl" open>
+      <summary>표<span class="sub" id="levelTableSub"></span></summary>
+      <div class="tscroll"><table id="levelTable"><thead><tr><th>날짜</th><th class="num">수위 (m)</th><th>표시</th></tr></thead><tbody></tbody></table></div>
+    </details>
+  </section>
+
+  <section class="card" id="truthCard">
+    <h2><span class="n">2</span>촬영일 기준 실측 수위 <span class="sub">원점 · D+1 · D+7 — 위성 연계 비교 지점</span></h2>
+    <p class="lead">예측값과 비교되는 실제 관측값. 위 1번 자료에서 촬영일과 그 1일·7일 뒤 날짜의 값을 그대로 뽑은 것이다.</p>
+    <div class="tscroll"><table id="truthTable"><thead><tr><th>촬영일(원점)</th><th>센서</th><th>관측소</th><th class="num">원점 수위 (m)</th><th>D+1 날짜</th><th class="num">D+1 실측 (m)</th><th>D+7 날짜</th><th class="num">D+7 실측 (m)</th></tr></thead><tbody></tbody></table></div>
+    <p class="empty" id="truthEmpty" hidden></p>
+  </section>
+
+  <section class="card" id="areaCard">
+    <h2><span class="n">3</span>수체 면적 Raw 데이터 <span class="sub">위성 장면별 수체 탐지 면적</span></h2>
+    <p class="lead" id="areaLead">장면마다 탐지한 물 영역을 센서별 <b>공통 격자</b>(같은 창)에서 센 면적. 시계열로 비교하는 값은 <b>공통 격자 면적</b> 하나다. 예측은 앞 장면들의 공통 격자 면적으로 다음 장면의 공통 격자 면적을 맞히고, 그 다음 장면의 값이 비교 정답이다.</p>
+    <div class="actions"><a class="btn" id="areaJsonLink" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2"/></svg>원본 JSON</a></div>
+    <div class="stats" id="areaStats"></div>
+    <div class="chart" id="areaChart"></div>
+    <div class="legend" id="areaLegend"></div>
+    <div id="areaBlocks"></div>
+    <ul class="notes" id="areaNotes" hidden></ul>
+  </section>
+
+  <footer>표의 값은 서버 API 응답을 가공 없이 그대로 보인 것이다(요약 타일도 자료 자릿수 그대로). 각 절의 <b>원본 JSON</b> 으로 서버 응답 원문을 직접 볼 수 있다.</footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var API = '/api/v1';
+  var DAY = 86400000;
+  var DEFAULT_REGION = 'nakdong_busan';
+  var qs = new URLSearchParams(location.search);
+  var state = { regions: [], region: null, seq: 0, detail: null, scenes: [], area: null, origins: [], originSensor: {},
+                testYear: null, testYears: [], testYearSure: false, stations: [], compared: [], locNames: {},
+                station: null, range: 'test', series: {}, pending: {}, rows: [], rowsStation: null };
+
+  // ---------- 작은 도우미
+  function $(s, r) { return (r || document).querySelector(s); }
+  function $$(s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); }
+  function el(tag, attrs, children) {
+    var e = document.createElement(tag);
+    if (attrs) Object.keys(attrs).forEach(function (k) { if (attrs[k] == null) return; if (k === 'text') e.textContent = attrs[k]; else if (k === 'class') e.className = attrs[k]; else e.setAttribute(k, attrs[k]); });
+    (children || []).forEach(function (c) { if (c != null) e.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return e;
+  }
+  function clear(e) { while (e && e.firstChild) e.removeChild(e.firstChild); }
+  function text(e, t) { if (e) e.textContent = t == null ? '' : String(t); }
+  function num(v, d) { if (v == null || !isFinite(Number(v))) return '—'; return Number(v).toLocaleString('ko-KR', { minimumFractionDigits: d, maximumFractionDigits: d }); }
+  function dayMs(iso) { if (!iso) return null; var m = String(iso).match(/^(\d{4})-(\d{2})-(\d{2})/); if (!m) return null; return Date.UTC(+m[1], +m[2] - 1, +m[3]); }
+  function isoOf(ms) { return new Date(ms).toISOString().slice(0, 10); }
+  function addDays(iso, n) { var ms = dayMs(iso); return ms == null ? null : isoOf(ms + n * DAY); }
+  function fmtKo(iso) { var ms = dayMs(iso); if (ms == null) return iso || ''; var d = new Date(ms); return d.getUTCFullYear() + '.' + (d.getUTCMonth() + 1) + '.' + d.getUTCDate(); }
+  function fmtMD(ms) { var d = new Date(ms); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); }
+  function enc(s) { return encodeURIComponent(s); }
+  function isSar(sensor) { var s = String(sensor || '').toLowerCase(); return s.indexOf('iceye') >= 0 || s.indexOf('umbra') >= 0 || s.indexOf('sar') >= 0; }
+  function sensorColor(sensor) { return isSar(sensor) ? '#0f6fd1' : '#1baf7a'; }
+  function getJSON(url) {
+    return fetch(url, { headers: { Accept: 'application/json' } }).then(function (r) {
+      return r.text().then(function (t) {
+        var b = {}; try { b = t ? JSON.parse(t) : {}; } catch (e) { b = {}; }
+        if (!r.ok) { var err = new Error((b && b.detail && (typeof b.detail === 'string' ? b.detail : JSON.stringify(b.detail))) || ('HTTP ' + r.status)); err.status = r.status; throw err; }
+        return b;
+      });
+    });
+  }
+  function showErr(msg) { var b = $('#err'); b.hidden = !msg; text(b, msg || ''); }
+  function regionUrl(path, region) { return API + '/regions/' + enc(region || state.region) + path; }
+  function isCompared(stationId) { return state.compared.some(function (s) { return s.id === stationId; }); }
+  function yearLabel() { return (state.testYearSure ? '시험 연도 ' : '최근 촬영 연도 ') + state.testYear; }
+
+  // ---------- 시작: 서버 확인 → 지역 목록 → 지역 자료
+  getJSON(API + '/health').then(function () { $('#health').className = 'health ok'; text($('#healthText'), '서버 연결됨'); })
+    .catch(function () { $('#health').className = 'health bad'; text($('#healthText'), '서버 응답 없음'); });
+
+  getJSON(API + '/regions').then(function (d) {
+    var items = Array.isArray(d) ? d : (d && (d.items || d.regions)) || [];
+    state.regions = items.filter(function (r) { return r.gauge_available !== false; });
+    var sel = $('#regionSel'); clear(sel);
+    state.regions.forEach(function (r) { sel.appendChild(el('option', { value: r.id, text: (r.name || r.id) + (r.satellite_available ? '' : ' (위성 없음)') })); });
+    function has(id) { return !!id && state.regions.some(function (r) { return r.id === id; }); }
+    var want = qs.get('region');
+    var pick = has(want) ? want : has(DEFAULT_REGION) ? DEFAULT_REGION : (state.regions[0] && state.regions[0].id);
+    if (!pick) { showErr('수위 자료가 있는 지역이 없습니다.'); return; }
+    sel.value = pick;
+    sel.addEventListener('change', function () { loadRegion(sel.value); });
+    loadRegion(pick);
+    if (want && pick !== want) showErr('요청한 지역 "' + want + '" 이(가) 없어 ' + pick + ' 을(를) 보여 줍니다.');
+  }).catch(function (e) { showErr('지역 목록을 받지 못했습니다: ' + e.message); });
+
+  function loadRegion(id) {
+    var seq = ++state.seq;                      // 늦게 도착한 이전 지역 응답이 화면을 덮지 못하게 하는 토큰
+    state.region = id; state.station = null; state.rows = []; state.rowsStation = null; state.range = 'test';
+    try { history.replaceState(null, '', location.pathname + '?region=' + enc(id)); } catch (e) { /* 무시 */ }
+    showErr('');
+    $('#jsonLink').setAttribute('href', '#'); $('#csvBtn').disabled = true;
+    $('#areaJsonLink').setAttribute('href', regionUrl('/satellite/area-series', id));
+    var pDetail = getJSON(regionUrl('', id));
+    var pScenes = getJSON(regionUrl('/satellite/scenes', id)).catch(function () { return { scenes: [] }; });
+    var pArea = getJSON(regionUrl('/satellite/area-series', id)).catch(function () { return { available: false }; });
+    Promise.all([pDetail, pScenes, pArea]).then(function (res) {
+      if (seq !== state.seq) return;
+      state.detail = res[0]; state.scenes = (res[1] && res[1].scenes) || []; state.area = res[2];
+      state.stations = (state.detail.stations || []).slice();
+      state.compared = state.stations.filter(function (s) { return s.satellite_location; });
+      state.locNames = {};
+      var locs = (state.detail.satellite_locations) || {};
+      Object.keys(locs).forEach(function (k) { if (locs[k] && locs[k].name_ko) state.locNames[k] = locs[k].name_ko; });
+      var origins = {}; state.scenes.forEach(function (sc) { if (sc.date) { origins[String(sc.date).slice(0, 10)] = sc.sensor || ''; } });
+      state.origins = Object.keys(origins).sort(); state.originSensor = origins;
+      var years = {}; state.origins.forEach(function (d) { years[d.slice(0, 4)] = 1; });
+      var ys = Object.keys(years).sort();
+      state.testYears = ys; state.testYear = ys.length ? Number(ys[ys.length - 1]) : null; state.testYearSure = ys.length === 1;
+      renderRegion(); renderStations(); renderArea();
+      var first = state.compared[0] || state.stations[0];
+      if (first) selectStation(first.id); else renderLevel();
+      renderTruth();
+    }).catch(function (e) { if (seq === state.seq) showErr('지역 자료를 받지 못했습니다: ' + e.message); });
+  }
+
+  // ---------- 지역 요약·촬영일
+  function renderRegion() {
+    var d = state.detail, box = $('#regionTiles'); clear(box);
+    var periods = state.stations.map(function (s) { return s.period; }).filter(Boolean);
+    var lo = periods.length ? periods.map(function (p) { return p[0]; }).sort()[0] : null;
+    var hi = periods.length ? periods.map(function (p) { return p[1]; }).sort().slice(-1)[0] : null;
+    var src = {}; state.stations.forEach(function (s) { if (s.source) src[s.source] = 1; });
+    var sensors = {}; state.scenes.forEach(function (sc) { sensors[sc.sensor || '?'] = (sensors[sc.sensor || '?'] || 0) + 1; });
+    var sensorTxt = Object.keys(sensors).sort().map(function (k) { return k + ' ' + sensors[k]; }).join(' · ');
+    box.appendChild(tile(d.name || d.id, '지역 (' + d.id + ')'));
+    box.appendChild(tile(lo && hi ? fmtKo(lo) + ' ~ ' + fmtKo(hi) : '—', '수위 자료 기간 · ' + (Object.keys(src).join(', ') || '출처 미상') + ' 일 수위'));
+    box.appendChild(tile(state.stations.length + '곳', '수위관측소 (위성 연계 비교 지점 ' + state.compared.length + '곳)'));
+    box.appendChild(tile(state.scenes.length ? state.scenes.length + '장면' : '없음', '초소형위성 장면' + (sensorTxt ? ' · ' + sensorTxt : '')));
+    if (!state.testYear) box.appendChild(tile('—', '시험 연도 = 위성 촬영 연도 (장면 없음)'));
+    else if (state.testYearSure) {
+      box.appendChild(tile(state.testYear + '년', '시험 연도 = 위성 촬영 연도'));
+      if (lo) box.appendChild(tile(fmtKo(lo) + ' ~ ' + state.testYear + '.12.31', '이번 시험에 쓰는 구간 · 모델 학습·선택 ~' + (state.testYear - 1) + '년 · 시험 ' + state.testYear + '년 · 그 뒤 자료는 쓰지 않음', 'hi'));
+    } else box.appendChild(tile(state.testYears.join('·') + '년', '촬영 연도가 여러 해 — 시험 연도 미확정 (시험은 촬영 연도가 하나인 지역에서 한다)'));
+    var chips = $('#originChips'); clear(chips);
+    if (!state.origins.length) chips.appendChild(el('span', { class: 'empty', text: '등록된 위성 장면이 없습니다.' }));
+    state.origins.forEach(function (o) {
+      var sensor = state.originSensor[o];
+      chips.appendChild(el('span', { class: 'chip static' + (isSar(sensor) ? ' sar' : '') }, [fmtKo(o), el('span', { class: 'sen' + (isSar(sensor) ? '' : ' opt'), text: sensor || '' })]));
+    });
+  }
+  function tile(big, small, cls) { return el('div', { class: 'tile' + (cls ? ' ' + cls : '') }, [el('b', { text: big }), el('span', { text: small })]); }
+
+  // ---------- 1. 수위 raw
+  function renderStations() {
+    var box = $('#stationChips'); clear(box);
+    state.stations.forEach(function (s) {
+      var b = el('button', { type: 'button', class: 'chip', 'data-id': s.id, 'aria-pressed': 'false' }, [s.name || s.id]);
+      if (s.satellite_location) b.appendChild(el('span', { class: 'tag', text: '위성 연계 · 비교 지점', title: state.locNames[s.satellite_location] ? '위성 수위 산출 위치: ' + state.locNames[s.satellite_location] : null }));
+      if (s.source_code) b.appendChild(el('span', { class: 'sub', text: (s.source || '') + ' ' + s.source_code }));
+      b.addEventListener('click', function () { selectStation(s.id); });
+      box.appendChild(b);
+    });
+    text($('#levelLead'), state.stations.length ? '관측소를 고르면 서버가 가진 일 수위 자료를 그대로 보여 준다. "위성 연계 · 비교 지점" 표시가 있는 곳이 예측 정확도 비교 지점이고, 나머지는 학습에만 쓴다.' : '이 지역에는 수위관측소 자료가 없다.');
+    if (!state.origins.length) state.range = 'all';
+    $$('#rangeTabs button').forEach(function (b) {
+      var r = b.getAttribute('data-r');
+      if (r === 'test') text(b, state.testYear ? yearLabel() : '시험 연도');
+      b.disabled = (r !== 'all' && !state.origins.length);
+      b.onclick = function () { state.range = r; syncTabs(); renderLevel(); };
+    });
+    syncTabs();
+  }
+  function syncTabs() { $$('#rangeTabs button').forEach(function (x) { var on = x.getAttribute('data-r') === state.range; x.className = on ? 'is-on' : ''; x.setAttribute('aria-selected', on ? 'true' : 'false'); }); }
+  function seriesKey(stationId) { return state.region + '|' + stationId; }
+  function fetchSeries(stationId) {
+    var key = seriesKey(stationId), region = state.region;
+    if (state.series[key]) return Promise.resolve(state.series[key]);
+    if (!state.pending[key]) {
+      state.pending[key] = getJSON(regionUrl('/gauge/' + enc(stationId) + '/series', region))
+        .then(function (d) { state.series[key] = d; delete state.pending[key]; return d; }, function (e) { delete state.pending[key]; throw e; });
+    }
+    return state.pending[key];
+  }
+  function selectStation(id) {
+    var seq = state.seq;
+    state.station = id;
+    $$('#stationChips .chip').forEach(function (b) { var on = b.getAttribute('data-id') === id; b.className = 'chip' + (on ? ' is-on' : ''); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
+    $('#jsonLink').setAttribute('href', regionUrl('/gauge/' + enc(id) + '/series'));
+    if (!state.series[seriesKey(id)]) { var box = $('#levelChart'); clear(box); box.appendChild(el('p', { class: 'empty', text: '자료를 받는 중…' })); }
+    fetchSeries(id).then(function () { if (seq === state.seq && state.station === id) renderLevel(); })
+      .catch(function (e) { if (seq === state.seq && state.station === id) failLevel(id, e); });
+  }
+  function failLevel(id, e) {
+    state.rows = []; state.rowsStation = null;
+    clear($('#levelStats')); clear($('#levelTable tbody'));
+    var box = $('#levelChart'); clear(box); box.appendChild(el('p', { class: 'empty', text: '자료를 받지 못했다 (' + id + '): ' + e.message }));
+    text($('#levelTableSub'), '자료 못 받음 · ' + id);
+    $('#csvBtn').disabled = true; $('#levelLegend').hidden = true;
+    showErr('수위 자료를 받지 못했습니다 (' + id + '): ' + e.message);
+  }
+  function rangeBounds() {
+    if (state.range === 'test' && state.testYear) return [state.testYear + '-01-01', state.testYear + '-12-31'];
+    if (state.range === 'around' && state.origins.length) return [addDays(state.origins[0], -10), addDays(state.origins[state.origins.length - 1], 14)];
+    return null;
+  }
+  function marks() {
+    // 날짜 → 표시(원점 / D+1 / D+7, 어느 촬영일 기준인지). 한 날짜에 여러 표시가 겹칠 수 있다(예: 4/16 촬영 = 4/15 의 D+1).
+    var m = {};
+    state.origins.forEach(function (o) {
+      (m[o] = m[o] || []).push({ kind: 'o', origin: o });
+      [1, 7].forEach(function (h) { var t = addDays(o, h); (m[t] = m[t] || []).push({ kind: 'd' + h, origin: o }); });
+    });
+    return m;
+  }
+  function rangeLabel() { return state.range === 'all' ? '전체 기간' : state.range === 'test' ? yearLabel() : '촬영일 전후'; }
+  function renderLevel() {
+    var data = state.station && state.series[seriesKey(state.station)];
+    if (state.station && !data) return;             // 아직 받는 중 — 그래프 상자의 '자료를 받는 중…' 을 그대로 둔다
+    var rowsAll = (data && data.rows) || [];
+    var compared = !!state.station && isCompared(state.station);
+    var b = rangeBounds();
+    var rows = rowsAll.filter(function (r) { var d = String(r.date).slice(0, 10); return !b || (d >= b[0] && d <= b[1]); });
+    state.rows = rows; state.rowsStation = state.station;
+    var vals = rows.map(function (r) { return r.water_level_m; }).filter(function (v) { return v != null && isFinite(Number(v)); }).map(Number);
+    var stats = $('#levelStats'); clear(stats);
+    var st = (data && data.station) || {};
+    var label = rangeLabel();
+    var lo = vals.length ? Math.min.apply(null, vals) : null, hi = vals.length ? Math.max.apply(null, vals) : null;
+    stats.appendChild(tile(num(vals.length, 0) + '일', label + ' 자료 일수' + (st.n_days && state.range === 'all' ? ' (서버 등록 ' + num(st.n_days, 0) + '일)' : '')));
+    stats.appendChild(tile(rows.length ? fmtKo(rows[0].date) + ' ~ ' + fmtKo(rows[rows.length - 1].date) : '—', '기간'));
+    stats.appendChild(tile(lo != null ? num(lo, 4) + ' m' : '—', '최저 수위'));
+    stats.appendChild(tile(hi != null ? num(hi, 4) + ' m' : '—', '최고 수위'));
+    var rangeTail = state.range !== 'test' ? '' : !state.station ? '' : !compared ? ' · 비교 지점 아님(분모로 쓰지 않음)' : state.testYearSure ? ' · 오차 정규화 분모' : '';
+    stats.appendChild(tile(lo != null ? num(hi - lo, 4) + ' m' : '—', '관측범위 (최고 − 최저)' + rangeTail, compared && state.range === 'test' && state.testYearSure ? 'hi' : null));
+    if (st.qc && st.qc.removed_days) stats.appendChild(tile(num(st.qc.removed_days, 0) + '일', '품질관리로 제외된 날 (전체 기간)'));
+
+    // 그래프 — 촬영일·D+1·D+7 표시는 비교 지점에서만(다른 지점은 학습에만 쓰여 원점이 의미가 없다)
+    var mk = compared ? marks() : {};
+    var pts = rows.map(function (r) { return { x: dayMs(r.date), y: r.water_level_m == null ? null : Number(r.water_level_m) }; });
+    var byDate = {}; rows.forEach(function (r) { byDate[String(r.date).slice(0, 10)] = r.water_level_m; });
+    var markers = [], points = [];
+    if (compared && state.origins.length) {
+      state.origins.forEach(function (o) { var x = dayMs(o); if (!rows.length || (x >= pts[0].x && x <= pts[pts.length - 1].x)) markers.push({ x: x, label: state.range === 'all' ? '' : fmtMD(x) }); });
+      if (state.range !== 'all') Object.keys(mk).forEach(function (d) { mk[d].forEach(function (t) { if (t.kind !== 'o' && byDate[d] != null) points.push({ x: dayMs(d), y: Number(byDate[d]), color: t.kind === 'd1' ? '#178a4c' : '#6b46c1', title: (t.kind === 'd1' ? 'D+1' : 'D+7') + ' 실측 (' + fmtKo(t.origin) + ' 촬영 기준) ' + fmtKo(d) + ' · ' + num(byDate[d], 4) + ' m' }); }); });
+    }
+    var showBand = state.range === 'all' && state.testYearSure;
+    chart($('#levelChart'), {
+      label: (st.name || state.station || '') + ' 일 수위 그래프', unit: 'm', digits: 2,
+      series: [{ pts: pts, color: '#0f6fd1', w: state.range === 'all' ? 1.2 : 2 }],
+      band: showBand ? [Date.UTC(state.testYear, 0, 1), Date.UTC(state.testYear, 11, 31)] : null,
+      markers: markers, points: points,
+      xRange: b ? [dayMs(b[0]), dayMs(b[1])] : null
+    });
+    var legend = $('#levelLegend'); legend.hidden = !rows.length;
+    $$('[data-when]', legend).forEach(function (e) {
+      var w = e.getAttribute('data-when');
+      e.hidden = w === 'band' ? !showBand : w === 'origin' ? !markers.length : w === 'detail' ? !points.length : false;
+    });
+
+    // 표
+    var tb = $('#levelTable tbody'); clear(tb);
+    var frag = document.createDocumentFragment();
+    rows.forEach(function (r) {
+      var d = String(r.date).slice(0, 10), tags = mk[d] || [];
+      var tr = el('tr', { class: tags.some(function (t) { return t.kind === 'o'; }) ? 'origin' : tags.some(function (t) { return t.kind === 'd1'; }) ? 'd1' : tags.length ? 'd7' : '' });
+      tr.appendChild(el('td', { text: fmtKo(d) }));
+      tr.appendChild(el('td', { class: 'num' + (r.water_level_m == null ? ' dim' : ''), text: r.water_level_m == null ? '결측' : num(r.water_level_m, 4) }));
+      var td = el('td');
+      tags.forEach(function (t, i) {
+        if (i) td.appendChild(document.createTextNode(' '));
+        td.appendChild(el('span', { class: 'mark ' + (t.kind === 'o' ? 'o' : t.kind), text: t.kind === 'o' ? '촬영일(원점)' : (t.kind === 'd1' ? 'D+1' : 'D+7') + ' (' + fmtMD(dayMs(t.origin)) + ' 촬영 기준)' }));
+      });
+      tr.appendChild(td);
+      frag.appendChild(tr);
+    });
+    tb.appendChild(frag);
+    var sub = rows.length ? num(rows.length, 0) + '행 · ' + (st.name || state.station || '') + ' · ' + label : (state.station ? '이 구간에는 자료 없음 · ' + (st.name || state.station) : '관측소를 고르세요');
+    if (state.station && !compared) sub += ' · 비교 지점 아님(위성 연계 없음) — 학습에만 쓰임';
+    else if (compared && state.origins.length && !state.origins.some(function (o) { return rowsAll.some(function (r) { return String(r.date).slice(0, 10) === o && r.water_level_m != null; }); })) sub += ' · 촬영일 자료 없음' + (st.qc && st.qc.removed_days ? '(품질관리로 제외)' : '');
+    text($('#levelTableSub'), sub);
+    $('#csvBtn').disabled = !rows.length;
+  }
+  $('#csvBtn').addEventListener('click', function () {
+    if (!state.rows.length || !state.rowsStation) return;
+    var compared = isCompared(state.rowsStation), mk = compared ? marks() : {};
+    var st = (state.series[seriesKey(state.rowsStation)] || {}).station || {};
+    var lines = ['date,water_level_m,mark'];
+    state.rows.forEach(function (r) {
+      var d = String(r.date).slice(0, 10);
+      var tags = (mk[d] || []).map(function (t) { return t.kind === 'o' ? 'origin' : (t.kind === 'd1' ? 'D+1' : 'D+7') + '(origin ' + t.origin + ')'; }).join(' ');
+      lines.push(d + ',' + (r.water_level_m == null ? '' : r.water_level_m) + ',' + tags);
+    });
+    var bounds = rangeBounds();
+    var name = state.region + '_' + (st.name || state.rowsStation) + '_수위_' + (bounds ? bounds.join('_') : '전체') + '.csv';
+    var blob = new Blob(['﻿' + lines.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' });
+    var a = el('a', { href: URL.createObjectURL(blob), download: name }); document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  });
+
+  // ---------- 2. 촬영일 기준 실측(원점·D+1·D+7) — 비교 지점 전부
+  function renderTruth() {
+    var seq = state.seq, origins = state.origins, compared = state.compared, sensors = state.originSensor;   // 지금 지역의 것을 잡아 둔다
+    var tb = $('#truthTable tbody'); clear(tb);
+    var empty = $('#truthEmpty');
+    if (!compared.length || !origins.length) { empty.hidden = false; text(empty, !origins.length ? '위성 장면이 없어 촬영일 기준 실측을 만들 수 없다.' : '위성 연계 비교 지점이 없다.'); $('#truthTable').hidden = true; return; }
+    $('#truthTable').hidden = false; empty.hidden = true;
+    Promise.all(compared.map(function (s) { return fetchSeries(s.id).catch(function () { return null; }); })).then(function (all) {
+      if (seq !== state.seq) return;              // 그 사이 지역이 바뀌었으면 버린다
+      clear(tb);
+      var frag = document.createDocumentFragment();
+      origins.forEach(function (o) {
+        compared.forEach(function (s, i) {
+          var data = all[i], byDate = {};
+          ((data && data.rows) || []).forEach(function (r) { byDate[String(r.date).slice(0, 10)] = r.water_level_m; });
+          var d1 = addDays(o, 1), d7 = addDays(o, 7);
+          var tr = el('tr');
+          tr.appendChild(el('td', { text: i === 0 ? fmtKo(o) : '', class: i === 0 ? '' : 'dim' }));
+          tr.appendChild(el('td', { text: i === 0 ? (sensors[o] || '') : '', class: 'dim' }));
+          tr.appendChild(el('td', { text: s.name || s.id }));
+          tr.appendChild(cell(byDate[o], data));
+          tr.appendChild(el('td', { text: fmtKo(d1), class: 'dim' }));
+          tr.appendChild(cell(byDate[d1], data));
+          tr.appendChild(el('td', { text: fmtKo(d7), class: 'dim' }));
+          tr.appendChild(cell(byDate[d7], data));
+          frag.appendChild(tr);
+        });
+      });
+      tb.appendChild(frag);
+    });
+    function cell(v, data) { return el('td', { class: 'num' + (v == null ? ' dim' : ''), text: !data ? '자료 못 받음' : v == null ? '실측 없음' : num(v, 4) }); }
+  }
+
+  // ---------- 3. 수체 면적 raw
+  var AREA_NOTES = [
+    '시계열 비교값은 공통 격자 면적 하나다. 센서별로 같은 창(공통 격자)을 잡고 모든 날짜를 그 안에서 세므로 날짜 사이 비교가 된다.',
+    '장면 자체 범위에서 센 수체 면적은 촬영 범위가 넓어지거나 옮겨 가면 물이 늘지 않아도 커지므로 참고값이다. 장면 유효 자료 범위는 그 장면이 실제로 덮은 땅의 넓이이지 물 면적이 아니다.',
+    '센서끼리는 창이 달라 값을 직접 비교하지 않는다. 같은 센서 안에서 이웃한 촬영일 사이만 예측한다.',
+    '정답 라벨 면적은 사람이 그린 정답 라벨로 센 값으로 탐지 결과를 확인하는 용도이며, 예측 비교에는 쓰지 않는다.'
+  ];
+  function renderArea() {
+    var a = state.area, blocks = $('#areaBlocks'), notes = $('#areaNotes'), legend = $('#areaLegend'), box = $('#areaChart'), stats = $('#areaStats');
+    clear(blocks); clear(notes); clear(legend); clear(box); clear(stats); notes.hidden = true;
+    if (!a || !a.available || !a.sensors || !Object.keys(a.sensors).length) {
+      box.appendChild(el('p', { class: 'empty', text: '이 지역에는 위성 장면 수체 면적 자료가 없다.' })); return;
+    }
+    var sceneById = {}; state.scenes.forEach(function (sc) { sceneById[sc.scene_id] = sc; });
+    var series = [], points = [], allVals = [], nPairs = 0;
+    Object.keys(a.sensors).sort().forEach(function (sensor) {
+      var blk = a.sensors[sensor], rows = (blk.rows || []).slice().sort(function (p, q) { return String(p.date) < String(q.date) ? -1 : 1; });
+      var color = sensorColor(sensor);
+      var vals = rows.filter(function (r) { return r.area_km2_common_frame != null; });
+      vals.forEach(function (r) { allVals.push(Number(r.area_km2_common_frame)); });
+      nPairs += Math.max(0, vals.length - 1);
+      series.push({ pts: rows.map(function (r) { return { x: dayMs(r.date), y: r.area_km2_common_frame == null ? null : Number(r.area_km2_common_frame) }; }), color: color, w: 2, dots: true });
+      rows.forEach(function (r) { if (r.area_km2_common_frame != null) points.push({ x: dayMs(r.date), y: Number(r.area_km2_common_frame), color: color, title: sensor + ' ' + fmtKo(r.date) + ' · 공통 격자 면적 ' + num(r.area_km2_common_frame, 3) + ' km²' }); });
+      legend.appendChild(el('span', {}, [el('i', { class: 'line', style: 'background:' + color }), sensor + ' 공통 격자 면적 (km²)']));
+
+      var sec = el('div', { class: 'sensor' });
+      sec.appendChild(el('h3', {}, [el('span', { class: 'sen', style: 'background:' + color + '22;color:' + color, text: isSar(sensor) ? 'SAR' : '광학' }), sensor, el('span', { class: 'dim', text: ' · ' + rows.length + '장면 · 인접 관측쌍 ' + Math.max(0, vals.length - 1) + '건' })]));
+      var fr = blk.frame || {};
+      sec.appendChild(el('p', { class: 'meta', text: '공통 격자(같은 창) ' + (fr.coverage_km2 != null ? num(fr.coverage_km2, 1) + ' km²' : '—') + (fr.width && fr.height ? ' · ' + fr.width + '×' + fr.height + ' 픽셀' : '') + (fr.pixel_area_m2 != null ? ' · 픽셀 ' + num(fr.pixel_area_m2, 0) + ' m²' : '') + (blk.common_valid_footprint_km2 != null ? ' · 전 장면 공통 유효 범위 ' + num(blk.common_valid_footprint_km2, 1) + ' km²' : '') }));
+      var tbl = el('table'), thead = el('thead'), trh = el('tr');
+      [['촬영일', ''], ['장면', ''], ['공통 격자 면적 (km²) — 시계열 비교값', 'num'], ['장면 자체 범위에서 센 수체 면적 (km²) — 참고, 비교 금지', 'num'], ['장면 유효 자료 범위 (km²) — 물 아님, 참고', 'num'], ['정답 라벨 면적 (km²) — 탐지 확인용, 예측 비교에 안 씀', 'num']].forEach(function (h) { trh.appendChild(el('th', { text: h[0], class: h[1] })); });
+      thead.appendChild(trh); tbl.appendChild(thead);
+      var tbody = el('tbody');
+      rows.forEach(function (r) {
+        var tr = el('tr');
+        tr.appendChild(el('td', { text: fmtKo(r.date) }));
+        tr.appendChild(el('td', { text: r.scene_id || '', class: 'dim' }));
+        tr.appendChild(el('td', { text: num(r.area_km2_common_frame, 3), class: 'num' }));
+        tr.appendChild(el('td', { text: num(r.area_km2_scene_footprint, 3), class: 'num dim' }));
+        tr.appendChild(el('td', { text: num(r.valid_area_km2, 2), class: 'num dim' }));
+        tr.appendChild(el('td', { text: r.gt_area_km2 == null ? '—' : num(r.gt_area_km2, 3), class: 'num dim' }));
+        tbody.appendChild(tr);
+      });
+      tbl.appendChild(tbody);
+      sec.appendChild(el('div', { class: 'tscroll' }, [tbl]));
+      var thumbs = el('div', { class: 'thumbs' });
+      rows.forEach(function (r) {
+        var sc = sceneById[r.scene_id], urls = (sc && sc.image_urls) || {};
+        var href = urls.overlay || urls.mask || urls.input;
+        if (!href) return;
+        var card = el('a', { class: 'thumb', href: href, target: '_blank', rel: 'noopener', title: '원래 크기로 보기' });
+        card.appendChild(el('img', { src: href, alt: sensor + ' ' + fmtKo(r.date) + ' 탐지 결과 겹쳐 보기 (청록 = 탐지된 수체)', loading: 'lazy' }));
+        card.appendChild(el('span', { text: fmtKo(r.date) }, [el('small', { text: '탐지 수체(청록) 겹쳐 보기 · 공통 격자 ' + num(r.area_km2_common_frame, 3) + ' km²' })]));
+        thumbs.appendChild(card);
+      });
+      if (thumbs.firstChild) sec.appendChild(thumbs);
+      blocks.appendChild(sec);
+    });
+    if (allVals.length) {
+      var lo = Math.min.apply(null, allVals), hi = Math.max.apply(null, allVals);
+      stats.appendChild(tile(num(allVals.length, 0) + '값 · ' + nPairs + '건', '관측(장면) 수 · 예측 비교 건수(인접 관측쌍, 센서별 합)'));
+      stats.appendChild(tile(num(hi - lo, 3) + ' km²', '관측범위 (전 센서 최고 − 최저) · 오차 정규화 분모', 'hi'));
+    }
+    chart(box, { label: '위성 장면별 수체 면적 그래프', unit: 'km²', digits: 1, series: series, points: points, markers: [], band: null, xRange: null });
+    AREA_NOTES.forEach(function (n) { notes.appendChild(el('li', { text: n })); });
+    notes.hidden = false;
+  }
+
+  // ---------- SVG 선그래프 (간단 화면의 chart 를 자료 확인용으로 손본 것: 구간 음영·세로 표지(라벨 겹침 회피)·강조점)
+  function chart(box, o) {
+    clear(box);
+    var hasLabels = (o.markers || []).some(function (mk) { return mk.label; });
+    var W = 920, H = hasLabels ? 310 : 290, m = { l: 64, r: 18, t: hasLabels ? 56 : 22, b: 40 };
+    var NS = 'http://www.w3.org/2000/svg';
+    function S(tag, attrs) { var e = document.createElementNS(NS, tag); Object.keys(attrs).forEach(function (k) { if (k === 'text') e.textContent = attrs[k]; else e.setAttribute(k, attrs[k]); }); return e; }
+    var all = [];
+    (o.series || []).forEach(function (s) { s.pts.forEach(function (p) { if (p.x != null && p.y != null && isFinite(p.y)) all.push(p); }); });
+    if (!all.length) { box.appendChild(el('p', { class: 'empty', text: '표시할 값이 없습니다.' })); return; }
+    var xs = all.map(function (p) { return p.x; }), ys = all.map(function (p) { return p.y; });
+    var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+    if (o.xRange) { x0 = Math.min(x0, o.xRange[0]); x1 = Math.max(x1, o.xRange[1]); }
+    if (x1 === x0) { x0 -= DAY; x1 += DAY; }
+    var pad = (y1 - y0) * 0.12 || 0.5; y0 -= pad; y1 += pad;
+    var digits = (y1 - y0) < 1 ? o.digits + 1 : o.digits;
+    function X(v) { return m.l + (v - x0) / (x1 - x0) * (W - m.l - m.r); }
+    function Y(v) { return H - m.b - (v - y0) / (y1 - y0) * (H - m.t - m.b); }
+    var svg = S('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': o.label || '그래프' });
+    if (o.band) {
+      var bx0 = Math.max(x0, o.band[0]), bx1 = Math.min(x1, o.band[1]);
+      if (bx1 > bx0) svg.appendChild(S('rect', { x: X(bx0), y: m.t, width: X(bx1) - X(bx0), height: H - m.t - m.b, fill: '#0f6fd1', opacity: '.08' }));
+    }
+    for (var i = 0; i <= 4; i++) {
+      var v = y0 + (y1 - y0) * i / 4, yy = Y(v);
+      svg.appendChild(S('line', { x1: m.l, x2: W - m.r, y1: yy, y2: yy, stroke: '#e2e7ee' }));
+      svg.appendChild(S('text', { x: m.l - 8, y: yy + 4, 'text-anchor': 'end', 'class': 'ax', text: num(v, digits) }));
+    }
+    svg.appendChild(S('text', { x: m.l - 8, y: m.t - 8, 'text-anchor': 'end', 'class': 'ax', text: o.unit || '' }));
+    xTicks(x0, x1).forEach(function (t) {
+      svg.appendChild(S('line', { x1: X(t.x), x2: X(t.x), y1: m.t, y2: H - m.b, stroke: '#eef2f6' }));
+      if (t.label) svg.appendChild(S('text', { x: X(t.x), y: H - 12, 'text-anchor': 'middle', 'class': 'ax', text: t.label }));
+    });
+    svg.appendChild(S('text', { x: m.l, y: H - 12, 'text-anchor': 'start', 'class': 'ax', text: fmtKo(isoOf(x0)) }));
+    svg.appendChild(S('text', { x: W - m.r, y: H - 12, 'text-anchor': 'end', 'class': 'ax', text: fmtKo(isoOf(x1)) }));
+    var lastX = [];                                   // 라벨 줄(0~3)마다 마지막 라벨 x — 가까우면 다음 줄로 내려 겹침을 피한다
+    (o.markers || []).forEach(function (mk) {
+      var x = X(mk.x);
+      svg.appendChild(S('line', { x1: x, x2: x, y1: m.t, y2: H - m.b, stroke: '#b26a00', 'stroke-dasharray': '4 4', opacity: '.8' }));
+      if (!mk.label) return;
+      var row = -1;
+      for (var r = 0; r < 4; r++) { if (lastX[r] == null || x - lastX[r] >= 30) { row = r; break; } }
+      if (row < 0) return;
+      lastX[row] = x;
+      svg.appendChild(S('text', { x: x + 3, y: 12 + row * 12, 'class': 'lbl', text: mk.label }));
+    });
+    (o.series || []).forEach(function (s) {
+      var pts = s.pts.filter(function (p) { return p.x != null && p.y != null && isFinite(p.y); });
+      if (pts.length > 1) svg.appendChild(S('polyline', { points: pts.map(function (p) { return X(p.x).toFixed(1) + ',' + Y(p.y).toFixed(1); }).join(' '), fill: 'none', stroke: s.color, 'stroke-width': s.w || 2, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+      if (s.dots || pts.length === 1) pts.forEach(function (p) { svg.appendChild(S('circle', { cx: X(p.x), cy: Y(p.y), r: 5, fill: '#fff', stroke: s.color, 'stroke-width': 3 })); });
+    });
+    (o.points || []).forEach(function (p) {
+      var c = S('circle', { cx: X(p.x), cy: Y(p.y), r: 4.5, fill: p.color, stroke: '#fff', 'stroke-width': 1.5 });
+      if (p.title) c.appendChild(S('title', { text: p.title }));
+      svg.appendChild(c);
+    });
+    box.appendChild(svg);
+  }
+  function xTicks(x0, x1) {
+    var span = (x1 - x0) / DAY, out = [], d0 = new Date(x0);
+    if (span > 1100) {
+      for (var y = d0.getUTCFullYear() + 1; Date.UTC(y, 0, 1) < x1; y++) out.push({ x: Date.UTC(y, 0, 1), label: String(y) });
+    } else if (span > 100) {
+      var Y0 = d0.getUTCFullYear(), M0 = d0.getUTCMonth(), n = 0;
+      for (var i = 1; i < 60; i++) { var t = Date.UTC(Y0, M0 + i, 1); if (t >= x1) break; var dd = new Date(t); out.push({ x: t, label: (dd.getUTCMonth() === 0 ? dd.getUTCFullYear() + '.' : '') + (dd.getUTCMonth() + 1) + '월' }); n++; }
+      if (n > 14) out.forEach(function (t, k) { if (k % 3 !== 2) t.label = ''; });
+    } else {
+      var step = span > 40 ? 7 : span > 14 ? 2 : 1;
+      for (var t2 = x0 + step * DAY; t2 < x1 - DAY / 2; t2 += step * DAY) out.push({ x: t2, label: fmtMD(t2) });
+    }
+    return out;
+  }
+})();
+</script>
+</body>
+</html>

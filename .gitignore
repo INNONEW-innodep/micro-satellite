@@ -45,6 +45,7 @@ __pycache__/
 .env.*
 
 data/
+!backend/app/static/data/
 weights/
 inference_results/
 eval_results/

@@ -398,6 +398,10 @@ def create_app(
     from .simple_ui import mount_simple_ui
 
     mount_simple_ui(app)
+    # 시험 자료 현황 /data — 예측에 실제로 쓰이는 원자료(지점 일 수위·장면별 수체 면적)를 표·그래프로 (2026-11-10, 시험원 확인용)
+    from .data_ui import mount_data_ui
+
+    mount_data_ui(app)
     return app
 
 
