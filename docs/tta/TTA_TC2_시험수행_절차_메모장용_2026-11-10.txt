@@ -64,6 +64,11 @@ TTA-26-03423  TC2  시험 수행 절차  (수체면적 및 수위변화 시계�
         scp innonew98@172.18.10.113:/home/innonew98/tta/tc2_result.json innonew98@172.18.10.113:/home/innonew98/tta/tc2_result.txt .
  5-2. 클라이언트 PC 에서 터미널 창을 하나 더 열고, 결과를 둘 폴더로 이동(cd)한 뒤 그 scp 한 줄을 붙여 넣는다.
       비밀번호를 넣으면 tc2_result.txt (화면의 표·판정 그대로) 와 tc2_result.json (계산 상세) 이 그 폴더에 내려온다.
+ 5-3. 자료 화면(/data)의 제출용 사본도 같이 가져간다. (서버 없이 열리는 HTML 과 PDF — 값은 화면과 같다)
+      분석 PC 의 SSH 터미널에서:
+        python3 scripts/export_data_page.py --public http://172.18.10.113:18000 --pdf
+      → ~/tta/WATERCAST_시험자료현황_nakdong_busan_<날짜>.html 과 .pdf 가 생긴다. 클라이언트 PC 터미널에서:
+        scp "innonew98@172.18.10.113:/home/innonew98/tta/WATERCAST_*" .
 
 [6] 시험 종료 후  — 이노뎁 담당자
  6-1. SSH 터미널에서 학습 산출물을 되돌린다.
