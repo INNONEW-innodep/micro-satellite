@@ -42,11 +42,13 @@ def test_data_page_is_served_with_raw_data_sections(client: TestClient) -> None:
                   "수체 면적 Raw 데이터", "공통 격자 면적", "장면 자체 범위에서 센 수체 면적", "비교 금지", "정답 라벨 면적", "예측 비교에 안 씀",
                   "초소형위성 촬영일", "이번 시험에 쓰는 구간", "비교 지점 아님", "학습에만 쓰임", "촬영 기준",
                   # ③ 자료 출처·위치(어디 자료인지): 지역·창 위치(경위도 환산)·영상 파일명·수체 판정(탐지 마스크)
-                  "어디", "창 위치", "경위도 환산", "원본 영상 → 탐지 마스크", "수체 판정", "탐지 모델(WBMS)"):
+                  "어디", "창 위치", "경위도 환산", "원본 영상 → 탐지 마스크", "수체 판정", "탐지 모델(WBMS)",
+                  # ④ 기상 raw(기상청 ASOS 일 관측 — 수위 예측 모델의 외생 입력: 강수량·평균기온, 실관측)
+                  "기상 Raw 데이터", "기상청 ASOS", "강수량 (mm) — 입력", "평균기온 (°C) — 입력", "예보가 아니다"):
         assert label in html, label
-    assert html.index("수위 Raw 데이터") < html.index("촬영일 기준 실측 수위") < html.index("수체 면적 Raw 데이터")
+    assert html.index("수위 Raw 데이터") < html.index("촬영일 기준 실측 수위") < html.index("수체 면적 Raw 데이터") < html.index("기상 Raw 데이터")
     # 페이지가 부르는 API 는 전부 기존 읽기 경로
-    for call in ("'/health'", "'/regions'", "/satellite/scenes", "/satellite/area-series", "/gauge/' + enc(", "/series'"):
+    for call in ("'/health'", "'/regions'", "/satellite/scenes", "/satellite/area-series", "/gauge/' + enc(", "/series'", "'/weather'"):
         assert call in html, call
     assert "POST" not in html and "fetch(url, { headers: { Accept: 'application/json' } })" in html  # 읽기만 한다
     assert 'href="/app"' in html and 'href="/eval"' in html
@@ -123,6 +125,17 @@ def test_data_page_contract_on_builtin_busan(tmp_path: Path) -> None:
         for row in block["rows"]:
             assert row["date"] in origins and row["scene_id"] and row["area_km2_common_frame"] > 0
             assert "area_km2_scene_footprint" in row and "valid_area_km2" in row
+
+    # ④ 기상: 저장된 기상청 ASOS 부산(159) 일 관측 — 모든 촬영일에 강수량·평균기온이 있다(학습 외생 입력이 빈칸 없이 찬다)
+    assert detail["weather_daily_available"] is True
+    wx = client.get(f"/api/v1/regions/{rid}/weather").json()
+    assert wx["provider"] == "KMA_ASOS" and wx["station_id"] == "159" and wx["station_name"] == "부산"
+    assert wx["range"] == ["2015-01-01", "2024-12-31"] and wx["n"] == len(wx["rows"]) == 3653
+    wx_by_date = {r["date"]: r for r in wx["rows"]}
+    for o in origins:
+        row = wx_by_date[o]
+        assert row["precipitation_mm"] is not None and row["avg_temperature_c"] is not None, o
+        assert {"min_temperature_c", "max_temperature_c", "humidity_pct"} <= set(row)
 
     from datetime import date, timedelta
 

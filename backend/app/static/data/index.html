@@ -175,6 +175,36 @@
     <ul class="notes" id="areaNotes" hidden></ul>
   </section>
 
+  <section class="card" id="wxCard">
+    <h2><span class="n">4</span>기상 Raw 데이터 <span class="sub">기상청 ASOS 일 관측 — 수위 예측 모델의 보조 입력</span></h2>
+    <p class="lead" id="wxLead">수위 예측 모델을 학습할 때 외생 입력으로 넣는 기상청 ASOS 일 관측 자료. 모델이 쓰는 변수는 <b>일 강수량</b>과 <b>평균기온</b>이고, 최저·최고기온과 습도는 같은 자료에 들어 있는 참고값이다. 실관측이며 예보가 아니다. 위성·수위 자료와 같은 날짜로 맞춰 쓴다.</p>
+    <div class="toolbar">
+      <div class="tabs" id="wxTabs" role="tablist" aria-label="기상 보는 구간">
+        <button type="button" role="tab" data-r="all">전체 기간</button>
+        <button type="button" role="tab" data-r="test">시험 연도</button>
+        <button type="button" role="tab" data-r="around">촬영일 전후</button>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn" id="wxCsvBtn" disabled><svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 20h16"/></svg>CSV 내려받기</button>
+        <a class="btn" id="wxJsonLink" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2"/></svg>원본 JSON</a>
+      </div>
+    </div>
+    <div class="stats" id="wxStats"></div>
+    <div class="chart" id="wxRainChart"></div>
+    <div class="chart" id="wxTempChart"></div>
+    <div class="legend" id="wxLegend" hidden>
+      <span><i class="line" style="background:#0f6fd1"></i>일 강수량 (mm) — 모델 입력</span>
+      <span><i class="line" style="background:#d9480f"></i>평균기온 (°C) — 모델 입력</span>
+      <span data-when="band"><i style="background:#0f6fd1;opacity:.15"></i>시험 연도 구간</span>
+      <span data-when="origin"><i class="dash"></i>촬영일(원점)</span>
+    </div>
+    <details class="tbl" open>
+      <summary>표<span class="sub" id="wxTableSub"></span></summary>
+      <div class="tscroll"><table id="wxTable"><thead><tr><th>날짜</th><th class="num">강수량 (mm) — 입력</th><th class="num">평균기온 (°C) — 입력</th><th class="num">최저기온 (°C)</th><th class="num">최고기온 (°C)</th><th class="num">습도 (%)</th><th>표시</th></tr></thead><tbody></tbody></table></div>
+    </details>
+    <p class="empty" id="wxEmpty" hidden></p>
+  </section>
+
   <footer>표의 값은 서버 API 응답을 가공 없이 그대로 보인 것이다(요약 타일도 자료 자릿수 그대로). 각 절의 <b>원본 JSON</b> 으로 서버 응답 원문을 직접 볼 수 있다.</footer>
 </div>
 
@@ -187,7 +217,8 @@
   var qs = new URLSearchParams(location.search);
   var state = { regions: [], region: null, seq: 0, detail: null, scenes: [], area: null, origins: [], originSensor: {},
                 testYear: null, testYears: [], testYearSure: false, stations: [], compared: [], locNames: {},
-                station: null, range: 'test', series: {}, pending: {}, rows: [], rowsStation: null };
+                station: null, range: 'test', series: {}, pending: {}, rows: [], rowsStation: null,
+                wx: null, wxRange: 'test', wxRows: [] };
 
   // ---------- 작은 도우미
   function $(s, r) { return (r || document).querySelector(s); }
@@ -273,16 +304,19 @@
   function loadRegion(id) {
     var seq = ++state.seq;                      // 늦게 도착한 이전 지역 응답이 화면을 덮지 못하게 하는 토큰
     state.region = id; state.station = null; state.rows = []; state.rowsStation = null; state.range = 'test';
+    state.wx = null; state.wxRange = 'test'; state.wxRows = [];
     try { history.replaceState(null, '', location.pathname + '?region=' + enc(id)); } catch (e) { /* 무시 */ }
     showErr('');
     $('#jsonLink').setAttribute('href', '#'); $('#csvBtn').disabled = true;
     $('#areaJsonLink').setAttribute('href', regionUrl('/satellite/area-series', id));
+    $('#wxJsonLink').setAttribute('href', regionUrl('/weather', id)); $('#wxCsvBtn').disabled = true;
     var pDetail = getJSON(regionUrl('', id));
     var pScenes = getJSON(regionUrl('/satellite/scenes', id)).catch(function () { return { scenes: [] }; });
     var pArea = getJSON(regionUrl('/satellite/area-series', id)).catch(function () { return { available: false }; });
-    Promise.all([pDetail, pScenes, pArea]).then(function (res) {
+    var pWx = getJSON(regionUrl('/weather', id)).catch(function () { return null; });
+    Promise.all([pDetail, pScenes, pArea, pWx]).then(function (res) {
       if (seq !== state.seq) return;
-      state.detail = res[0]; state.scenes = (res[1] && res[1].scenes) || []; state.area = res[2];
+      state.detail = res[0]; state.scenes = (res[1] && res[1].scenes) || []; state.area = res[2]; state.wx = res[3];
       state.stations = (state.detail.stations || []).slice();
       state.compared = state.stations.filter(function (s) { return s.satellite_location; });
       state.locNames = {};
@@ -293,7 +327,7 @@
       var years = {}; state.origins.forEach(function (d) { years[d.slice(0, 4)] = 1; });
       var ys = Object.keys(years).sort();
       state.testYears = ys; state.testYear = ys.length ? Number(ys[ys.length - 1]) : null; state.testYearSure = ys.length === 1;
-      renderRegion(); renderStations(); renderArea();
+      renderRegion(); renderWeatherTile(); renderStations(); renderArea(); renderWeatherTabs(); renderWeather();
       var first = state.compared[0] || state.stations[0];
       if (first) selectStation(first.id); else renderLevel();
       renderTruth();
@@ -375,11 +409,12 @@
     $('#csvBtn').disabled = true; $('#levelLegend').hidden = true;
     showErr('수위 자료를 받지 못했습니다 (' + id + '): ' + e.message);
   }
-  function rangeBounds() {
-    if (state.range === 'test' && state.testYear) return [state.testYear + '-01-01', state.testYear + '-12-31'];
-    if (state.range === 'around' && state.origins.length) return [addDays(state.origins[0], -10), addDays(state.origins[state.origins.length - 1], 14)];
+  function boundsFor(range) {
+    if (range === 'test' && state.testYear) return [state.testYear + '-01-01', state.testYear + '-12-31'];
+    if (range === 'around' && state.origins.length) return [addDays(state.origins[0], -10), addDays(state.origins[state.origins.length - 1], 14)];
     return null;
   }
+  function rangeBounds() { return boundsFor(state.range); }
   function marks() {
     // 날짜 → 표시(원점 / D+1 / D+7, 어느 촬영일 기준인지). 한 날짜에 여러 표시가 겹칠 수 있다(예: 4/16 촬영 = 4/15 의 D+1).
     var m = {};
@@ -470,6 +505,82 @@
     var bounds = rangeBounds();
     var name = state.region + '_' + (st.name || state.rowsStation) + '_수위_' + (bounds ? bounds.join('_') : '전체') + '.csv';
     var blob = new Blob(['﻿' + lines.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' });
+    var a = el('a', { href: URL.createObjectURL(blob), download: name }); document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  });
+
+  // ---------- 4. 기상 raw(기상청 ASOS 일 관측 — 수위 예측 모델의 외생 입력: 강수량·평균기온)
+  function wxLabel(wx) { return (wx.provider === 'KMA_ASOS' ? '기상청 ASOS ' : (wx.provider || '') + ' ') + (wx.station_name || '') + (wx.station_id ? '(' + wx.station_id + ')' : ''); }
+  function renderWeatherTile() {
+    var wx = state.wx, box = $('#regionTiles');
+    if (wx && wx.rows && wx.rows.length) box.appendChild(tile(wxLabel(wx), '기상 자료 · 일 관측 ' + num(wx.rows.length, 0) + '일 · 수위 예측 모델 보조 입력(강수·기온)'));
+    else box.appendChild(tile('없음', '기상 자료 · 이 지역에는 저장된 기상청 자료가 없음'));
+  }
+  function renderWeatherTabs() {
+    if (!state.origins.length) state.wxRange = 'all';
+    $$('#wxTabs button').forEach(function (b) {
+      var r = b.getAttribute('data-r');
+      if (r === 'test') text(b, state.testYear ? yearLabel() : '시험 연도');
+      b.disabled = (r !== 'all' && !state.origins.length);
+      b.onclick = function () { state.wxRange = r; syncWxTabs(); renderWeather(); };
+    });
+    syncWxTabs();
+  }
+  function syncWxTabs() { $$('#wxTabs button').forEach(function (x) { var on = x.getAttribute('data-r') === state.wxRange; x.className = on ? 'is-on' : ''; x.setAttribute('aria-selected', on ? 'true' : 'false'); }); }
+  function wxRangeLabel() { return state.wxRange === 'all' ? '전체 기간' : state.wxRange === 'test' ? yearLabel() : '촬영일 전후'; }
+  function renderWeather() {
+    var wx = state.wx, stats = $('#wxStats'), rain = $('#wxRainChart'), temp = $('#wxTempChart'), legend = $('#wxLegend'), tb = $('#wxTable tbody'), empty = $('#wxEmpty');
+    clear(stats); clear(rain); clear(temp); clear(tb); legend.hidden = true; empty.hidden = true; state.wxRows = []; $('#wxCsvBtn').disabled = true;
+    var all = (wx && wx.rows) || [];
+    if (!all.length) { empty.hidden = false; text(empty, '이 지역에는 저장된 기상청 자료가 없다.'); $('#wxTable').hidden = true; text($('#wxTableSub'), ''); return; }
+    $('#wxTable').hidden = false;
+    var bounds = boundsFor(state.wxRange), label = wxRangeLabel();
+    var rows = all.filter(function (r) { var d = String(r.date).slice(0, 10); return !bounds || (d >= bounds[0] && d <= bounds[1]); });
+    var rng = wx.range || [all[0].date, all[all.length - 1].date];
+    stats.appendChild(tile(wxLabel(wx), '관측 지점 · ' + (wx.provider || '') + ' 일 관측 · 실관측(예보 아님)'));
+    stats.appendChild(tile(fmtKo(rng[0]) + ' ~ ' + fmtKo(rng[1]), '자료 기간 · ' + num(all.length, 0) + '일'));
+    var rainVals = rows.filter(function (r) { return r.precipitation_mm != null; }), rainSum = 0, rainDays = 0;
+    rainVals.forEach(function (r) { rainSum += Number(r.precipitation_mm); if (Number(r.precipitation_mm) > 0) rainDays += 1; });
+    var temps = rows.filter(function (r) { return r.avg_temperature_c != null; }).map(function (r) { return Number(r.avg_temperature_c); });
+    stats.appendChild(tile(num(rows.length, 0) + '일', '보는 구간 · ' + label));
+    stats.appendChild(tile(rainVals.length ? num(rainSum, 1) + ' mm' : '—', '구간 강수량 합계 · 강수일(0 mm 초과) ' + num(rainDays, 0) + '일'));
+    stats.appendChild(tile(temps.length ? num(Math.min.apply(null, temps), 1) + ' ~ ' + num(Math.max.apply(null, temps), 1) + ' °C' : '—', '구간 평균기온 범위 (최저 ~ 최고)'));
+    var band = (state.wxRange === 'all' && state.testYearSure) ? [dayMs(state.testYear + '-01-01'), dayMs(state.testYear + '-12-31') + DAY - 1] : null;
+    var markers = state.origins.map(function (o) { return { x: dayMs(o), label: state.wxRange === 'all' ? null : fmtMD(dayMs(o)) }; });
+    var xRange = bounds ? [dayMs(bounds[0]), dayMs(bounds[1])] : null;
+    chart(rain, { label: '일 강수량 그래프 (mm)', unit: 'mm', digits: 0, xRange: xRange, band: band, markers: markers,
+      series: [{ pts: rows.map(function (r) { return { x: dayMs(r.date), y: r.precipitation_mm == null ? null : Number(r.precipitation_mm) }; }), color: '#0f6fd1', w: 1.5 }] });
+    chart(temp, { label: '평균기온 그래프 (°C)', unit: '°C', digits: 1, xRange: xRange, band: band, markers: markers,
+      series: [{ pts: rows.map(function (r) { return { x: dayMs(r.date), y: r.avg_temperature_c == null ? null : Number(r.avg_temperature_c) }; }), color: '#d9480f', w: 1.5 }] });
+    $$('#wxLegend span').forEach(function (sp) { var w = sp.getAttribute('data-when'); sp.hidden = (w === 'band' && !band) || (w === 'origin' && !state.origins.length); });
+    legend.hidden = false;
+    var isOrigin = {}; state.origins.forEach(function (o) { isOrigin[o] = true; });
+    var frag = document.createDocumentFragment();
+    rows.forEach(function (r) {
+      var d = String(r.date).slice(0, 10), tr = el('tr', { class: isOrigin[d] ? 'origin' : '' });
+      tr.appendChild(el('td', { text: fmtKo(d) }));
+      [['precipitation_mm', 1], ['avg_temperature_c', 1], ['min_temperature_c', 1], ['max_temperature_c', 1], ['humidity_pct', 1]].forEach(function (c, i) {
+        tr.appendChild(el('td', { class: 'num' + (r[c[0]] == null ? ' dim' : '') + (i >= 2 ? ' dim' : ''), text: r[c[0]] == null ? '결측' : num(r[c[0]], c[1]) }));
+      });
+      tr.appendChild(el('td', {}, isOrigin[d] ? [el('span', { class: 'mark o', text: '촬영일(원점)' })] : []));
+      frag.appendChild(tr);
+    });
+    tb.appendChild(frag);
+    text($('#wxTableSub'), rows.length ? num(rows.length, 0) + '행 · ' + wxLabel(wx) + ' · ' + label : '이 구간에는 자료 없음');
+    state.wxRows = rows; $('#wxCsvBtn').disabled = !rows.length;
+  }
+  $('#wxCsvBtn').addEventListener('click', function () {
+    if (!state.wxRows.length || !state.wx) return;
+    var isOrigin = {}; state.origins.forEach(function (o) { isOrigin[o] = true; });
+    var cols = ['precipitation_mm', 'avg_temperature_c', 'min_temperature_c', 'max_temperature_c', 'humidity_pct'];
+    var lines = ['date,' + cols.join(',') + ',mark'];
+    state.wxRows.forEach(function (r) {
+      var d = String(r.date).slice(0, 10);
+      lines.push([d].concat(cols.map(function (c) { return r[c] == null ? '' : r[c]; })).join(',') + ',' + (isOrigin[d] ? 'origin' : ''));
+    });
+    var bounds = boundsFor(state.wxRange);
+    var name = state.region + '_기상_' + (state.wx.provider === 'KMA_ASOS' ? 'ASOS' : (state.wx.provider || '')) + (state.wx.station_id || '') + '_' + (bounds ? bounds.join('_') : '전체') + '.csv';
+    var blob = new Blob(['\ufeff' + lines.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' });
     var a = el('a', { href: URL.createObjectURL(blob), download: name }); document.body.appendChild(a); a.click();
     setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   });
