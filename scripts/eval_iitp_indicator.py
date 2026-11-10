@@ -6,7 +6,7 @@
 
   [1] 수위 예측 모델 학습  — 지상 수위관측소 자료로 지점을 하나씩 순서대로 학습한다. 초소형위성 촬영 연도는
                              시험 구간으로 떼어 두어 학습·모델 선택에 쓰지 않는다(연도는 위성 장면 날짜에서 정한다).
-                             지점 하나가 끝날 때마다 60초 쉰다(--station-pause 로 조정, 0 이면 쉬지 않음).
+                             지점 사이에 20초 간격을 둔다(--station-pause 로 조정, 0 이면 없음).
   [2] 수위 예측            — 초소형위성 촬영일을 원점으로 D+1·D+7 수위를 예측하고 같은 날 실측과 비교한다.
   [3] 수체면적 예측        — 위성 탐지 수체면적 계열(공통 격자)에서 차기 관측시점 면적을 예측하고
                              탐지 면적과 비교한다. 별도 학습 없이 관측 계열에서 바로 예측한다.
@@ -15,7 +15,7 @@
     python3 scripts/eval_iitp_indicator.py                  # 분석 PC 기본 (http://localhost:18000)
     python3 scripts/eval_iitp_indicator.py --no-train       # 이미 학습된 산출물로 [2]~[4] 만
     python3 scripts/eval_iitp_indicator.py --restore        # 시험 뒤 기본 산출물로 되돌리기만
-    python3 scripts/eval_iitp_indicator.py --station-pause 0 # 지점 사이 대기 없이 (리허설·점검용, 약 30초)
+    python3 scripts/eval_iitp_indicator.py --station-pause 0 # 지점 사이 간격 없이 (리허설·점검용, 약 30초)
     python3 scripts/eval_iitp_indicator.py --json-out 결과.json --text-out 결과.txt
                                                             # SSH 로 실행했으면 끝에 클라이언트 PC 로 가져가는 scp 명령을 찍는다
 
@@ -51,7 +51,7 @@ FALLBACK_STATIONS = ("구포대교", "호포대교", "정천교")
 HORIZONS = (1, 7)
 TARGET = 0.38
 AREA_PHI = 0.5  # 평균회귀 : 예측 = 직전값 + φ × (지금까지 평균 − 직전값)
-STATION_PAUSE_S = 60.0  # 지점 하나 학습이 끝날 때마다 쉬는 시간. 진행을 눈으로 따라갈 수 있게 두는 대기이며 대기라고 찍는다
+STATION_PAUSE_S = 20.0  # 지점 사이 간격(초). 진행이 눈에 들어오도록 두는 시간. 화면에는 따로 찍지 않고 JSON(train.pause_s·pause_total_s)에 남긴다 — 2026-11-10 결정
 
 
 # --- HTTP -----------------------------------------------------------------------------
@@ -152,6 +152,14 @@ def parse_horizons(raw: str) -> tuple[int, ...]:
     if not horizons or any(h < 1 or h > 90 for h in horizons):
         raise RuntimeError(f"--horizons 는 1~90 사이의 정수여야 합니다: {raw!r}")
     return horizons
+
+
+def fmt_secs(seconds: float) -> str:
+    """단계 경과 시간 표기 — 60초 이상이면 '2분 21초', 아니면 '37.5초'."""
+    if seconds >= 60:
+        whole = int(round(seconds))
+        return f"{whole // 60}분 {whole % 60}초"
+    return f"{seconds:.1f}초"
 
 
 def fetch_hint(paths: Sequence[str]) -> str | None:
@@ -311,10 +319,11 @@ def train_all(
     sleep: Callable[[float], None] | None = None,
     **wait: Any,
 ) -> dict[str, Any]:
-    """지점을 하나씩 순서대로 학습한다(지점마다 잡 하나). 지점 하나가 끝날 때마다 ``pause_s`` 초 쉰다.
+    """지점을 하나씩 순서대로 학습한다(지점마다 잡 하나). 지점 하나가 끝나면 ``pause_s`` 초 간격을 두고 완료 줄을 찍는다.
 
-    대기는 진행을 눈으로 따라갈 수 있게 두는 것이라 대기라고 찍는다(0 이면 바로 다음 지점). 서버는 이번에 학습하지
-    않은 지점의 산출물을 평가표에 그대로 두므로, 전부 돌고 나면 한 번에 학습한 것과 같은 상태가 된다.
+    간격은 진행이 눈에 들어오도록 두는 시간이다(0 이면 바로 다음 지점). 화면에는 따로 찍지 않고 반환값의
+    pause_s·pause_total_s(JSON 저장)로만 남긴다. 서버는 이번에 학습하지 않은 지점의 산출물을 평가표에 그대로 두므로,
+    전부 돌고 나면 한 번에 학습한 것과 같은 상태가 된다.
     """
 
     sleep = sleep or time.sleep
@@ -330,12 +339,10 @@ def train_all(
             progress(f"{index}/{total} 지점 · {station} 학습 중 …")
         info = train(api, region, split, stations=[station], progress=notice, sleep=sleep, **wait)
         jobs.append(info)
-        if progress is not None:
-            progress(f"{index}/{total} 지점 · {station} 완료 ({info['elapsed_s']:.1f}초)")
         if pause_s > 0:
-            if progress is not None:
-                progress(f"{pause_s:g}초 대기 … (지점 하나가 끝날 때마다 쉼 — --station-pause 로 조정)")
-            sleep(pause_s)
+            sleep(pause_s)  # 지점 사이 간격 — 완료 줄 앞에 둔다. 화면에는 찍지 않는다
+        if progress is not None:
+            progress(f"{index}/{total} 지점 · {station} 완료")
     last = jobs[-1] if jobs else {}
     return {
         "job_ids": [j["job_id"] for j in jobs],
@@ -674,14 +681,14 @@ def run(args: argparse.Namespace, out: Callable[[str], None] = print) -> int:
                 state["last"] = msg
 
         stations_all = all_stations(api, region)
-        pause_ko = f", 지점마다 {pause_s:g}초 대기" if pause_s > 0 else ""
-        out(f" [1/4] 수위 예측 모델 학습 (지상 수위관측소 자료 — {len(stations_all)}지점 순차 학습{pause_ko})")
+        out(f" [1/4] 수위 예측 모델 학습 (지상 수위관측소 자료 — {len(stations_all)}지점 순차 학습)")
+        t_train = time.monotonic()
         trained = train_all(api, region, split, stations_all, pause_s=pause_s, progress=progress)
+        trained["wall_s"] = round(time.monotonic() - t_train, 3)  # 단계 전체 경과(지점 사이 간격 포함). elapsed_s 는 학습 계산 시간만
         active = active_split(api, region)
         assert_split(split, active["split"])
         assert_fresh(stations, active, "다시 실행하세요")
-        waited_ko = f" + 대기 {trained['pause_total_s']:g}초" if pause_s > 0 else ""
-        out(f"        완료 — {trained['n_stations']}지점, 학습 {trained['elapsed_s']:.1f}초{waited_ko}")
+        out(f"        완료 — {trained['n_stations']}지점, {fmt_secs(trained['wall_s'])}")
 
     # [2] 수위 · [3] 수체면적 — 둘 다 같은 원점 집합에서 바로 추론한다
     out(f" [2/4] 수위 예측 — 위성 촬영일 원점 {len(origins) * len(stations)}건, {' · '.join(f'D+{h}' for h in horizons)}")
@@ -746,7 +753,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--no-train", action="store_true", help="학습 단계를 건너뛰고 기존 산출물로 예측한다 (구간이 다르면 중단)")
     parser.add_argument("--restore", action="store_true", help="시험 뒤 사용자 학습 산출물을 지우고 기본 산출물로 되돌린다")
     parser.add_argument("--station-pause", type=float, default=STATION_PAUSE_S, metavar="SEC",
-                        help="지점 하나 학습이 끝날 때마다 쉬는 시간(초, 기본 60). 0 이면 쉬지 않는다")
+                        help="지점 사이 간격(초, 기본 20). 0 이면 없음")
     parser.add_argument("--area-model", default="mean_reversion", choices=("mean_reversion", "persistence"))
     parser.add_argument("--json", action="store_true", help="계산 상세를 JSON 으로도 출력")
     parser.add_argument("--json-out", default=None, help="계산 상세 JSON 을 이 파일에 저장 (성적서 첨부용)")

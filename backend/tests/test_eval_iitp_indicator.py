@@ -7,7 +7,8 @@
 * 활성 산출물의 구간이 시험 설정과 다르면 중단한다(--no-train 경로).
 * 수체면적은 '그 시점까지 관측된 값'만 쓰고, 제출값(공통 격자·평균회귀 0.02663)을 그대로 재현한다.
 * 한 번 실행에 학습 → 수위 D+1·D+7 → 수체면적 → 지표가 전부 나오고 비교표가 출력된다.
-* 학습은 지역 지점 전부를 하나씩 순서대로 돌리고, 지점 하나가 끝날 때마다 쉰다(기본 60초) — 대기는 대기라고 찍는다.
+* 학습은 지역 지점 전부를 하나씩 순서대로 돌리고, 지점 사이에 간격을 둔다(기본 20초) — 화면에는 간격을 따로 찍지 않고
+  JSON 의 train.pause_s·pause_total_s(간격)·elapsed_s(학습 계산)·wall_s(단계 경과)로 남긴다.
 * SSH 로 들어와 실행했으면 결과 파일을 클라이언트 PC 로 가져가는 scp 명령을 끝에 찍는다.
 """
 
@@ -210,16 +211,18 @@ def test_train_polls_until_done_and_reports_progress(fake: FakeApi) -> None:
     assert seen[0].startswith("1/2 지점") and seen[-1].startswith("2/2 지점")
 
 
-def test_train_all_runs_stations_one_by_one_and_pauses_after_each(fake: FakeApi) -> None:
-    slept: list[float] = []
-    seen: list[str] = []
-    info = script.train_all(API, REGION, SPLIT_2020, ("A", "B", "C"), pause_s=60, progress=seen.append, sleep=slept.append)
+def test_train_all_runs_stations_one_by_one_with_a_silent_gap_before_each_done_line(fake: FakeApi) -> None:
+    log: list[Any] = []  # 진행 문구와 sleep 호출을 한 줄기로 — 간격이 어디에 들어가는지 순서를 본다
+    info = script.train_all(API, REGION, SPLIT_2020, ("A", "B", "C"), pause_s=60, progress=log.append, sleep=log.append)
     assert [b["stations"] for b in fake.train_bodies] == [["A"], ["B"], ["C"]]
-    assert slept.count(60) == 3  # 지점 하나가 끝날 때마다 한 번씩, 마지막 지점 뒤에도
+    events = [e for e in log if e != 2.0]  # 잡 폴링 간격(2초)은 뺀다
+    assert events == ["1/3 지점 · A 학습 중 …", 60, "1/3 지점 · A 완료",
+                      "2/3 지점 · B 학습 중 …", 60, "2/3 지점 · B 완료",
+                      "3/3 지점 · C 학습 중 …", 60, "3/3 지점 · C 완료"]  # 간격은 "학습 중 …" 과 "완료" 사이, 마지막 지점에도
     assert info["n_stations"] == 3 and info["elapsed_s"] == 37.5 and info["pause_total_s"] == 180.0
     assert info["stations"] == ["A", "B", "C"] and info["split"] == SPLIT_2020
-    assert seen[0] == "1/3 지점 · A 학습 중 …" and seen[1] == "1/3 지점 · A 완료 (12.5초)"
-    assert seen[2].startswith("60초 대기 …") and seen[-1].startswith("60초 대기 …")
+    seen = [e for e in log if isinstance(e, str)]
+    assert not any("대기" in m or "초)" in m for m in seen)  # 화면에는 간격도 지점별 계산 시간도 찍지 않는다
     assert not any(m.startswith("0/1") or m.startswith("1/1") for m in seen)  # 잡 폴링 진행률은 따로 찍지 않는다
 
 
@@ -296,13 +299,15 @@ def test_run_trains_then_scores_both_terms_in_one_go(fake: FakeApi, tmp_path: Pa
     # 학습은 지역 지점 전부(A·B·C)를 하나씩 순서대로 — 비교(연계 2개소)와 별개로 C 도 학습한다
     assert [b["stations"] for b in fake.train_bodies] == [["A"], ["B"], ["C"]]
     assert all(b["split"] == SPLIT_2020 and b["async_run"] is True for b in fake.train_bodies)
-    assert "3지점 순차 학습, 지점마다 60초 대기" in text and text.count("60초 대기 …") == 3
-    assert "완료 — 3지점, 학습 37.5초 + 대기 180초" in text
+    assert "3지점 순차 학습)" in text and "대기" not in text and "초)" not in text.split("[2/4]")[0]  # 간격·지점별 계산 시간은 화면에 없다
+    assert text.count("완료 — 3지점, ") == 1  # 단계 경과 시간 하나만
     payload = json.loads(out_file.read_text(encoding="utf-8"))
     assert payload["split"] == SPLIT_2020 and set(payload["result"]) == {"D+1", "D+7"}
     assert payload["result"]["D+1"]["area_norm_mse"] == pytest.approx(0.02663, abs=5e-5)
     assert payload["train"]["elapsed_s"] == 37.5 and payload["train"]["n_stations"] == 3
-    assert payload["train"]["job_ids"] == ["job1", "job1", "job1"] and payload["train"]["pause_total_s"] == 180.0
+    assert payload["train"]["job_ids"] == ["job1", "job1", "job1"]
+    assert payload["train"]["pause_s"] == 20.0 and payload["train"]["pause_total_s"] == 60.0  # 기본 간격 20초 × 3지점 — JSON 에는 남는다
+    assert "wall_s" in payload["train"]
 
 
 def test_run_station_pause_zero_skips_the_waits(fake: FakeApi) -> None:
@@ -311,12 +316,17 @@ def test_run_station_pause_zero_skips_the_waits(fake: FakeApi) -> None:
     assert len(fake.train_bodies) == 3
 
 
-def test_run_labels_fractional_pause_with_the_seconds_actually_slept(fake: FakeApi, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_run_fractional_pause_sleeps_exactly_that_long_and_stays_off_screen(fake: FakeApi, monkeypatch: pytest.MonkeyPatch) -> None:
     slept: list[float] = []
     monkeypatch.setattr(script.time, "sleep", slept.append)
     code, text = _run(["--api", API, "--region", REGION, "--station-pause", "0.5"])
     assert code == 0 and slept.count(0.5) == 3
-    assert "지점마다 0.5초 대기" in text and text.count("0.5초 대기 …") == 3 and "+ 대기 1.5초" in text
+    assert "0.5초" not in text and "대기" not in text
+
+
+def test_fmt_secs_switches_to_minutes_at_sixty() -> None:
+    assert script.fmt_secs(37.46) == "37.5초" and script.fmt_secs(59.9) == "59.9초"
+    assert script.fmt_secs(60) == "1분 0초" and script.fmt_secs(141.4) == "2분 21초" and script.fmt_secs(149.6) == "2분 30초"
 
 
 def test_run_rejects_station_pause_out_of_range_before_touching_the_api(fake: FakeApi) -> None:
