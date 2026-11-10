@@ -91,10 +91,13 @@
   .thumb span small { display:block; color:var(--muted); font-weight:600; }
   .notes { margin:12px 0 0; padding:11px 13px 11px 28px; background:var(--bg); border-radius:12px; font-size:.84rem; color:var(--ink); line-height:1.5; }
   .notes li + li { margin-top:4px; }
+  .src { display:grid; grid-template-columns:72px 1fr; gap:7px 12px; margin:0 0 12px; padding:11px 13px; background:var(--bg); border-radius:12px; font-size:.84rem; line-height:1.5; }
+  .src dt { font-weight:800; color:var(--accent); } .src dd { margin:0; } .src dd b { font-weight:800; }
+  td.file { font-size:.74rem; white-space:nowrap; line-height:1.35; }
   .empty { color:var(--muted); margin:10px 0 0; font-size:.9rem; }
   footer { margin-top:18px; color:var(--muted); font-size:.8rem; line-height:1.5; }
   footer a { color:var(--muted); }
-  @media (max-width: 700px) { .card { padding:14px; } th, td { padding:6px 7px; } }
+  @media (max-width: 700px) { .card { padding:14px; } th, td { padding:6px 7px; } .src { grid-template-columns:1fr; gap:2px 0; } .src dd { margin-bottom:6px; } }
 </style>
 </head>
 <body>
@@ -163,6 +166,7 @@
   <section class="card" id="areaCard">
     <h2><span class="n">3</span>수체 면적 Raw 데이터 <span class="sub">위성 장면별 수체 탐지 면적</span></h2>
     <p class="lead" id="areaLead">장면마다 탐지한 물 영역을 센서별 <b>공통 격자</b>(같은 창)에서 센 면적. 시계열로 비교하는 값은 <b>공통 격자 면적</b> 하나다. 예측은 앞 장면들의 공통 격자 면적으로 다음 장면의 공통 격자 면적을 맞히고, 그 다음 장면의 값이 비교 정답이다.</p>
+    <dl class="src" id="areaSource" hidden></dl>
     <div class="actions"><a class="btn" id="areaJsonLink" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M8 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h2"/><path d="M16 4h2a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-2"/></svg>원본 JSON</a></div>
     <div class="stats" id="areaStats"></div>
     <div class="chart" id="areaChart"></div>
@@ -203,6 +207,34 @@
   function fmtKo(iso) { var ms = dayMs(iso); if (ms == null) return iso || ''; var d = new Date(ms); return d.getUTCFullYear() + '.' + (d.getUTCMonth() + 1) + '.' + d.getUTCDate(); }
   function fmtMD(ms) { var d = new Date(ms); return (d.getUTCMonth() + 1) + '/' + d.getUTCDate(); }
   function enc(s) { return encodeURIComponent(s); }
+  // UTM(EPSG:326zz 북반구 / 327zz 남반구) 평면좌표를 WGS84 경위도로 — 공통 격자 창의 위치를 사람이 읽을 수 있게(역 가우스-크뤼거 급수, 오차 mm 단위)
+  function utmEpsg(v) { var m = String(v || '').match(/(?:EPSG:?|bounds_epsg)(32[67])(\d{2})$/i); return m ? { zone: +m[2], south: m[1] === '327' } : null; }
+  function utmToLonLat(epsg, E, N) {
+    if (!epsg || !isFinite(E) || !isFinite(N)) return null;
+    var a = 6378137, f = 1 / 298.257223563, k0 = 0.9996, n = f / (2 - f), A = a / (1 + n) * (1 + n * n / 4 + Math.pow(n, 4) / 64);
+    var b = [n / 2 - 2 * n * n / 3 + 37 * Math.pow(n, 3) / 96, n * n / 48 + Math.pow(n, 3) / 15, 17 * Math.pow(n, 3) / 480];
+    var dl = [2 * n - 2 * n * n / 3 - 2 * Math.pow(n, 3), 7 * n * n / 3 - 8 * Math.pow(n, 3) / 5, 56 * Math.pow(n, 3) / 15];
+    var xi = (N - (epsg.south ? 10000000 : 0)) / (k0 * A), eta = (E - 500000) / (k0 * A), xi2 = xi, eta2 = eta;
+    for (var j = 1; j <= 3; j++) { xi2 -= b[j - 1] * Math.sin(2 * j * xi) * Math.cosh(2 * j * eta); eta2 -= b[j - 1] * Math.cos(2 * j * xi) * Math.sinh(2 * j * eta); }
+    var chi = Math.asin(Math.sin(xi2) / Math.cosh(eta2)), lat = chi;
+    for (var k = 1; k <= 3; k++) lat += dl[k - 1] * Math.sin(2 * k * chi);
+    var lon0 = (epsg.zone - 1) * 6 - 180 + 3;
+    return [lon0 + Math.atan2(Math.sinh(eta2), Math.cos(xi2)) * 180 / Math.PI, lat * 180 / Math.PI];
+  }
+  function lonLatRange(pts, digits) {
+    var ok = (pts || []).filter(function (p) { return p && isFinite(p[0]) && isFinite(p[1]); });
+    if (!ok.length) return null;
+    var lons = ok.map(function (p) { return p[0]; }), lats = ok.map(function (p) { return p[1]; });
+    return '경도 ' + num(Math.min.apply(null, lons), digits) + '~' + num(Math.max.apply(null, lons), digits) + ' · 위도 ' + num(Math.min.apply(null, lats), digits) + '~' + num(Math.max.apply(null, lats), digits);
+  }
+  function frameWhere(frame) {
+    var fr = frame || {}, key = Object.keys(fr).filter(function (k) { return /^bounds_epsg\d+$/.test(k); })[0];
+    var bb = key ? fr[key] : null; if (!bb || bb.length !== 4) return null;
+    var epsg = utmEpsg(key) || utmEpsg(state.detail && state.detail.crs);
+    var ll = epsg ? lonLatRange([utmToLonLat(epsg, bb[0], bb[1]), utmToLonLat(epsg, bb[2], bb[1]), utmToLonLat(epsg, bb[0], bb[3]), utmToLonLat(epsg, bb[2], bb[3])], 3) : null;
+    return (ll ? ll + ' (경위도 환산) · ' : '') + (key ? key.replace('bounds_epsg', 'EPSG:') : '') + ' E ' + num(bb[0], 0) + '~' + num(bb[2], 0) + ' · N ' + num(bb[1], 0) + '~' + num(bb[3], 0) + ' m';
+  }
+  function baseName(p) { var s = String(p || ''); return s ? s.slice(s.lastIndexOf('/') + 1) : ''; }
   function isSar(sensor) { var s = String(sensor || '').toLowerCase(); return s.indexOf('iceye') >= 0 || s.indexOf('umbra') >= 0 || s.indexOf('sar') >= 0; }
   function sensorColor(sensor) { return isSar(sensor) ? '#0f6fd1' : '#1baf7a'; }
   function getJSON(url) {
@@ -489,6 +521,7 @@
       box.appendChild(el('p', { class: 'empty', text: '이 지역에는 위성 장면 수체 면적 자료가 없다.' })); return;
     }
     var sceneById = {}; state.scenes.forEach(function (sc) { sceneById[sc.scene_id] = sc; });
+    renderAreaSource(a);
     var series = [], points = [], allVals = [], nPairs = 0;
     Object.keys(a.sensors).sort().forEach(function (sensor) {
       var blk = a.sensors[sensor], rows = (blk.rows || []).slice().sort(function (p, q) { return String(p.date) < String(q.date) ? -1 : 1; });
@@ -504,14 +537,19 @@
       sec.appendChild(el('h3', {}, [el('span', { class: 'sen', style: 'background:' + color + '22;color:' + color, text: isSar(sensor) ? 'SAR' : '광학' }), sensor, el('span', { class: 'dim', text: ' · ' + rows.length + '장면 · 인접 관측쌍 ' + Math.max(0, vals.length - 1) + '건' })]));
       var fr = blk.frame || {};
       sec.appendChild(el('p', { class: 'meta', text: '공통 격자(같은 창) ' + (fr.coverage_km2 != null ? num(fr.coverage_km2, 1) + ' km²' : '—') + (fr.width && fr.height ? ' · ' + fr.width + '×' + fr.height + ' 픽셀' : '') + (fr.pixel_area_m2 != null ? ' · 픽셀 ' + num(fr.pixel_area_m2, 0) + ' m²' : '') + (blk.common_valid_footprint_km2 != null ? ' · 전 장면 공통 유효 범위 ' + num(blk.common_valid_footprint_km2, 1) + ' km²' : '') }));
+      var where = frameWhere(fr);
+      if (where) sec.appendChild(el('p', { class: 'meta', text: '창 위치 — ' + where }));
       var tbl = el('table'), thead = el('thead'), trh = el('tr');
-      [['촬영일', ''], ['장면', ''], ['공통 격자 면적 (km²) — 시계열 비교값', 'num'], ['장면 자체 범위에서 센 수체 면적 (km²) — 참고, 비교 금지', 'num'], ['장면 유효 자료 범위 (km²) — 물 아님, 참고', 'num'], ['정답 라벨 면적 (km²) — 탐지 확인용, 예측 비교에 안 씀', 'num']].forEach(function (h) { trh.appendChild(el('th', { text: h[0], class: h[1] })); });
+      [['촬영일', ''], ['장면', ''], ['원본 영상 → 탐지 마스크 (파일명)', ''], ['공통 격자 면적 (km²) — 시계열 비교값', 'num'], ['장면 자체 범위에서 센 수체 면적 (km²) — 참고, 비교 금지', 'num'], ['장면 유효 자료 범위 (km²) — 물 아님, 참고', 'num'], ['정답 라벨 면적 (km²) — 탐지 확인용, 예측 비교에 안 씀', 'num']].forEach(function (h) { trh.appendChild(el('th', { text: h[0], class: h[1] })); });
       thead.appendChild(trh); tbl.appendChild(thead);
       var tbody = el('tbody');
       rows.forEach(function (r) {
         var tr = el('tr');
         tr.appendChild(el('td', { text: fmtKo(r.date) }));
         tr.appendChild(el('td', { text: r.scene_id || '', class: 'dim' }));
+        var sc0 = sceneById[r.scene_id] || {}, fp = sc0.quicklook && sc0.quicklook.footprint_lonlat, fpTxt = lonLatRange(fp, 3);
+        var fileTip = [sc0.source_pre ? '원본 영상: ' + sc0.source_pre : null, sc0.source_mask ? '탐지 마스크: ' + sc0.source_mask : null, fpTxt ? '이 장면의 촬영 범위 ' + fpTxt : null].filter(Boolean).join('\n');
+        tr.appendChild(el('td', { class: 'dim file', title: fileTip || null }, sc0.source_pre || sc0.source_mask ? [baseName(sc0.source_pre) || '—', el('br'), '→ ' + (baseName(sc0.source_mask) || '—')] : ['—']));
         tr.appendChild(el('td', { text: num(r.area_km2_common_frame, 3), class: 'num' }));
         tr.appendChild(el('td', { text: num(r.area_km2_scene_footprint, 3), class: 'num dim' }));
         tr.appendChild(el('td', { text: num(r.valid_area_km2, 2), class: 'num dim' }));
@@ -541,6 +579,25 @@
     chart(box, { label: '위성 장면별 수체 면적 그래프', unit: 'km²', digits: 1, series: series, points: points, markers: [], band: null, xRange: null });
     AREA_NOTES.forEach(function (n) { notes.appendChild(el('li', { text: n })); });
     notes.hidden = false;
+  }
+
+  // 자료 출처·위치 — 사용자 지적(2026-11-10) '수체는 어디 데이터인지 정보가 없다': 지역·창 위치, 영상(센서·장면 수·기간·파일), 수체 판정(탐지 마스크)
+  function renderAreaSource(a) {
+    var box = $('#areaSource'); clear(box); box.hidden = true;
+    var d = state.detail || {}, scenes = state.scenes || [];
+    if (!scenes.length) return;
+    function row(k, nodes) { box.appendChild(el('dt', { text: k })); box.appendChild(el('dd', {}, nodes)); }
+    var bb = d.bbox_wgs84, where = [el('b', { text: d.name || state.region })];
+    if (d.description) where.push(' — ' + d.description);
+    if (bb && bb.length === 4) where.push(el('span', { class: 'dim', text: ' 지역 범위 ' + lonLatRange([[bb[0], bb[1]], [bb[2], bb[3]]], 2) }));
+    where.push(el('br'));
+    where.push('면적은 수위관측소 한 지점의 값이 아니라 센서별 공통 격자(같은 창) 전체에서 센 수체 면적이다. 창의 위치(경위도)·크기는 아래 센서 블록 첫 줄에 있다.');
+    row('어디', where);
+    var bySensor = {}; scenes.forEach(function (sc) { var k = sc.sensor || '?'; (bySensor[k] = bySensor[k] || []).push(sc); });
+    var parts = Object.keys(bySensor).sort().map(function (k) { var ds = bySensor[k].map(function (sc) { return String(sc.date || '').slice(0, 10); }).filter(Boolean).sort(); return k + ' (' + (isSar(k) ? 'SAR' : '광학') + ') ' + bySensor[k].length + '장면' + (ds.length ? ' ' + fmtKo(ds[0]) + ' ~ ' + fmtKo(ds[ds.length - 1]) : ''); });
+    row('영상', [el('b', { text: parts.join(' · ') }), el('br'), '수체 탐지 모델에 넣는 전처리(L1) 위성 영상. 파일은 분석 PC 에 있고 아래 표에는 파일명만 적는다(파일명의 날짜·시각은 촬영 시각 UTC). 전체 경로는 파일명에 마우스를 올리거나 원본 JSON 에서 본다.']);
+    row('수체 판정', ['장면마다 수체 탐지 모델(WBMS) 이 만든 이진 마스크가 "물" 이다(표의 → 뒤 파일). 이 마스크를 센서별 공통 격자로 다시 세어 수체 화소 수 × 화소 면적을 낸 것이 공통 격자 면적이고, 퀵룩의 청록이 그 마스크다.' + (a && a.water_threshold != null ? ' 마스크 임계값 ' + a.water_threshold + '.' : '')]);
+    box.hidden = false;
   }
 
   // ---------- SVG 선그래프 (간단 화면의 chart 를 자료 확인용으로 손본 것: 구간 음영·세로 표지(라벨 겹침 회피)·강조점)

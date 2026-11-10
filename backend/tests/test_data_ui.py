@@ -40,7 +40,9 @@ def test_data_page_is_served_with_raw_data_sections(client: TestClient) -> None:
     for label in ("수위 Raw 데이터", "지상 수위관측소 일 수위", "전체 기간", "시험 연도", "촬영일 전후", "CSV 내려받기", "원본 JSON",
                   "촬영일 기준 실측 수위", "D+1", "D+7", "위성 연계", "관측범위", "정규화 분모",
                   "수체 면적 Raw 데이터", "공통 격자 면적", "장면 자체 범위에서 센 수체 면적", "비교 금지", "정답 라벨 면적", "예측 비교에 안 씀",
-                  "초소형위성 촬영일", "이번 시험에 쓰는 구간", "비교 지점 아님", "학습에만 쓰임", "촬영 기준"):
+                  "초소형위성 촬영일", "이번 시험에 쓰는 구간", "비교 지점 아님", "학습에만 쓰임", "촬영 기준",
+                  # ③ 자료 출처·위치(어디 자료인지): 지역·창 위치(경위도 환산)·영상 파일명·수체 판정(탐지 마스크)
+                  "어디", "창 위치", "경위도 환산", "원본 영상 → 탐지 마스크", "수체 판정", "탐지 모델(WBMS)"):
         assert label in html, label
     assert html.index("수위 Raw 데이터") < html.index("촬영일 기준 실측 수위") < html.index("수체 면적 Raw 데이터")
     # 페이지가 부르는 API 는 전부 기존 읽기 경로
@@ -104,8 +106,12 @@ def test_data_page_contract_on_builtin_busan(tmp_path: Path) -> None:
     assert scenes["n_scenes"] == 8 and len(scenes["scenes"]) == 8
     origins = sorted(sc["date"] for sc in scenes["scenes"])
     assert {d[:4] for d in origins} == {"2020"}  # 시험 연도 = 촬영 연도 하나
+    assert detail["crs"] == "EPSG:32652" and len(detail["bbox_wgs84"]) == 4 and detail["description"]  # ③ '어디' 행
     for sc in scenes["scenes"]:
         assert sc["sensor"] in ("ICEYE", "PlanetScope") and sc["scene_id"]
+        # ③ 파일명 열(원본 영상 → 탐지 마스크)과 장면 촬영 범위 툴팁이 읽는 필드
+        assert sc["source_pre"].endswith(".tif") and sc["source_mask"].endswith(".tif") and "/" in sc["source_pre"]
+        assert len(sc["quicklook"]["footprint_lonlat"]) == 4 and len(sc["frame"]["bounds_epsg32652"]) == 4
         assert sc["image_urls"]["overlay"].startswith(f"/api/v1/regions/{rid}/satellite/files/")
     assert client.get(scenes["scenes"][0]["image_urls"]["overlay"]).status_code == 200  # 퀵룩 썸네일
 
@@ -113,6 +119,7 @@ def test_data_page_contract_on_builtin_busan(tmp_path: Path) -> None:
     assert area["available"] and set(area["sensors"]) == {"ICEYE", "PlanetScope"} and area["notes_ko"]
     for sensor, block in area["sensors"].items():
         assert len(block["rows"]) == 4 and block["frame"]["coverage_km2"] > 0, sensor
+        assert len(block["frame"]["bounds_epsg32652"]) == 4  # ③ 센서 블록 '창 위치' 줄(UTM → 경위도 환산)
         for row in block["rows"]:
             assert row["date"] in origins and row["scene_id"] and row["area_km2_common_frame"] > 0
             assert "area_km2_scene_footprint" in row and "valid_area_km2" in row
